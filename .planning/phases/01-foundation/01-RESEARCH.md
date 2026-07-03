@@ -469,17 +469,17 @@ export const strings = {
 | A1 | `@lucide/svelte`'s icon component prop API (size/color/strokeWidth) is functionally identical to `lucide-svelte`'s for the 4 icons this phase needs (`settings-2`→`Settings2`, `users`→`Users`, `target`→`Target`, `trophy`→`Trophy`) | Standard Stack / Code Examples | LOW — both packages are generated from the same underlying Lucide icon-source monorepo; worst case is a prop-name mismatch caught immediately by `svelte-check`/TypeScript at build time, not a runtime surprise. |
 | A2 | Tailwind v4's default `slate`/`teal`/`red` OKLCH shade values render as visually identical colors to the specific hex values the UI-SPEC quotes (`#F8FAFC`, `#0F172A`, `#14B8A6`, `#2DD4BF`, etc.) | Architecture Patterns / Pattern 4 | LOW-MEDIUM — OKLCH and the legacy hex values were confirmed to correspond via official docs cross-reference, but no pixel-level color comparison was run in this session. If a shade looks visibly off during implementation, fall back to explicit `@theme` overrides with the literal hex values from UI-SPEC — trivial to add if needed. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should `dexie-export-import` be installed in Phase 1 or deferred to the preset-saving phase (Phase 2)?**
    - What we know: It's cheap, has no downside to installing early, and is already in CLAUDE.md's locked stack.
    - What's unclear: Phase 1's CONTEXT.md explicitly scopes out "real feature content," and this package has zero utility until Phase 2 presets exist.
-   - Recommendation: Defer the actual `npm install` to Phase 2 planning; no need to carry an unused dependency through Phase 1's walking-skeleton scaffold.
+   - **RESOLVED:** Defer the `npm install` of `dexie-export-import` to Phase 2 (the preset-saving phase). Phase 1's walking-skeleton scaffold does NOT carry this dependency; Plan 01-01 Task 1 explicitly excludes it and asserts its absence via `npm ls dexie-export-import` returning not-found.
 
 2. **Walking-skeleton "one real interaction" — should it touch Dexie, or is the theme toggle (via localStorage) sufficient?**
    - What we know: The project's MVP/walking-skeleton guidance calls for "one real UI interaction" proving the stack end-to-end; this phase's CONTEXT.md explicitly limits Phase 1 to shell/theming/nav/PWA infrastructure with zero real feature data.
    - What's unclear: Whether "real interaction" must specifically exercise Dexie/IndexedDB (the project's actual persistence layer) to count as proving the full stack, or whether the theme toggle (a real, persisted, user-visible interaction using `localStorage`) satisfies the walking-skeleton intent on its own.
-   - Recommendation: Treat the theme toggle as Phase 1's qualifying "real interaction" (it is genuinely interactive, persisted, and testable end-to-end), while still scaffolding `db/schema.ts` and opening an empty Dexie database on boot — this proves IndexedDB opens successfully in this project's target browsers/PWA context without requiring Phase 1 to invent throwaway feature data just to exercise Dexie. Flag this interpretation for the planner to confirm or override.
+   - **RESOLVED:** The persisted light/dark theme toggle IS Phase 1's qualifying "real interaction" — it is genuinely interactive, persisted (via `localStorage`), and testable end-to-end (unit + offline E2E). Dexie is still scaffolded (`db/schema.ts`) and its empty database is opened on boot to prove IndexedDB opens successfully in the target PWA context, but Phase 1 does NOT invent throwaway feature data to exercise Dexie writes. Plan 01-01 implements exactly this split (theme toggle = the interaction; Dexie = open-only).
 
 ## Environment Availability
 
