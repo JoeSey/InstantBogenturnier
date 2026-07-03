@@ -21,7 +21,7 @@ reviewed_at: 2026-07-03
 | Tool | none — shadcn/ui is React-only (Radix-based); this project's tech stack is locked as Svelte 5 + Tailwind CSS 4 (see CLAUDE.md). No shadcn-svelte or other component registry is introduced. All components are hand-built Svelte components styled with Tailwind utility classes. |
 | Preset | not applicable |
 | Component library | none (custom Svelte 5 components) |
-| Icon library | `lucide-svelte` — tree-shakeable, bundled at build time (fully offline-safe, no CDN/runtime fetch), consistent thin-stroke line icons that suit the subtle-glass aesthetic. Default stroke width 1.75, size 20px (nav) / 24px (headers/placeholders). |
+| Icon library | `@lucide/svelte` (corrected 2026-07-03 per 01-RESEARCH.md — `lucide-svelte` is deprecated upstream; `@lucide/svelte` is the actively maintained, drop-in successor from the same org, requires `svelte: "^5"`) — tree-shakeable, bundled at build time (fully offline-safe, no CDN/runtime fetch), consistent thin-stroke line icons that suit the subtle-glass aesthetic. Default stroke width 1.75, size 20px (nav) / 24px (headers/placeholders). Import as PascalCase, e.g. `import { Settings2 } from '@lucide/svelte'`. |
 | Font | Tailwind's default `font-sans` system-UI stack (`ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`) — **default, no bundled webfont**. Chosen deliberately over a self-hosted font (e.g. Inter) to guarantee zero-latency, zero-precache-weight text rendering on a cold offline PWA launch — directly serves PLAT-01. No FOUT/FOIT risk. |
 
 ---
@@ -110,12 +110,12 @@ All UI copy is German (D-07) and centralized in a single strings module from day
 
 ### Nav Section Labels (locked for this phase, reused by Phases 2–4)
 
-| Section | Nav label (German) | Icon (lucide-svelte) |
+| Section | Nav label (German) | Icon (`@lucide/svelte`) |
 |---------|--------------------|-----------------------|
-| Setup | Einrichtung | `settings-2` |
-| Registration | Schützen | `users` |
-| Score Entry | Erfassung | `target` |
-| Results | Ergebnisse | `trophy` |
+| Setup | Einrichtung | `Settings2` |
+| Registration | Schützen | `Users` |
+| Score Entry | Erfassung | `Target` |
+| Results | Ergebnisse | `Trophy` |
 
 App name shown in the top app bar / splash: **"InstantBogenturnier"** (D-05).
 
