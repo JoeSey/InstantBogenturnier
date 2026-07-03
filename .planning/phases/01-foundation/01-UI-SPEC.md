@@ -1,10 +1,11 @@
 ---
 phase: 1
 slug: foundation
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-07-03
+reviewed_at: 2026-07-03
 ---
 
 # Phase 1 — UI Design Contract
@@ -100,7 +101,7 @@ All UI copy is German (D-07) and centralized in a single strings module from day
 
 | Element | Copy |
 |---------|------|
-| Primary CTA | **"Aktualisieren"** — the PWA update-banner action button (verb, imperative, matches D-01–D-03 update-prompt flow) |
+| Primary CTA | **"Aktualisieren"** — the PWA update-banner action button (verb, imperative, matches D-01–D-03 update-prompt flow). Always rendered directly under the banner body "Ein Update ist verfügbar." (never shown standalone), so the noun context comes from the adjacent copy — do not extract this button into a context without that body text. |
 | Update banner body | "Ein Update ist verfügbar." with secondary dismiss action labeled **"Später"** (not "Abbrechen" — framing is deferral, not rejection, since D-03 says it reappears next full app open) |
 | Empty state heading | **"{Bereich} kommt bald"** — pattern, one per nav section: "Einrichtung kommt bald" / "Schützen kommt bald" / "Erfassung kommt bald" / "Ergebnisse kommt bald" |
 | Empty state body | "Diese Funktion wird in einer kommenden Version freigeschaltet." (This feature will be unlocked in an upcoming version.) — same body copy for all four placeholder screens |
@@ -125,7 +126,7 @@ App name shown in the top app bar / splash: **"InstantBogenturnier"** (D-05).
 - **Breakpoint for nav-form switch:** below `768px` (Tailwind `md`) → bottom tab bar. `768px` and above → sidebar. This is the single responsive breakpoint governing the phone-vs-tablet/desktop nav transition for this phase.
 - **Bottom tab bar** (phone): fixed to viewport bottom, full width, glass-treated (see tokens above), exactly 4 items (Einrichtung / Schützen / Erfassung / Ergebnisse), each a vertical icon+label stack, 44×44px minimum touch target, active item shown in accent color with a small accent indicator bar above the icon; inactive items in neutral slate-500 (light) / slate-400 (dark).
 - **Sidebar** (tablet/desktop): fixed to viewport left edge, full height, glass-treated, 240px wide (icon-only 72px rail if space-constrained below `xl`/1280px), same 4 items stacked vertically with icon+label, same active/inactive color treatment as the tab bar.
-- **Top app bar** (all breakpoints): persistent header showing app name "InstantBogenturnier" (Heading role, 20px/600), with the light/dark manual-override toggle (sun/moon icon button) anchored to the right edge. This is where PLAT-03's manual override toggle lives — a single binary icon-button toggle, not a 3-way segmented control; default state mirrors system preference (`prefers-color-scheme`) until the trainer taps it, after which the manual choice persists across restarts.
+- **Top app bar** (all breakpoints): persistent header showing app name "InstantBogenturnier" (Heading role, 20px/600), with the light/dark manual-override toggle (sun/moon icon button) anchored to the right edge. This is where PLAT-03's manual override toggle lives — a single binary icon-button toggle, not a 3-way segmented control; default state mirrors system preference (`prefers-color-scheme`) until the trainer taps it, after which the manual choice persists across restarts. Icon-only button MUST carry `aria-label="Hell-/Dunkelmodus umschalten"` (updated dynamically to reflect the action it performs, e.g. "Zu Dunkelmodus wechseln" / "Zu Hellmodus wechseln") since it has no visible text label.
 - **Update banner** (D-01–D-04): renders below the top app bar, full width, glass-treated, only when a new service-worker update is waiting. Contains: Body-role message text, primary "Aktualisieren" button (accent fill), and "Später" dismiss (ghost/text button). Session-scoped dismissal only — reappears on next full app open if the update is still pending. No polling/manual-check UI.
 - **Placeholder ("coming soon") screens** (D-16): each of the 4 sections renders the same layout — centered content column (max-width ~480px), a large neutral-colored icon (48px, matching the section's nav icon) inside a glass-treated circular badge, Display-role heading ("{Bereich} kommt bald"), Body-role supporting copy below it. No CTA button on these screens — they are informational only, nothing to act on in Phase 1.
 - **Nav item disabled state** (structural provision for D-15, not triggered in Phase 1): reduced opacity (50%), no accent color even if selected, `aria-disabled="true"`, `cursor: not-allowed`. Build the nav component to accept a `disabled` prop per item now, even though every item is enabled in Phase 1 (there is no data yet to gate on) — this avoids a rework when Phase 4 needs to gate "Ergebnisse" before any scores exist.
@@ -143,11 +144,11 @@ App name shown in the top app bar / splash: **"InstantBogenturnier"** (D-05).
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: FLAG (non-blocking — clarified CTA context above)
+- [x] Dimension 2 Visuals: FLAG (non-blocking — aria-label requirement added above)
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved (2026-07-03) — all dimensions PASS or FLAG, no BLOCK. Both FLAG recommendations addressed inline (see Copywriting Contract and Layout & Navigation sections).
