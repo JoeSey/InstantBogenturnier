@@ -4,6 +4,7 @@
   import ClassForm from '../components/ClassForm.svelte';
   import SetupRounds from './SetupRounds.svelte';
   import PresetSave from '../components/PresetSave.svelte';
+  import PresetList from './PresetList.svelte';
   import { db } from '../db/schema';
   import { strings } from '../i18n/strings.de';
 
@@ -67,6 +68,7 @@
         {strings.presets.heading}
       </h3>
       <PresetSave />
+      <PresetList />
     </GlassCard>
   </section>
 </div>
