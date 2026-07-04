@@ -48,9 +48,36 @@
     // originates from a $derived-wrapped liveQuery array, and IndexedDB's structured
     // clone algorithm cannot serialize a live Proxy (DataCloneError otherwise).
     const preset = $state.snapshot(loadTarget);
+
+    // CR-03: `preset.classes` still carries the original numeric `id`s captured at save
+    // time (possibly from a different device/session, or a re-imported file). Those ids
+    // must never be trusted — reusing them verbatim risks an accidental id collision
+    // that silently repoints existing shooters (via `shooters.classId`) at an unrelated
+    // class. Record the pre-load id->name mapping so shooters can be reconciled by name
+    // after fresh ids are assigned below, then strip `id` from every class so Dexie
+    // always allocates new auto-increment ids.
+    const previousClasses = await db.classes.toArray();
+    const previousNameById = new Map(previousClasses.map((c) => [c.id, c.name]));
+    const classesWithoutIds = preset.classes.map(({ id: _id, ...rest }) => rest);
+
     // Never touches db.shooters (D-12) — only classes/shootingLines/rounds are replaced.
     await db.classes.clear();
-    await db.classes.bulkAdd(preset.classes);
+    const newIds = await db.classes.bulkAdd(classesWithoutIds, { allKeys: true });
+    const newIdByName = new Map(classesWithoutIds.map((c, i) => [c.name, newIds[i]]));
+
+    // Reconcile shooters.classId: a shooter whose class still exists (by name) in the
+    // freshly loaded preset gets remapped to its new id. A shooter whose class no
+    // longer exists is left alone rather than silently repointed at a same-numbered but
+    // unrelated class (the exact bug this fix addresses).
+    const allShooters = await db.shooters.toArray();
+    for (const shooter of allShooters) {
+      const oldName = previousNameById.get(shooter.classId);
+      const newId = oldName !== undefined ? newIdByName.get(oldName) : undefined;
+      if (newId !== undefined && newId !== shooter.classId && shooter.id !== undefined) {
+        await db.shooters.update(shooter.id, { classId: newId });
+      }
+    }
+
     await db.shootingLines.put({ id: 1, count: preset.shootingLineCount });
     await db.rounds.put({ id: 1, ...preset.roundsConfig });
     feedback = strings.presets.loadFeedback.replace('{name}', preset.name);
