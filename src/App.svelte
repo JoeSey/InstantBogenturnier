@@ -6,7 +6,7 @@
   import BottomTabBar from './lib/components/BottomTabBar.svelte';
   import Sidebar from './lib/components/Sidebar.svelte';
   import Setup from './lib/views/Setup.svelte';
-  import RegistrationPlaceholder from './lib/views/RegistrationPlaceholder.svelte';
+  import Registration from './lib/views/Registration.svelte';
   import ScoringPlaceholder from './lib/views/ScoringPlaceholder.svelte';
   import ResultsPlaceholder from './lib/views/ResultsPlaceholder.svelte';
   import { strings } from './lib/i18n/strings.de';
@@ -23,7 +23,7 @@
 
   const views: Record<SectionId, Component> = {
     setup: Setup,
-    registration: RegistrationPlaceholder,
+    registration: Registration,
     scoring: ScoringPlaceholder,
     results: ResultsPlaceholder,
   };
