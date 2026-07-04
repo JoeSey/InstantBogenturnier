@@ -48,6 +48,7 @@ export const strings = {
     passesPerRoundLabel: 'Passen pro Runde',
     arrowsPerPassLabel: 'Pfeile pro Passe',
     customDistanceLabel: 'Entfernung',
+    saveButton: 'Speichern',
     // Additions beyond the UI-SPEC verbatim block — needed for the Classes card's
     // inline delete-confirmation row (plan Task 2 action text); not itself listed in
     // 02-UI-SPEC.md's Strings Module Extension code block.
