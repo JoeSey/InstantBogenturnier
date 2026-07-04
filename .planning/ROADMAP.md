@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. App presents a glassmorphism-influenced design that adapts correctly across phone, tablet, and desktop widths.
   4. App automatically matches the system's light/dark preference and offers a manual override toggle that persists across restarts.
 **Plans**: 2 plans
-- [ ] 01-01-PLAN.md — Walking skeleton: scaffold + offline PWA + persisted light/dark theme toggle (PLAT-01, PLAT-03)
+- [x] 01-01-PLAN.md — Walking skeleton: scaffold + offline PWA + persisted light/dark theme toggle (PLAT-01, PLAT-03)
 - [ ] 01-02-PLAN.md — Responsive glass nav shell + four placeholder sections + session-dismissible update banner (PLAT-02, PLAT-01)
 **UI hint**: yes
 
@@ -77,7 +77,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/2 | Planned | - |
+| 1. Foundation | 1/2 | In Progress|  |
 | 2. Setup & Registration | 0/TBD | Not started | - |
 | 3. Score Entry | 0/TBD | Not started | - |
 | 4. Results | 0/TBD | Not started | - |

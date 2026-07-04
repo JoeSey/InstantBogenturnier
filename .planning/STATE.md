@@ -4,8 +4,8 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Phase 1 UI-SPEC approved
-last_updated: "2026-07-04T06:20:32.847Z"
-last_activity: 2026-07-04 -- Phase 1 planning complete
+last_updated: "2026-07-04T06:24:23.523Z"
+last_activity: 2026-07-04 -- Phase 01 execution started
 progress:
   total_phases: 4
   completed_phases: 0
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-03)
 
 **Core value:** Score entry and results ranking must work correctly and offline, on one device, during a live tournament at the range — everything else is secondary.
-**Current focus:** Phase 1 — Foundation
+**Current focus:** Phase 01 — foundation
 
 ## Current Position
 
-Phase: 1 of 4 (Foundation)
-Plan: 0 of TBD in current phase
-Status: Ready to execute
-Last activity: 2026-07-04 -- Phase 1 planning complete
+Phase: 01 (foundation) — EXECUTING
+Plan: 1 of 2
+Status: Executing Phase 01
+Last activity: 2026-07-04 -- Phase 01 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
