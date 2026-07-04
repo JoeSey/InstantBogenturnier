@@ -3,6 +3,8 @@
   import GlassCard from '../components/GlassCard.svelte';
   import ClassForm from '../components/ClassForm.svelte';
   import SetupRounds from './SetupRounds.svelte';
+  import PresetSave from '../components/PresetSave.svelte';
+  import PresetList from './PresetList.svelte';
   import { db } from '../db/schema';
   import { strings } from '../i18n/strings.de';
 
@@ -57,6 +59,16 @@
         {strings.setup.roundsLabel}
       </h3>
       <SetupRounds />
+    </GlassCard>
+  </section>
+
+  <section class="mb-6">
+    <GlassCard class="p-4 md:p-6">
+      <h3 class="mb-4 text-[20px] font-semibold leading-[1.2] text-slate-900 dark:text-slate-100">
+        {strings.presets.heading}
+      </h3>
+      <PresetSave />
+      <PresetList />
     </GlassCard>
   </section>
 </div>
