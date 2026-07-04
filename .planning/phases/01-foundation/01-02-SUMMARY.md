@@ -40,6 +40,7 @@ key-files:
     - e2e/nav.spec.ts
   modified:
     - src/App.svelte
+    - src/lib/components/TopAppBar.svelte
 
 key-decisions:
   - "Added data-testid=bottom-tab-bar / data-testid=sidebar-nav to the two nav <nav> elements for reliable E2E visibility assertions (both are always mounted, distinguished only by CSS display at the 768px breakpoint)"
@@ -49,16 +50,16 @@ key-decisions:
 patterns-established:
   - "Shared NavItem consumed by two structurally-different nav containers via prop-driven variation (hideLabelBelowXl), not duplicated markup"
 
-requirements-completed: []  # PLAT-01/PLAT-02 not marked complete — Task 4 (human-verify checkpoint: real-device install + airplane-mode launch) has not yet been performed. See Checkpoint Status below.
+requirements-completed: [PLAT-02]  # Task 4 human-verify checkpoint approved by trainer on real device (iPad, same-LAN preview) 2026-07-04
 
 # Metrics
-duration: ~35min (Tasks 1-3 only; Task 4 checkpoint pending)
+duration: ~40min (Tasks 1-4, incl. one post-checkpoint bug fix)
 completed: 2026-07-04
 ---
 
 # Phase 1 Plan 02: Responsive Glassmorphism Nav Shell Summary
 
-**Responsive glass nav shell (bottom tab bar / sidebar switching at 768px) with four "coming soon" placeholder sections and a session-dismissible, user-gated PWA update banner — Tasks 1-3 complete and fully green; Task 4 (real-device install/offline checkpoint) is paused awaiting human verification.**
+**Responsive glass nav shell (bottom tab bar / sidebar switching at 768px) with four "coming soon" placeholder sections and a session-dismissible, user-gated PWA update banner — all 4 tasks complete, including human verification on a real device.**
 
 ## Performance
 
@@ -70,15 +71,17 @@ completed: 2026-07-04
 
 ## Checkpoint Status
 
-**PAUSED at Task 4: Human verification — install to device and launch offline.**
+**RESOLVED — Task 4: Human verification — install to device and launch offline.**
 
-Tasks 1-3 are complete, committed, and fully verified by automation:
+Tasks 1-3 were complete, committed, and fully verified by automation before the checkpoint:
 - `npm run build` exits 0, `npx svelte-check --threshold error` reports 0 errors.
 - `npx playwright test` — 12/12 pass (7 new in `e2e/nav.spec.ts` + 5 pre-existing in `e2e/skeleton.spec.ts`).
 
-Task 4 requires a trainer to physically install the production build (`npm run build && npm run preview`) to a real device, launch it in airplane mode, and confirm the full shell renders, responsive nav switches correctly, theme persists across a true relaunch, and all four placeholder sections show the correct icon. This cannot be performed by an automated agent — it is explicitly a `checkpoint:human-verify` with `gate="blocking"` in the plan, and `workflow.auto_advance` is `false` in `.planning/config.json`, so it is not auto-approved.
+The trainer verified the production build (`npm run build && npm run preview`, served over LAN to an iPad on the same Wi-Fi as the dev host) against the full Task 4 checklist: offline shell render, responsive nav switch (bottom tabs on phone / sidebar on tablet+desktop), theme persistence across a true relaunch, and all four placeholder sections with correct icon.
 
-**This plan is NOT complete.** `requirements-completed` is intentionally left empty (PLAT-01/PLAT-02) pending Task 4's approval. A continuation agent (or the orchestrator) must run the checkpoint verification steps from `01-02-PLAN.md` Task 4 and, upon trainer approval, finalize this plan (mark requirements complete, update STATE.md/ROADMAP.md).
+**One issue was found and fixed during verification** (see Deviations below: `TopAppBar` sidebar-overlap fix, commit `ca71a4d`). After the fix, the trainer re-verified and approved.
+
+**This plan is now complete.** `requirements-completed: [PLAT-02]` reflects the approved checkpoint.
 
 ## Accomplishments
 - Built the shared `NavItem` (icon+label, active/disabled/D-15 provision, 44x44 min touch target) consumed identically by `BottomTabBar` (phone, always-visible label) and `Sidebar` (tablet/desktop, label hidden below xl per UI-SPEC's 72px icon-rail spec)
@@ -95,9 +98,7 @@ Each task was committed atomically:
 1. **Task 1: Write failing E2E tests for responsive nav, section switching, and the update banner** - `4652073` (test — TDD RED)
 2. **Task 2: Build the responsive glass nav shell and four placeholder sections** - `99c1ed2` (feat)
 3. **Task 3: Build and wire the session-dismissible update banner to green** - `7b62274` (feat — TDD GREEN)
-4. **Task 4: Human verification — install to device and launch offline** - NOT STARTED (checkpoint, requires human action)
-
-**Plan metadata:** (this commit, docs) — pending, will follow this SUMMARY
+4. **Task 4: Human verification — install to device and launch offline** - Approved by trainer (real-device LAN check); one fix required, see Deviations — `ca71a4d` (fix)
 
 ## Files Created/Modified
 - `src/lib/components/GlassCard.svelte` - Reusable `.glass-surface` wrapper (rounded-2xl), not yet consumed in Phase 1 — reserved primitive for Phase 2+
@@ -130,8 +131,17 @@ Each task was committed atomically:
 
 ---
 
-**Total deviations:** 1 auto-fixed (1 bug — test/verification-script false positive, not a functional defect)
-**Impact on plan:** No architectural or behavioral change; purely a comment wording fix to satisfy a literal grep-based acceptance check.
+**2. [Rule 1 - Bug] Fixed sidebar overlapped the header, hiding the start of the app title on tablet/desktop**
+- **Found during:** Task 4 human verification (trainer testing on iPad at tablet/desktop width)
+- **Issue:** `TopAppBar` was `w-full` with no left offset, but `Sidebar` is `fixed inset-y-0 left-0` at the same `z-10`. On viewports ≥768px the sidebar visually covered the header's left edge, truncating "InstantBogenturnier" to "tBogenturnier". `<main>` already had the correct `md:pl-[88px] xl:pl-[256px]` offset to avoid the sidebar; `TopAppBar` was missing the equivalent.
+- **Fix:** Added the same `md:pl-[88px] xl:pl-[256px]` classes to the header.
+- **Files modified:** src/lib/components/TopAppBar.svelte
+- **Verification:** Playwright bounding-box check confirmed no overlap at 900px and 1400px viewports (h1 left edge sits at/after the sidebar's right edge); trainer re-verified on device and approved.
+- **Committed in:** `ca71a4d`
+
+---
+
+**Total deviations:** 2 auto-fixed (2 bugs — 1 test/verification-script false positive, 1 real layout overlap caught by human verification; neither is an architectural or behavioral change)
 
 ## Issues Encountered
 None beyond the deviation above.
@@ -146,17 +156,14 @@ None - no external service configuration required.
 
 ## Next Phase Readiness
 
-**Blocked on Task 4.** Before this plan can be considered complete and before Phase 2 planning begins:
-1. A human (trainer) must run `npm run build && npm run preview`, install the app to a real device, and confirm the checklist in `01-02-PLAN.md` Task 4 (`<how-to-verify>`): full offline shell render, responsive nav switch across widths, light/dark persistence across a true relaunch, and all four placeholder sections with correct icons.
-2. Upon approval, a continuation agent should: mark `requirements-completed: [PLAT-01, PLAT-02]` in this SUMMARY's frontmatter, and the orchestrator should then run its normal STATE.md/ROADMAP.md/REQUIREMENTS.md updates for the completed plan.
-3. If the trainer reports issues instead, they should be triaged as new auto-fix tasks (Rules 1-3) or a plan revision, not silently absorbed into this SUMMARY.
+Plan 01-02 is complete. Phase 1 (foundation) has no further incomplete plans — ready for phase-level verification, then Phase 2 (setup/registration) planning.
 
-All automatable verification (build, type-check, full Playwright suite including offline-reload from Plan 01 and the new nav/banner suite from this plan) is green and ready for that final human check.
+All automatable verification (build, type-check, full Playwright suite including offline-reload from Plan 01 and the new nav/banner suite from this plan) is green, and the trainer has approved the real-device checkpoint.
 
 ---
 *Phase: 01-foundation*
 *Plan: 02*
-*Status: Tasks 1-3 complete, Task 4 (checkpoint) pending human verification*
+*Status: Complete — all 4 tasks done, checkpoint approved*
 
 ## Self-Check: PASSED
 
