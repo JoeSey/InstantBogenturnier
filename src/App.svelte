@@ -5,7 +5,7 @@
   import UpdateBanner from './lib/components/UpdateBanner.svelte';
   import BottomTabBar from './lib/components/BottomTabBar.svelte';
   import Sidebar from './lib/components/Sidebar.svelte';
-  import SetupPlaceholder from './lib/views/SetupPlaceholder.svelte';
+  import Setup from './lib/views/Setup.svelte';
   import RegistrationPlaceholder from './lib/views/RegistrationPlaceholder.svelte';
   import ScoringPlaceholder from './lib/views/ScoringPlaceholder.svelte';
   import ResultsPlaceholder from './lib/views/ResultsPlaceholder.svelte';
@@ -22,7 +22,7 @@
   ];
 
   const views: Record<SectionId, Component> = {
-    setup: SetupPlaceholder,
+    setup: Setup,
     registration: RegistrationPlaceholder,
     scoring: ScoringPlaceholder,
     results: ResultsPlaceholder,
@@ -31,8 +31,8 @@
   let activeSection = $state<SectionId>('setup');
   let ActiveView = $derived(views[activeSection]);
 
-  function selectSection(id: SectionId) {
-    activeSection = id;
+  function selectSection(id: string) {
+    activeSection = id as SectionId;
   }
 
   // Deterministic E2E test hook (nav.spec.ts contract): only active with `?e2e=1` in the
