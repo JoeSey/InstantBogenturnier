@@ -12,22 +12,21 @@ Score entry and results ranking must work correctly and offline, on one device, 
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] App is installable as a PWA and fully functional offline (no network required during the tournament) — Validated in Phase 1: Foundation
+- [x] App uses a modern, glassmorphism-influenced design, responsive across phone/tablet/desktop, with automatic light/dark mode and a manual override toggle — Validated in Phase 1: Foundation
+- [x] Trainer can define classes as a tuple of age group / bow type / distance, with only one field required and the rest optional, with an app-suggested name (e.g. RCV-U14) that the user can override — Validated in Phase 2: Setup & Registration
+- [x] Trainer can set the number of shooting lines for the tournament — Validated in Phase 2: Setup & Registration
+- [x] Trainer can set number of rounds and passes, choosing from WA presets (e.g. 1 round of 30 passes, 2 rounds of 30 passes) or a free custom configuration — Validated in Phase 2: Setup & Registration
+- [x] Trainer can register shooters with name, class, and optional shooting line assignment — Validated in Phase 2: Setup & Registration
+- [x] App indicates during shooter registration whether the tournament is running in mode AB or AB/CD (derived from shooter count vs. shooting line count) — Validated in Phase 2: Setup & Registration
+- [x] Trainer can save and reload 4-8 named tournament configuration presets (classes, lines, rounds/passes setup) to quickly start a new tournament — Validated in Phase 2: Setup & Registration (implementation also adds full-preset export/import via `dexie-export-import`, pulled forward from the v1 tech-stack recommendation — see 02-CONTEXT.md D-15)
 
 ### Active
 
-- [ ] Trainer can define classes as a tuple of age group / bow type / distance, with only one field required and the rest optional, with an app-suggested name (e.g. RCV-U14) that the user can override
-- [ ] Trainer can set the number of shooting lines for the tournament
-- [ ] Trainer can set number of rounds and passes, choosing from WA presets (e.g. 1 round of 30 passes, 2 rounds of 30 passes) or a free custom configuration
-- [ ] Trainer can register shooters with name, class, and optional shooting line assignment
-- [ ] App indicates during shooter registration whether the tournament is running in mode AB or AB/CD (derived from shooter count vs. shooting line count)
 - [ ] Trainer can enter scores per round/passe in a table (line, name, class, per-arrow scores, sum) sortable by clicking column headers (line, name, class, sum)
 - [ ] Trainer can save score entries mid-entry (interim save) and the app detects when all rounds/passes are complete, revealing a "complete tournament" action distinct from "save"
 - [ ] Trainer can view results sorted by score descending, with ties sharing a rank and skipping the next rank
 - [ ] Results view adapts by screen size: class-selectable dropdown on phone, multi-column all-classes view on larger screens
-- [ ] Trainer can save and reload 4-8 named tournament configuration presets (classes, lines, rounds/passes setup) to quickly start a new tournament
-- [ ] App is installable as a PWA and fully functional offline (no network required during the tournament)
-- [ ] App uses a modern, glassmorphism-influenced design, responsive across phone/tablet/desktop, with automatic light/dark mode and a manual override toggle
 
 ### Out of Scope
 
@@ -81,4 +80,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-03 after initialization*
+*Last updated: 2026-07-04 — Phase 2: Setup & Registration complete*
