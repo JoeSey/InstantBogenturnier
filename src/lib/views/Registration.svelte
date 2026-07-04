@@ -22,6 +22,7 @@
   let mode = $derived(detectMode(shooterCount, lineCount));
 
   let editingShooter = $state<ShooterRecord | null>(null);
+  let errorFeedback = $state('');
 
   function startEdit(shooter: ShooterRecord) {
     editingShooter = { ...shooter };
@@ -33,7 +34,16 @@
 
   async function deleteShooter(id: number | undefined) {
     if (id === undefined) return;
-    await db.shooters.delete(id);
+    errorFeedback = '';
+    try {
+      await db.shooters.delete(id);
+    } catch (err) {
+      // WR-04: surface write failures instead of failing silently.
+      errorFeedback = strings.common.saveError.replace(
+        '{error}',
+        err instanceof Error ? err.message : String(err)
+      );
+    }
   }
 
   function className(classId: number): string {
@@ -45,6 +55,10 @@
   <h1 class="text-[28px] font-semibold leading-[1.2] text-slate-900 dark:text-slate-100">
     {strings.registration.heading}
   </h1>
+
+  {#if errorFeedback}
+    <p class="text-[14px] leading-[1.4] text-red-600 dark:text-red-400">{errorFeedback}</p>
+  {/if}
 
   <GlassCard class="p-4 md:p-6">
     {#if mode === 'AB/CD'}

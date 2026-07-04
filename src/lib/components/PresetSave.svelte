@@ -11,38 +11,48 @@
   let capacityWarningVisible = $state(false);
   let showCollisionDialog = $state(false);
   let pendingName = $state('');
+  let errorFeedback = $state('');
 
   const presetsCountQuery = liveQuery(() => db.presets.count());
   let presetCount = $derived($presetsCountQuery ?? 0);
 
   async function performSave(nameToSave: string) {
-    const existing = await db.presets.where('name').equals(nameToSave).first();
-    const classes = await db.classes.toArray();
-    const shootingLineCount = (await db.shootingLines.get(1))?.count ?? 2;
-    const roundsRecord = await db.rounds.get(1);
-    const roundsConfig: Omit<RoundConfig, 'id'> = roundsRecord
-      ? {
-          arrowsPerPasse: roundsRecord.arrowsPerPasse,
-          passesPerRound: roundsRecord.passesPerRound,
-          numberOfRounds: roundsRecord.numberOfRounds,
-          distance: roundsRecord.distance,
-          presetId: roundsRecord.presetId,
-        }
-      : { arrowsPerPasse: 3, passesPerRound: 10, numberOfRounds: 1, distance: '18m' };
+    errorFeedback = '';
+    try {
+      const existing = await db.presets.where('name').equals(nameToSave).first();
+      const classes = await db.classes.toArray();
+      const shootingLineCount = (await db.shootingLines.get(1))?.count ?? 2;
+      const roundsRecord = await db.rounds.get(1);
+      const roundsConfig: Omit<RoundConfig, 'id'> = roundsRecord
+        ? {
+            arrowsPerPasse: roundsRecord.arrowsPerPasse,
+            passesPerRound: roundsRecord.passesPerRound,
+            numberOfRounds: roundsRecord.numberOfRounds,
+            distance: roundsRecord.distance,
+            presetId: roundsRecord.presetId,
+          }
+        : { arrowsPerPasse: 3, passesPerRound: 10, numberOfRounds: 1, distance: '18m' };
 
-    // `put` with the existing record's id updates it in place (overwrite), rather than
-    // creating a duplicate row for the same name.
-    await db.presets.put({
-      ...(existing ? { id: existing.id } : {}),
-      name: nameToSave,
-      classes,
-      shootingLineCount,
-      roundsConfig,
-      createdAt: new Date(),
-    });
+      // `put` with the existing record's id updates it in place (overwrite), rather than
+      // creating a duplicate row for the same name.
+      await db.presets.put({
+        ...(existing ? { id: existing.id } : {}),
+        name: nameToSave,
+        classes,
+        shootingLineCount,
+        roundsConfig,
+        createdAt: new Date(),
+      });
 
-    showCollisionDialog = false;
-    capacityWarningVisible = false;
+      showCollisionDialog = false;
+      capacityWarningVisible = false;
+    } catch (err) {
+      // WR-04: surface write failures instead of failing silently.
+      errorFeedback = strings.common.saveError.replace(
+        '{error}',
+        err instanceof Error ? err.message : String(err)
+      );
+    }
   }
 
   async function handleSubmit() {
@@ -104,6 +114,10 @@
     <p class="text-[14px] leading-[1.4] text-red-600 dark:text-red-400">
       {strings.presets.capacityWarning}
     </p>
+  {/if}
+
+  {#if errorFeedback}
+    <p class="text-[14px] leading-[1.4] text-red-600 dark:text-red-400">{errorFeedback}</p>
   {/if}
 
   <button

@@ -45,6 +45,7 @@
   let stagedRoster = $state<RosterEntry[]>([]);
 
   let editingId = $state<number | undefined>(undefined);
+  let errorFeedback = $state('');
 
   // Pre-fill the form whenever a new shooter is selected for editing.
   $effect(() => {
@@ -67,12 +68,23 @@
     const trimmedName = name.trim();
     if (!trimmedName || classId === '') return; // REG-01 required fields — silent no-op
 
+    errorFeedback = '';
+
     if (editingId !== undefined) {
-      await db.shooters.update(editingId, {
-        name: trimmedName,
-        classId: Number(classId),
-        lineAssignment: lineNum === '' ? null : Number(lineNum),
-      });
+      try {
+        await db.shooters.update(editingId, {
+          name: trimmedName,
+          classId: Number(classId),
+          lineAssignment: lineNum === '' ? null : Number(lineNum),
+        });
+      } catch (err) {
+        // WR-04: surface write failures instead of failing silently.
+        errorFeedback = strings.common.saveError.replace(
+          '{error}',
+          err instanceof Error ? err.message : String(err)
+        );
+        return;
+      }
       resetForm();
       onEditComplete?.();
       return;
@@ -155,6 +167,10 @@
   >
     {strings.registration.addShooterButton}
   </button>
+
+  {#if errorFeedback}
+    <p class="text-[14px] leading-[1.4] text-red-600 dark:text-red-400">{errorFeedback}</p>
+  {/if}
 </div>
 
 {#if showModal}

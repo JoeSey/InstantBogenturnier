@@ -16,6 +16,7 @@
   let classNameOverride = $state('');
   let confirmDeleteId = $state<number | null>(null);
   let deleteBlocked = $state<{ id: number; count: number } | null>(null);
+  let errorFeedback = $state('');
 
   const existingClassesQuery = liveQuery(() => db.classes.toArray());
   let existingClasses = $derived($existingClassesQuery ?? []);
@@ -29,18 +30,29 @@
     // SETUP-01: at least one tuple field required — silently no-op otherwise.
     if (!ageGroup && !bowType && !distance) return;
 
+    errorFeedback = '';
     const nameToSave = autoSuffixOnCollision(
       classNameOverride.trim() || finalSuggestedName,
       { ageGroup, bowType, distance },
       existingClasses
     );
 
-    await db.classes.add({
-      name: nameToSave,
-      ageGroup: ageGroup || undefined,
-      bowType: bowType || undefined,
-      distance: distance || undefined,
-    });
+    try {
+      await db.classes.add({
+        name: nameToSave,
+        ageGroup: ageGroup || undefined,
+        bowType: bowType || undefined,
+        distance: distance || undefined,
+      });
+    } catch (err) {
+      // WR-04: surface write failures (e.g. storage quota exceeded) instead of failing
+      // silently while the trainer believes the class was saved.
+      errorFeedback = strings.common.saveError.replace(
+        '{error}',
+        err instanceof Error ? err.message : String(err)
+      );
+      return;
+    }
 
     ageGroup = '';
     bowType = '';
@@ -72,7 +84,16 @@
 
   async function confirmDelete(id: number | undefined) {
     if (id === undefined) return;
-    await db.classes.delete(id);
+    errorFeedback = '';
+    try {
+      await db.classes.delete(id);
+    } catch (err) {
+      errorFeedback = strings.common.saveError.replace(
+        '{error}',
+        err instanceof Error ? err.message : String(err)
+      );
+      return;
+    }
     confirmDeleteId = null;
   }
 </script>
@@ -123,6 +144,10 @@
   >
     {strings.setup.addClassButton}
   </button>
+
+  {#if errorFeedback}
+    <p class="text-[14px] leading-[1.4] text-red-600 dark:text-red-400">{errorFeedback}</p>
+  {/if}
 </div>
 
 <ul class="mt-6 flex flex-col gap-2">

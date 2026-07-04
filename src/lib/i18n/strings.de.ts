@@ -17,6 +17,11 @@ export const strings = {
     ariaToDark: 'Zu Dunkelmodus wechseln',
     ariaToLight: 'Zu Hellmodus wechseln',
   },
+  // WR-04: shared fallback error message surfaced whenever a Dexie write throws (e.g.
+  // storage quota exceeded, blocked version upgrade) so a failed save is never silent.
+  common: {
+    saveError: 'Speichern fehlgeschlagen: {error}',
+  },
   // Phase 2 sections (setup/registration/presets) — added verbatim from
   // 02-UI-SPEC.md's "Strings Module Extension" block. This is the ONLY plan in Phase 2
   // that edits this file; Plans 02/03/04 only ever import from it.

@@ -38,8 +38,10 @@
   let computedAssignments = $derived(assignShootersToLines(blankEntries.length, lineCount, mode));
   let summary = $derived(previewAssignmentSummary(computedAssignments));
   let count = $derived(blankEntries.length);
+  let errorFeedback = $state('');
 
   async function handleSave() {
+    errorFeedback = '';
     const toAdd: Array<{
       name: string;
       classId: number;
@@ -47,39 +49,49 @@
       flight: 'A/B' | 'C/D' | null;
     }> = [];
 
-    for (const entry of manualEntries) {
-      if (entry.id !== undefined) {
-        await db.shooters.update(entry.id, { lineAssignment: entry.lineNum, flight: null });
-      } else {
-        toAdd.push({
-          name: entry.name,
-          classId: entry.classId,
-          lineAssignment: entry.lineNum,
-          flight: null,
-        });
+    try {
+      for (const entry of manualEntries) {
+        if (entry.id !== undefined) {
+          await db.shooters.update(entry.id, { lineAssignment: entry.lineNum, flight: null });
+        } else {
+          toAdd.push({
+            name: entry.name,
+            classId: entry.classId,
+            lineAssignment: entry.lineNum,
+            flight: null,
+          });
+        }
       }
-    }
 
-    for (let i = 0; i < blankEntries.length; i++) {
-      const entry = blankEntries[i];
-      const assignment = computedAssignments[i];
-      if (entry.id !== undefined) {
-        await db.shooters.update(entry.id, {
-          lineAssignment: assignment.lineNum,
-          flight: assignment.flight,
-        });
-      } else {
-        toAdd.push({
-          name: entry.name,
-          classId: entry.classId,
-          lineAssignment: assignment.lineNum,
-          flight: assignment.flight,
-        });
+      for (let i = 0; i < blankEntries.length; i++) {
+        const entry = blankEntries[i];
+        const assignment = computedAssignments[i];
+        if (entry.id !== undefined) {
+          await db.shooters.update(entry.id, {
+            lineAssignment: assignment.lineNum,
+            flight: assignment.flight,
+          });
+        } else {
+          toAdd.push({
+            name: entry.name,
+            classId: entry.classId,
+            lineAssignment: assignment.lineNum,
+            flight: assignment.flight,
+          });
+        }
       }
-    }
 
-    if (toAdd.length > 0) {
-      await db.shooters.bulkAdd(toAdd);
+      if (toAdd.length > 0) {
+        await db.shooters.bulkAdd(toAdd);
+      }
+    } catch (err) {
+      // WR-04: surface write failures instead of failing silently -- a failed roster
+      // save here would otherwise leave the trainer believing shooters were assigned.
+      errorFeedback = strings.common.saveError.replace(
+        '{error}',
+        err instanceof Error ? err.message : String(err)
+      );
+      return;
     }
 
     onSave();
@@ -117,6 +129,10 @@
     <p class="mb-6 text-[14px] leading-[1.4] text-slate-500 dark:text-slate-400">
       {strings.registration.autoAssignHint}
     </p>
+
+    {#if errorFeedback}
+      <p class="mb-4 text-[14px] leading-[1.4] text-red-600 dark:text-red-400">{errorFeedback}</p>
+    {/if}
 
     <div class="flex justify-end gap-2">
       <button
