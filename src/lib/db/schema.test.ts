@@ -27,4 +27,24 @@ describe('Dexie v2 schema', () => {
     const config = await db.shootingLines.get(1);
     expect(config).toEqual({ id: 1, count: 4 });
   });
+
+  it('supports a singleton roundtrip on the rounds table', async () => {
+    await db.rounds.put({
+      id: 1,
+      arrowsPerPasse: 3,
+      passesPerRound: 10,
+      numberOfRounds: 1,
+      distance: '18m',
+      presetId: 'wa-18m',
+    });
+    const config = await db.rounds.get(1);
+    expect(config).toEqual({
+      id: 1,
+      arrowsPerPasse: 3,
+      passesPerRound: 10,
+      numberOfRounds: 1,
+      distance: '18m',
+      presetId: 'wa-18m',
+    });
+  });
 });
