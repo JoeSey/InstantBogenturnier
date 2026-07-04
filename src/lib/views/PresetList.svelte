@@ -172,6 +172,33 @@
     if (fileInputEl) fileInputEl.value = '';
   }
 
+  // WR-05: the outer container-type checks (name/classes/shootingLineCount/roundsConfig)
+  // let a structurally-valid-but-corrupted import through, e.g. `classes: [{"name":
+  // 123}]` or `roundsConfig: {arrowsPerPasse: "3"}` -- these pass the outer checks but
+  // break later code that assumes `ClassRecord.name` is always a string / rounds fields
+  // are always numbers. Validate the nested shape too, not just the container types.
+  function isValidPresetRecord(p: PresetRecord): boolean {
+    if (typeof p.name !== 'string') return false;
+    if (!Array.isArray(p.classes)) return false;
+    if (!p.classes.every((c) => c !== null && typeof c === 'object' && typeof c.name === 'string')) {
+      return false;
+    }
+    if (typeof p.shootingLineCount !== 'number') return false;
+    if (typeof p.roundsConfig !== 'object' || p.roundsConfig === null) return false;
+    const rc = p.roundsConfig;
+    if (
+      typeof rc.arrowsPerPasse !== 'number' ||
+      !Number.isFinite(rc.arrowsPerPasse) ||
+      typeof rc.passesPerRound !== 'number' ||
+      !Number.isFinite(rc.passesPerRound) ||
+      typeof rc.numberOfRounds !== 'number' ||
+      !Number.isFinite(rc.numberOfRounds)
+    ) {
+      return false;
+    }
+    return true;
+  }
+
   async function confirmImport() {
     if (!importFile) return;
     try {
@@ -183,14 +210,7 @@
       // Defensive re-validation (T-02-08): drop any record missing required fields.
       const afterImport = await db.presets.toArray();
       const invalidIds = afterImport
-        .filter(
-          (p) =>
-            typeof p.name !== 'string' ||
-            !Array.isArray(p.classes) ||
-            typeof p.shootingLineCount !== 'number' ||
-            typeof p.roundsConfig !== 'object' ||
-            p.roundsConfig === null
-        )
+        .filter((p) => !isValidPresetRecord(p))
         .map((p) => p.id)
         .filter((id): id is number => id !== undefined);
       if (invalidIds.length > 0) {
