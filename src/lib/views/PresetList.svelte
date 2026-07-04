@@ -154,10 +154,10 @@
       const validPresets = await db.presets.toArray();
       if (validPresets.length > 8) {
         const sorted = [...validPresets].sort(
-          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime() // newest first
         );
         const excessIds = sorted
-          .slice(8)
+          .slice(8) // everything past the 8 newest
           .map((p) => p.id)
           .filter((id): id is number => id !== undefined);
         await db.presets.bulkDelete(excessIds);
