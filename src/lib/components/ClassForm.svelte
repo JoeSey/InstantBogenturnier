@@ -15,6 +15,7 @@
   let distance = $state('');
   let classNameOverride = $state('');
   let confirmDeleteId = $state<number | null>(null);
+  let deleteBlocked = $state<{ id: number; count: number } | null>(null);
 
   const existingClassesQuery = liveQuery(() => db.classes.toArray());
   let existingClasses = $derived($existingClassesQuery ?? []);
@@ -47,13 +48,26 @@
     classNameOverride = '';
   }
 
-  function requestDelete(id: number | undefined) {
+  async function requestDelete(id: number | undefined) {
     if (id === undefined) return;
+    deleteBlocked = null;
+    // CR-02: block deletion while shooters still reference this class via `classId` —
+    // otherwise the roster is left with a dangling foreign key and Registration.svelte
+    // silently renders a blank class column, with no warning to the trainer.
+    const dependentCount = await db.shooters.where('classId').equals(id).count();
+    if (dependentCount > 0) {
+      deleteBlocked = { id, count: dependentCount };
+      return;
+    }
     confirmDeleteId = id;
   }
 
   function cancelDelete() {
     confirmDeleteId = null;
+  }
+
+  function dismissDeleteBlocked() {
+    deleteBlocked = null;
   }
 
   async function confirmDelete(id: number | undefined) {
@@ -137,15 +151,34 @@
           </div>
         </div>
       {:else}
-        <span>{cls.name}</span>
-        <button
-          type="button"
-          onclick={() => requestDelete(cls.id)}
-          aria-label={strings.setup.classDeleteAction}
-          class="flex min-h-[44px] min-w-[44px] items-center justify-center"
-        >
-          <Trash2 size={20} strokeWidth={1.75} class="text-red-600 dark:text-red-400" />
-        </button>
+        <div class="flex w-full flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex flex-col">
+            <span>{cls.name}</span>
+            {#if deleteBlocked?.id === cls.id}
+              <span class="text-[14px] leading-[1.4] text-red-600 dark:text-red-400">
+                {strings.setup.classDeleteBlocked(deleteBlocked.count)}
+              </span>
+            {/if}
+          </div>
+          {#if deleteBlocked?.id === cls.id}
+            <button
+              type="button"
+              onclick={dismissDeleteBlocked}
+              class="min-h-[44px] rounded-lg px-3 py-2 text-[14px] leading-[1.4] text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100"
+            >
+              {strings.setup.classDeleteCancel}
+            </button>
+          {:else}
+            <button
+              type="button"
+              onclick={() => requestDelete(cls.id)}
+              aria-label={strings.setup.classDeleteAction}
+              class="flex min-h-[44px] min-w-[44px] items-center justify-center"
+            >
+              <Trash2 size={20} strokeWidth={1.75} class="text-red-600 dark:text-red-400" />
+            </button>
+          {/if}
+        </div>
       {/if}
     </li>
   {/each}

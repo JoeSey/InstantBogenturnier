@@ -56,6 +56,10 @@ export const strings = {
     classDeleteConfirm: (name: string) => `Klasse '${name}' löschen?`,
     classDeleteConfirmYes: 'Ja, löschen',
     classDeleteCancel: 'Abbrechen',
+    // CR-02: shown instead of the delete-confirmation row when shooters still
+    // reference this class, so the trainer isn't left with a silently broken roster.
+    classDeleteBlocked: (count: number) =>
+      `Löschen nicht möglich: ${count} Schütze(n) sind dieser Klasse zugeordnet.`,
   },
   registration: {
     heading: 'Schützen',
