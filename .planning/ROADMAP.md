@@ -12,7 +12,7 @@ This roadmap delivers a client-only, installable PWA that takes a trainer/judge 
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation** - Installable offline PWA shell with the responsive, themeable glassmorphism visual system
+- [x] **Phase 1: Foundation** - Installable offline PWA shell with the responsive, themeable glassmorphism visual system (completed 2026-07-04)
 - [ ] **Phase 2: Setup & Registration** - Trainer configures classes, lines, rounds/passes, presets, and registers shooters
 - [ ] **Phase 3: Score Entry** - Trainer enters, saves, and finalizes per-arrow scores live, with zero data loss
 - [ ] **Phase 4: Results** - Trainer views correctly-ranked, per-class results adapted to any screen size
@@ -31,7 +31,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. App automatically matches the system's light/dark preference and offers a manual override toggle that persists across restarts.
 **Plans**: 2 plans
 - [x] 01-01-PLAN.md — Walking skeleton: scaffold + offline PWA + persisted light/dark theme toggle (PLAT-01, PLAT-03)
-- [ ] 01-02-PLAN.md — Responsive glass nav shell + four placeholder sections + session-dismissible update banner (PLAT-02, PLAT-01)
+- [x] 01-02-PLAN.md — Responsive glass nav shell + four placeholder sections + session-dismissible update banner (PLAT-02, PLAT-01)
 **UI hint**: yes
 
 ### Phase 2: Setup & Registration
@@ -77,7 +77,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 1/2 | In Progress|  |
+| 1. Foundation | 2/2 | Complete   | 2026-07-04 |
 | 2. Setup & Registration | 0/TBD | Not started | - |
 | 3. Score Entry | 0/TBD | Not started | - |
 | 4. Results | 0/TBD | Not started | - |
