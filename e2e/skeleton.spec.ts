@@ -43,6 +43,14 @@ test('app shell renders offline after reload (PLAT-01)', async ({ page, context 
   await page.goto('/');
   await expect(page.getByText('InstantBogenturnier')).toBeVisible();
 
+  // The service worker must finish installing AND actually control this page before
+  // offline serving works — the very first load is never SW-controlled. Wait for
+  // `navigator.serviceWorker.ready`, then reload once so the SW takes control, before
+  // testing the true offline path.
+  await page.evaluate(() => navigator.serviceWorker.ready);
+  await page.reload();
+  await expect(page.getByText('InstantBogenturnier')).toBeVisible();
+
   await context.setOffline(true);
   await page.reload();
   await expect(page.getByText('InstantBogenturnier')).toBeVisible();
