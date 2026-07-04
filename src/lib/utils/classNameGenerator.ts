@@ -35,17 +35,28 @@ export function autoSuffixOnCollision(
   const collision = existingClasses.find((c) => c.name === baseName);
   if (!collision) return baseName;
 
+  // WR-02: each semantic disambiguator below only resolves the *first* collision found
+  // above — it must still be re-checked against the full existingClasses list before
+  // being returned, otherwise a candidate like "RCV-U14-25m" can itself already be
+  // taken by an unrelated third class, and Dexie's `name` index (no unique constraint)
+  // would happily insert a duplicate-named row.
+  const existingNames = new Set(existingClasses.map((c) => c.name));
+
   if (tuple.distance && tuple.distance !== collision.distance) {
-    return `${baseName}-${tuple.distance}`;
+    const candidate = `${baseName}-${tuple.distance}`;
+    if (!existingNames.has(candidate)) return candidate;
   }
   if (tuple.bowType && getBowTypeAbbr(tuple.bowType) !== getBowTypeAbbr(collision.bowType ?? '')) {
-    return `${baseName}-${getBowTypeAbbr(tuple.bowType)}`;
+    const candidate = `${baseName}-${getBowTypeAbbr(tuple.bowType)}`;
+    if (!existingNames.has(candidate)) return candidate;
   }
   if (tuple.ageGroup && tuple.ageGroup !== collision.ageGroup) {
-    return `${baseName}-${tuple.ageGroup}`;
+    const candidate = `${baseName}-${tuple.ageGroup}`;
+    if (!existingNames.has(candidate)) return candidate;
   }
 
-  const existingNames = new Set(existingClasses.map((c) => c.name));
+  // Fall through to a numeric suffix once every semantic disambiguator either doesn't
+  // apply or is itself already taken.
   let suffix = 2;
   let candidate = `${baseName}-${suffix}`;
   while (existingNames.has(candidate)) {
