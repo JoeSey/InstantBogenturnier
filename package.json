@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:all": "npm run test && npm run test:e2e"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",
@@ -20,6 +21,7 @@
     "@types/node": "^24.13.2",
     "@vite-pwa/assets-generator": "^1.0.2",
     "eslint-plugin-svelte": "^3.20.0",
+    "fake-indexeddb": "^6.2.5",
     "jsdom": "^29.1.1",
     "prettier-plugin-svelte": "^4.1.1",
     "svelte": "^5.56.4",
