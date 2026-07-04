@@ -9,17 +9,17 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Setup
 
-- [ ] **SETUP-01**: Trainer can define classes as a tuple of age group / bow type / distance, with only one field required and the rest optional
-- [ ] **SETUP-02**: App suggests a class name from the entered tuple (e.g. RCV-U14), which the trainer can override
-- [ ] **SETUP-03**: Trainer can set the number of shooting lines for the tournament
-- [ ] **SETUP-04**: Trainer can configure rounds/passes from WA-style presets (e.g. 1 round of 10 ends of 3 arrows at 18m) or define custom values (arrows per end, ends per round, number of rounds, distance)
-- [ ] **SETUP-05**: Trainer can save the current tournament setup as a named preset (4-8 slots)
-- [ ] **SETUP-06**: Trainer can load a previously saved preset to quickly start a new tournament
+- [x] **SETUP-01**: Trainer can define classes as a tuple of age group / bow type / distance, with only one field required and the rest optional
+- [x] **SETUP-02**: App suggests a class name from the entered tuple (e.g. RCV-U14), which the trainer can override
+- [x] **SETUP-03**: Trainer can set the number of shooting lines for the tournament
+- [x] **SETUP-04**: Trainer can configure rounds/passes from WA-style presets (e.g. 1 round of 10 ends of 3 arrows at 18m) or define custom values (arrows per end, ends per round, number of rounds, distance)
+- [x] **SETUP-05**: Trainer can save the current tournament setup as a named preset (4-8 slots)
+- [x] **SETUP-06**: Trainer can load a previously saved preset to quickly start a new tournament
 
 ### Registration
 
-- [ ] **REG-01**: Trainer can register shooters with name, class assignment, and optional shooting-line assignment
-- [ ] **REG-02**: App indicates whether the tournament is running in mode AB or AB/CD, derived from shooter count vs. shooting-line count
+- [x] **REG-01**: Trainer can register shooters with name, class assignment, and optional shooting-line assignment
+- [x] **REG-02**: App indicates whether the tournament is running in mode AB or AB/CD, derived from shooter count vs. shooting-line count
 
 ### Score Entry
 
@@ -78,14 +78,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SETUP-01 | Phase 2 | Pending |
-| SETUP-02 | Phase 2 | Pending |
-| SETUP-03 | Phase 2 | Pending |
-| SETUP-04 | Phase 2 | Pending |
-| SETUP-05 | Phase 2 | Pending |
-| SETUP-06 | Phase 2 | Pending |
-| REG-01 | Phase 2 | Pending |
-| REG-02 | Phase 2 | Pending |
+| SETUP-01 | Phase 2 | Complete |
+| SETUP-02 | Phase 2 | Complete |
+| SETUP-03 | Phase 2 | Complete |
+| SETUP-04 | Phase 2 | Complete |
+| SETUP-05 | Phase 2 | Complete |
+| SETUP-06 | Phase 2 | Complete |
+| REG-01 | Phase 2 | Complete |
+| REG-02 | Phase 2 | Complete |
 | SCORE-01 | Phase 3 | Pending |
 | SCORE-02 | Phase 3 | Pending |
 | SCORE-03 | Phase 3 | Pending |

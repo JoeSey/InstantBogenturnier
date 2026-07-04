@@ -13,7 +13,7 @@ This roadmap delivers a client-only, installable PWA that takes a trainer/judge 
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Installable offline PWA shell with the responsive, themeable glassmorphism visual system (completed 2026-07-04)
-- [ ] **Phase 2: Setup & Registration** - Trainer configures classes, lines, rounds/passes, presets, and registers shooters
+- [x] **Phase 2: Setup & Registration** - Trainer configures classes, lines, rounds/passes, presets, and registers shooters (completed 2026-07-04)
 - [ ] **Phase 3: Score Entry** - Trainer enters, saves, and finalizes per-arrow scores live, with zero data loss
 - [ ] **Phase 4: Results** - Trainer views correctly-ranked, per-class results adapted to any screen size
 
@@ -45,10 +45,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Trainer can register shooters with name, class, and optional shooting-line assignment, and the app clearly indicates whether the tournament is running in mode AB or AB/CD, derived from shooter count vs. line count.
   4. Trainer can save the current tournament setup as one of 4-8 named presets and load a previously saved preset to quickly start a new tournament.
 **Plans**: 4 plans
-- [ ] 02-01-PLAN.md — Dexie v2 schema + class definition (name suggestion, collision auto-suffix) (SETUP-01, SETUP-02)
-- [ ] 02-02-PLAN.md — Shooting-line count + rounds/passes configuration (WA presets or custom) (SETUP-03, SETUP-04)
-- [ ] 02-03-PLAN.md — Shooter registration with AB/AB-CD mode detection + auto-assignment preview (REG-01, REG-02)
-- [ ] 02-04-PLAN.md — Preset save/load/delete + export/import (SETUP-05, SETUP-06)
+- [x] 02-01-PLAN.md — Dexie v2 schema + class definition (name suggestion, collision auto-suffix) (SETUP-01, SETUP-02)
+- [x] 02-02-PLAN.md — Shooting-line count + rounds/passes configuration (WA presets or custom) (SETUP-03, SETUP-04)
+- [x] 02-03-PLAN.md — Shooter registration with AB/AB-CD mode detection + auto-assignment preview (REG-01, REG-02)
+- [x] 02-04-PLAN.md — Preset save/load/delete + export/import (SETUP-05, SETUP-06)
 
 ### Phase 3: Score Entry
 **Goal**: Trainer can reliably enter, interim-save, and finalize per-arrow scores during a live tournament at the range with no risk of data loss if the device or tab closes mid-entry.
@@ -82,6 +82,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete   | 2026-07-04 |
-| 2. Setup & Registration | 0/4 | Not started | - |
+| 2. Setup & Registration | 4/4 | Complete    | 2026-07-04 |
 | 3. Score Entry | 0/TBD | Not started | - |
 | 4. Results | 0/TBD | Not started | - |
