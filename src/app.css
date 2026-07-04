@@ -1,0 +1,26 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@utility glass-surface {
+  background-color: rgb(255 255 255 / 0.70);
+  border: 1px solid rgb(255 255 255 / 0.45);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 24px rgb(15 23 42 / 0.08);
+}
+.dark .glass-surface {
+  background-color: rgb(30 41 59 / 0.72);
+  border-color: rgb(255 255 255 / 0.06);
+  box-shadow: 0 4px 24px rgb(0 0 0 / 0.35);
+}
+
+/* Reserved for the future score-entry table (Phase 3, D-11) — fully opaque, no blur/transparency. */
+@utility surface-opaque {
+  background-color: #ffffff;
+}
+.dark .surface-opaque {
+  background-color: #1e293b;
+}
+
+body {
+  margin: 0;
+}

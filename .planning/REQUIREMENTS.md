@@ -40,9 +40,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Platform
 
-- [ ] **PLAT-01**: App is installable as a PWA and fully functional with zero network connectivity
+- [x] **PLAT-01**: App is installable as a PWA and fully functional with zero network connectivity
 - [ ] **PLAT-02**: App uses a modern, glassmorphism-influenced design, responsive across phone/tablet/desktop
-- [ ] **PLAT-03**: App automatically switches light/dark mode based on system preference, with a manual override toggle
+- [x] **PLAT-03**: App automatically switches light/dark mode based on system preference, with a manual override toggle
 
 ## v2 Requirements
 
@@ -97,9 +97,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | RES-02 | Phase 4 | Pending |
 | RES-03 | Phase 4 | Pending |
 | RES-04 | Phase 4 | Pending |
-| PLAT-01 | Phase 1 | Pending |
+| PLAT-01 | Phase 1 | Complete |
 | PLAT-02 | Phase 1 | Pending |
-| PLAT-03 | Phase 1 | Pending |
+| PLAT-03 | Phase 1 | Complete |
 
 **Coverage:**
 - v1 requirements: 22 total
