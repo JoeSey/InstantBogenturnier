@@ -35,11 +35,14 @@ test.describe('nav sections', () => {
     await expect(sidebar.getByText('Ergebnisse')).toBeVisible();
   });
 
-  test('clicking Schützen shows the Schützen placeholder heading', async ({ page }) => {
+  test('clicking Schützen shows the Registration view', async ({ page }) => {
+    // Phase 2 (02-03) replaced RegistrationPlaceholder with the real Registration view —
+    // its <h1> reads "Schützen" (strings.registration.heading), not the Phase 1
+    // "Schützen kommt bald" placeholder text.
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
     await page.getByTestId('sidebar-nav').getByText('Schützen').click();
-    await expect(page.getByRole('heading', { name: 'Schützen kommt bald' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Schützen' })).toBeVisible();
   });
 
   test('clicking Ergebnisse shows the Ergebnisse placeholder heading', async ({ page }) => {
