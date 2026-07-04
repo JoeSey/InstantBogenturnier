@@ -39,7 +39,26 @@
     };
   });
 
+  // WR-03: Svelte's number binding on an emptied input yields NaN, and the `min`/`max`
+  // attributes on the inputs below are only HTML hints, not enforced values. Validate
+  // the resolved config before persisting so a cleared field can't silently write NaN
+  // into db.rounds -- mirrors Setup.svelte's handleLineCountChange integer/range guard.
+  function isValidResolvedConfig(config: typeof resolvedConfig): boolean {
+    return (
+      Number.isInteger(config.numberOfRounds) &&
+      config.numberOfRounds >= 1 &&
+      config.numberOfRounds <= 20 &&
+      Number.isInteger(config.passesPerRound) &&
+      config.passesPerRound >= 1 &&
+      config.passesPerRound <= 30 &&
+      Number.isInteger(config.arrowsPerPasse) &&
+      config.arrowsPerPasse >= 1 &&
+      config.arrowsPerPasse <= 20
+    );
+  }
+
   async function save() {
+    if (!isValidResolvedConfig(resolvedConfig)) return;
     await db.rounds.put({ id: 1, ...resolvedConfig });
   }
 </script>
