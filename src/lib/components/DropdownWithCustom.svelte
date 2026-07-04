@@ -21,11 +21,17 @@
 
   let isCustom = $state(false);
   let customInput = $state('');
+  // WR-01: tracks the last value *this component* pushed up via `onchange`, so the
+  // reset effect below can distinguish "parent externally reset `value`" (e.g. form
+  // reset after save) from "the bound `value` prop is just echoing our own emit" (e.g.
+  // the user backspaced the custom field down to ''). Only the former should kick the
+  // component out of custom-entry mode.
+  let lastEmittedValue = $state<string | null>(null);
 
   // If the bound value is externally reset (e.g. form reset after save), fall back out
   // of custom-entry mode so the dropdown doesn't stay stuck showing a stale text input.
   $effect(() => {
-    if (value === '') {
+    if (value === '' && value !== lastEmittedValue) {
       isCustom = false;
       customInput = '';
     }
@@ -35,15 +41,18 @@
     const selected = (e.target as HTMLSelectElement).value;
     if (selected === 'custom') {
       isCustom = true;
+      lastEmittedValue = customInput;
       onchange(customInput);
     } else {
       isCustom = false;
+      lastEmittedValue = selected;
       onchange(selected);
     }
   }
 
   function handleCustomInput(e: Event) {
     customInput = (e.target as HTMLInputElement).value;
+    lastEmittedValue = customInput;
     onchange(customInput);
   }
 </script>
