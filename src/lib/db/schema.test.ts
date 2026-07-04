@@ -21,4 +21,10 @@ describe('Dexie v2 schema', () => {
     const all = await db.classes.toArray();
     expect(all.some((c) => c.name === 'Test')).toBe(true);
   });
+
+  it('supports a singleton roundtrip on the shootingLines table', async () => {
+    await db.shootingLines.put({ id: 1, count: 4 });
+    const config = await db.shootingLines.get(1);
+    expect(config).toEqual({ id: 1, count: 4 });
+  });
 });
