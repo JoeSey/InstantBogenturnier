@@ -1,8 +1,8 @@
 ---
 phase: 4
 slug: results
-status: draft
-nyquist_compliant: false
+status: approved
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-07-05
 ---
@@ -38,12 +38,14 @@ created: 2026-07-05
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 04-01-01 | 01 | 0 | RES-01/RES-02 | — | N/A | unit | `npx vitest run src/lib/utils/ranking.test.ts` | ❌ W0 | ⬜ pending |
-| 04-01-02 | 01 | 0 | RES-06 | T-4-01 | Guard is UX-only, not a security boundary (single trusted device) | unit | `npx vitest run src/lib/utils/scoreCompletion.test.ts -t "computeIsFinalized"` | ❌ W0 | ⬜ pending |
-| 04-02-01 | 02 | 1 | RES-01/RES-02/RES-03 | — | N/A | unit | `npx vitest run src/lib/views/Results.test.ts` | ❌ W0 | ⬜ pending |
-| 04-02-02 | 02 | 1 | RES-03/RES-04 | — | N/A | e2e | `npx playwright test e2e/results.spec.ts -g "phone|desktop"` | ❌ W0 | ⬜ pending |
-| 04-03-01 | 03 | 1 | RES-05 | T-4-03 | Atomic `db.transaction('rw', shooters, scores)` prevents orphaned records on interruption | unit + e2e | `npx vitest run src/lib/views/Results.test.ts -t "reset"` / `npx playwright test e2e/results.spec.ts -g "reset"` | ❌ W0 | ⬜ pending |
-| 04-04-01 | 04 | 1 | RES-06 | T-4-01 / T-4-02 | Reset confirmation reuses non-dismissible `ConfirmDialog` (D-09); guard blocks delete/config-edit while finalized | unit | `npx vitest run src/lib/views/Registration.test.ts -t "finalized"` | ❌ W0 (new file) | ⬜ pending |
+| 04-01-1 | 01 | 1 | RES-01/RES-02 | — | N/A | unit | `npx vitest run src/lib/utils/ranking.test.ts` | ❌ W0 | ⬜ pending |
+| 04-01-2 | 01 | 1 | RES-01/RES-02 | — | N/A | unit | `npx vitest run src/lib/components/ResultsTable.test.ts` | ❌ W0 | ⬜ pending |
+| 04-01-3 | 01 | 1 | RES-03/RES-04 | — | N/A | unit + e2e | `npx vitest run src/lib/views/Results.test.ts && npx playwright test e2e/results.spec.ts -g "phone\|desktop"` | ❌ W0 | ⬜ pending |
+| 04-02-1 | 02 | 2 | RES-05 | T-4-03 | Atomic `db.transaction('rw', shooters, scores)` prevents orphaned records on interruption | unit | `npx vitest run src/lib/views/Results.test.ts -t "reset"` | ❌ W0 | ⬜ pending |
+| 04-02-2 | 02 | 2 | RES-05 | T-4-03 | Reset confirmation reuses non-dismissible `ConfirmDialog` (D-09) | unit + e2e | `npx vitest run src/lib/views/Results.test.ts -t "reset" && npx playwright test e2e/results.spec.ts -g "reset"` | ❌ W0 | ⬜ pending |
+| 04-03-1 | 03 | 2 | RES-06 | T-4-01 | Guard is UX-only, not a security boundary (single trusted device) | unit | `npx vitest run src/lib/utils/scoreCompletion.test.ts -t "computeIsFinalized" && npx vitest run src/lib/views/ScoreEntry.test.ts` | ❌ W0 | ⬜ pending |
+| 04-03-2 | 03 | 2 | RES-06 | T-4-01 / T-4-02 | Guard blocks delete-shooter while finalized | unit | `npx vitest run src/lib/views/Registration.test.ts -t "finalized"` | ❌ W0 (new file) | ⬜ pending |
+| 04-03-3 | 03 | 2 | RES-06 | T-4-01 / T-4-02 | Guard blocks rounds/passes config edits and class edits while finalized | unit | `npx vitest run src/lib/views/SetupRounds.test.ts && npx vitest run src/lib/components/ClassForm.test.ts` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -67,11 +69,11 @@ created: 2026-07-05
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 90s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 90s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved 2026-07-05 (gsd-plan-checker Dimension 8 pass against final 04-01/04-02/04-03 PLAN.md structure)

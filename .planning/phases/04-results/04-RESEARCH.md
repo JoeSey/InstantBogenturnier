@@ -446,17 +446,17 @@ No "old approach → current approach" shift applies here — this phase's techn
 
 **If this table is empty:** N/A — two low-risk assumptions logged above; both are cheap to verify at implementation time and both already have a documented fallback in 04-UI-SPEC.md.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should `assignRanks`/`computeClassRankings` also expose a flat (non-per-class) variant for the future v1.5 jsPDF "all results" export?**
    - What we know: CLAUDE.md explicitly flags that ranking logic should stay reusable for jsPDF export later; the per-class `Map<classId, RankedRow[]>` shape already satisfies "per class" grouping.
    - What's unclear: Whether v1.5's PDF export will want a single flat sorted array across all classes, or the same per-class grouping. Not knowable now since v1.5 requirements aren't written yet.
-   - Recommendation: Don't over-build now. The current per-class `Map` return shape is trivially flattenable (`[...map.values()].flat()`) if v1.5 needs it — no design debt is created by keeping the Phase 4 shape as-is.
+   - RESOLVED: Don't over-build now. The current per-class `Map` return shape is trivially flattenable (`[...map.values()].flat()`) if v1.5 needs it — no design debt is created by keeping the Phase 4 shape as-is.
 
 2. **Does `db.transaction()` need the `rounds`/`classes`/`shootingLines` tables included in its table list even though they aren't cleared?**
    - What we know: Dexie's transaction API only needs to list tables that are read/written inside the transaction callback.
    - What's unclear: None functionally — this is settled by Dexie's documented API (only `shooters`/`scores` need listing since only they are touched).
-   - Recommendation: List only `db.shooters, db.scores` in the transaction call, exactly as shown in Code Examples above.
+   - RESOLVED: List only `db.shooters, db.scores` in the transaction call, exactly as shown in Code Examples above.
 
 ## Environment Availability
 
