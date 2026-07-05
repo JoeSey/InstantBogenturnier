@@ -125,4 +125,23 @@ export const strings = {
     importSuccess: 'Vorlagen erfolgreich importiert. {count} Vorlagen sind jetzt verfügbar.',
     importError: 'Import fehlgeschlagen: {error}',
   },
+  // Phase 3 Plan 01 section — score entry table, tap-button picker, Runde/Passe
+  // navigation. Added verbatim per 03-01-PLAN.md Task 2 action text.
+  scoring: {
+    heading: 'Erfassung',
+    notConfiguredHeading: 'Turnier nicht konfiguriert',
+    notConfiguredBody: 'Gehen Sie zu Einrichtung, um zu beginnen.',
+    roundLabel: 'Runde',
+    passeLabel: 'Passe',
+    columnLine: 'Linie',
+    columnName: 'Name',
+    columnClass: 'Klasse',
+    columnSum: 'Summe',
+    sumIncomplete: '–',
+    pickerTitle: 'Punktzahl wählen',
+    pickerCancel: 'Abbrechen',
+    pickerAriaMiss: 'Fehlschuss (0 Punkte)',
+    pickerAriaX: 'X-Ring (10 Punkte)',
+    pickerAriaNumeric: (value: string) => `${value} Punkte`,
+  },
 } as const;

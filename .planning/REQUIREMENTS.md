@@ -23,11 +23,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Score Entry
 
-- [ ] **SCORE-01**: Trainer can enter per-arrow scores (0-10, M) for each shooter per round/passe in a table showing line, name, class, per-arrow values, and sum
-- [ ] **SCORE-02**: "M" (miss) is automatically treated as zero in sum calculations
-- [ ] **SCORE-03**: Score entries are saved as they're entered — no data loss if the device/tab closes mid-entry
+- [x] **SCORE-01**: Trainer can enter per-arrow scores (0-10, M) for each shooter per round/passe in a table showing line, name, class, per-arrow values, and sum
+- [x] **SCORE-02**: "M" (miss) is automatically treated as zero in sum calculations
+- [x] **SCORE-03**: Score entries are saved as they're entered — no data loss if the device/tab closes mid-entry
 - [ ] **SCORE-04**: Table is sortable by clicking column headers (line, name, class, sum)
-- [ ] **SCORE-05**: Trainer can interim-save progress at any point; entries remain editable until finalized
+- [x] **SCORE-05**: Trainer can interim-save progress at any point; entries remain editable until finalized
 - [ ] **SCORE-06**: App detects when all configured rounds/passes are fully entered and offers a distinct "Abschließen" (finalize) action, separate from "Speichern" (save)
 - [ ] **SCORE-07**: Once finalized, score entries are locked and cannot be further edited
 
@@ -86,11 +86,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SETUP-06 | Phase 2 | Complete |
 | REG-01 | Phase 2 | Complete |
 | REG-02 | Phase 2 | Complete |
-| SCORE-01 | Phase 3 | Pending |
-| SCORE-02 | Phase 3 | Pending |
-| SCORE-03 | Phase 3 | Pending |
+| SCORE-01 | Phase 3 | Complete |
+| SCORE-02 | Phase 3 | Complete |
+| SCORE-03 | Phase 3 | Complete |
 | SCORE-04 | Phase 3 | Pending |
-| SCORE-05 | Phase 3 | Pending |
+| SCORE-05 | Phase 3 | Complete |
 | SCORE-06 | Phase 3 | Pending |
 | SCORE-07 | Phase 3 | Pending |
 | RES-01 | Phase 4 | Pending |

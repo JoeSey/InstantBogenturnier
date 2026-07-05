@@ -1,0 +1,99 @@
+<script lang="ts">
+  import type { ScoreValue } from '../db/schema';
+  import { strings } from '../i18n/strings.de';
+  import GlassCard from './GlassCard.svelte';
+
+  // Tap-button score picker (D-01, D-02, 03-01-PLAN.md Task 2). Non-dismissible by
+  // backdrop click — matches ConfirmDialog.svelte's overlay pattern — but adds an
+  // Escape-key path in addition to the explicit "Abbrechen" button, since this modal
+  // (unlike ConfirmDialog) has no destructive default action to guard against.
+  let {
+    open,
+    onselect,
+    oncancel,
+  }: {
+    open: boolean;
+    onselect: (value: ScoreValue) => void;
+    oncancel: () => void;
+  } = $props();
+
+  const SCORE_VALUES: ScoreValue[] = [
+    '0',
+    '1',
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+    '10',
+    'X',
+    'M',
+  ];
+
+  function ariaLabelFor(value: ScoreValue): string {
+    if (value === 'M') return strings.scoring.pickerAriaMiss;
+    if (value === 'X') return strings.scoring.pickerAriaX;
+    return strings.scoring.pickerAriaNumeric(value);
+  }
+
+  function buttonClass(value: ScoreValue): string {
+    const base =
+      'flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-[16px] font-semibold leading-[1.5]';
+    if (value === 'X') {
+      return `${base} border border-amber-200 bg-amber-400 text-slate-900 hover:bg-amber-500 dark:border-amber-300/40 dark:bg-amber-500 dark:text-slate-900`;
+    }
+    if (value === 'M') {
+      return `${base} border border-gray-200 bg-gray-300 text-slate-900 hover:bg-gray-400 dark:border-gray-400/40 dark:bg-gray-500 dark:text-slate-900`;
+    }
+    return `${base} bg-teal-500 text-white hover:bg-teal-600 dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300`;
+  }
+
+  function handleKeydown(event: KeyboardEvent) {
+    if (open && event.key === 'Escape') {
+      oncancel();
+    }
+  }
+</script>
+
+<svelte:window onkeydown={handleKeydown} />
+
+{#if open}
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <GlassCard class="w-full max-w-[360px] p-6">
+      <div role="dialog" aria-modal="true" aria-labelledby="score-picker-title">
+        <h2
+          id="score-picker-title"
+          class="mb-4 text-[20px] font-semibold leading-[1.2] text-slate-900 dark:text-slate-100"
+        >
+          {strings.scoring.pickerTitle}
+        </h2>
+
+        <div class="grid grid-cols-5 gap-2">
+          {#each SCORE_VALUES as value (value)}
+            <button
+              type="button"
+              class={buttonClass(value)}
+              aria-label={ariaLabelFor(value)}
+              onclick={() => onselect(value)}
+            >
+              {value}
+            </button>
+          {/each}
+        </div>
+
+        <div class="mt-6 flex justify-end">
+          <button
+            type="button"
+            onclick={oncancel}
+            class="min-h-[44px] rounded-lg px-4 py-2 text-[16px] leading-[1.5] text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100"
+          >
+            {strings.scoring.pickerCancel}
+          </button>
+        </div>
+      </div>
+    </GlassCard>
+  </div>
+{/if}
