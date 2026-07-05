@@ -12,4 +12,4 @@ export const BOW_TYPE_OPTIONS = [
   { value: 'CP', label: 'Compound' },
 ] as const;
 
-export const DISTANCE_OPTIONS = ['18m', '25m', '70m'] as const;
+export const DISTANCE_OPTIONS = ['10m', '18m', '25m', '70m'] as const;
