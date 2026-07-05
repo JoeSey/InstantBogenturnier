@@ -11,13 +11,23 @@ export function getBowTypeAbbr(bowType: string): string {
   return match ? match.value : bowType;
 }
 
+// Resolve an age-group value to its short abbreviation, mirroring getBowTypeAbbr's
+// pattern. Only "Erwachsene" has a longer full-word form that needs shortening — the
+// other options (U12/U14/U16/U18) are already abbreviations and pass through unchanged,
+// as does any custom free text.
+export function getAgeGroupAbbr(ageGroup: string): string {
+  if (!ageGroup) return ageGroup;
+  return ageGroup === 'Erwachsene' ? 'E' : ageGroup;
+}
+
 // Live class-name suggestion from the age-group/bow-type/distance tuple (D-04).
-// Order: bow-type abbreviation, then age-group, then distance — only populated fields
-// are joined. Falls back to a friendly placeholder when the tuple is fully empty.
+// Order: bow-type abbreviation, then age-group abbreviation, then distance — only
+// populated fields are joined. Falls back to a friendly placeholder when the tuple is
+// fully empty.
 export function generateClassName(ageGroup: string, bowType: string, distance: string): string {
   const parts: string[] = [];
   if (bowType) parts.push(getBowTypeAbbr(bowType));
-  if (ageGroup) parts.push(ageGroup);
+  if (ageGroup) parts.push(getAgeGroupAbbr(ageGroup));
   if (distance) parts.push(distance);
   return parts.length > 0 ? parts.join('-') : 'Neue Klasse';
 }
@@ -51,7 +61,7 @@ export function autoSuffixOnCollision(
     if (!existingNames.has(candidate)) return candidate;
   }
   if (tuple.ageGroup && tuple.ageGroup !== collision.ageGroup) {
-    const candidate = `${baseName}-${tuple.ageGroup}`;
+    const candidate = `${baseName}-${getAgeGroupAbbr(tuple.ageGroup)}`;
     if (!existingNames.has(candidate)) return candidate;
   }
 
