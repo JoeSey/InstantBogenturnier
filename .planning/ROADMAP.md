@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation** - Installable offline PWA shell with the responsive, themeable glassmorphism visual system (completed 2026-07-04)
 - [x] **Phase 2: Setup & Registration** - Trainer configures classes, lines, rounds/passes, presets, and registers shooters (completed 2026-07-04)
 - [x] **Phase 3: Score Entry** - Trainer enters, saves, and finalizes per-arrow scores live, with zero data loss (completed 2026-07-05)
-- [ ] **Phase 4: Results** - Trainer views correctly-ranked, per-class results adapted to any screen size
+- [x] **Phase 4: Results** - Trainer views correctly-ranked, per-class results adapted to any screen size (completed 2026-07-05)
 
 ## Phase Details
 
@@ -78,8 +78,8 @@ Decimal phases appear between their surrounding integers in numeric order.
   5. Destructive edits (deleting shooters, changing rounds/passes configuration) are blocked while finalized tournament data exists, directing the trainer to reset first rather than silently cascading the reset.
 **Plans**: 3 plans
 - [x] 04-01-PLAN.md — Ranking utility + live per-class results view, phone dropdown + tablet/desktop responsive grid (RES-01, RES-02, RES-03, RES-04)
-- [ ] 04-02-PLAN.md — Reset flow: destructive "Neues Turnier starten" action with atomic Dexie clear (RES-05)
-- [ ] 04-03-PLAN.md — Destructive-edit guard: shared isFinalized + disabled controls across Registration/Setup/SetupRounds/ClassForm (RES-06)
+- [x] 04-02-PLAN.md — Reset flow: destructive "Neues Turnier starten" action with atomic Dexie clear (RES-05)
+- [x] 04-03-PLAN.md — Destructive-edit guard: shared isFinalized + disabled controls across Registration/Setup/SetupRounds/ClassForm (RES-06)
 **UI hint**: yes
 
 ## Progress
@@ -92,4 +92,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Foundation | 2/2 | Complete   | 2026-07-04 |
 | 2. Setup & Registration | 4/4 | Complete    | 2026-07-04 |
 | 3. Score Entry | 3/3 | Complete    | 2026-07-05 |
-| 4. Results | 1/3 | In Progress|  |
+| 4. Results | 3/3 | Complete   | 2026-07-05 |
