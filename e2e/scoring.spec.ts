@@ -108,3 +108,23 @@ test.describe('score entry finalize/lock (SCORE-06/07, D-09/D-10)', () => {
     await expect(page.getByRole('button', { name: 'Turnier abschließen' })).toHaveCount(0);
   });
 });
+
+test.describe('score table phone-view compaction (260705-p25)', () => {
+  test('phone width (375px): Klasse column header is hidden', async ({ page }) => {
+    // setUpOneShooterOneArrowTournament sets its own 1440x900 viewport internally to
+    // complete setup reliably — re-set the viewport to phone width immediately
+    // before the final assertion, since Klasse-column visibility only depends on
+    // the final viewport at assertion time, not navigation-time viewport.
+    await setUpOneShooterOneArrowTournament(page);
+    await page.setViewportSize({ width: 375, height: 700 });
+
+    await expect(page.getByRole('columnheader', { name: 'Klasse' })).toBeHidden();
+  });
+
+  test('desktop width (1024px): Klasse column header is visible', async ({ page }) => {
+    await setUpOneShooterOneArrowTournament(page);
+    await page.setViewportSize({ width: 1024, height: 800 });
+
+    await expect(page.getByRole('columnheader', { name: 'Klasse' })).toBeVisible();
+  });
+});
