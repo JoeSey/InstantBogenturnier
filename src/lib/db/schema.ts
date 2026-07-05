@@ -43,6 +43,34 @@ export interface PresetRecord {
   createdAt: Date;
 }
 
+// Phase 3 data model — per-arrow score entry (03-01-PLAN.md Interfaces block).
+// `roundIndex`/`passeIndex`/`arrowIndex` are 0-based; the UI displays them 1-based
+// via `{i + 1}`. No separate `id` field — the 4-part compound tuple below is the
+// primary key, giving `db.scores.put(...)` upsert-by-cell semantics for free.
+export type ScoreValue =
+  | '0'
+  | '1'
+  | '2'
+  | '3'
+  | '4'
+  | '5'
+  | '6'
+  | '7'
+  | '8'
+  | '9'
+  | '10'
+  | 'X'
+  | 'M';
+
+export interface ScoreRecord {
+  shooterId: number;
+  roundIndex: number;
+  passeIndex: number;
+  arrowIndex: number;
+  value: ScoreValue;
+  finalized: boolean;
+}
+
 class InstantBogenturnierDB extends Dexie {
   classes!: Table<ClassRecord, number>;
   // Singleton row tables (always id: 1) — keyed by explicit `id`, not auto-increment.
@@ -50,6 +78,7 @@ class InstantBogenturnierDB extends Dexie {
   rounds!: Table<RoundConfig, number>;
   shooters!: Table<ShooterRecord, number>;
   presets!: Table<PresetRecord, number>;
+  scores!: Table<ScoreRecord, [number, number, number, number]>;
 
   constructor() {
     super('InstantBogenturnierDB');
@@ -61,6 +90,16 @@ class InstantBogenturnierDB extends Dexie {
       rounds: 'id',
       shooters: '++id, classId, lineAssignment',
       presets: '++id, name',
+    });
+    // v3 (Phase 3 Plan 01): adds the `scores` table. Every prior version's stores must
+    // be restated unchanged per Dexie's versioning requirement.
+    this.version(3).stores({
+      classes: '++id, name',
+      shootingLines: 'id',
+      rounds: 'id',
+      shooters: '++id, classId, lineAssignment',
+      presets: '++id, name',
+      scores: '[shooterId+roundIndex+passeIndex+arrowIndex], shooterId, roundIndex',
     });
   }
 }

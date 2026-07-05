@@ -5,14 +5,17 @@ import { resetDb } from './testHelpers';
 // Dexie v2 schema (Phase 2): all 5 tables this phase's plans need — classes,
 // shootingLines, rounds, shooters, presets. fake-indexeddb (wired in vitest-setup.ts)
 // polyfills IndexedDB under jsdom so this can be asserted without a real browser.
+// Note: `db` always opens at its latest defined version (v3 as of Phase 3 Plan 01),
+// so table-membership assertions here include the `scores` table too — see the
+// "Dexie v3 schema" describe block below for the schema-migration-specific coverage.
 describe('Dexie v2 schema', () => {
   beforeEach(async () => {
     await resetDb();
   });
 
-  it('defines all 5 Phase 2 tables', () => {
+  it('defines all 5 Phase 2 tables plus the Phase 3 scores table', () => {
     expect(db.tables.map((t) => t.name).sort()).toEqual(
-      ['classes', 'presets', 'rounds', 'shooters', 'shootingLines'].sort()
+      ['classes', 'presets', 'rounds', 'scores', 'shooters', 'shootingLines'].sort()
     );
   });
 
@@ -46,5 +49,44 @@ describe('Dexie v2 schema', () => {
       distance: '18m',
       presetId: 'wa-18m',
     });
+  });
+});
+
+// Dexie v3 schema (Phase 3 Plan 01): adds the `scores` table on top of Phase 2's 5
+// tables. Compound primary key `[shooterId+roundIndex+passeIndex+arrowIndex]` gives
+// upsert-by-cell semantics for free (RESEARCH.md Pitfall 1 — no duplicate records from
+// repeated taps on the same cell).
+describe('Dexie v3 schema', () => {
+  beforeEach(async () => {
+    await resetDb();
+  });
+
+  it('defines all 6 tables including scores', () => {
+    expect(db.tables.map((t) => t.name).sort()).toEqual(
+      ['classes', 'presets', 'rounds', 'scores', 'shooters', 'shootingLines'].sort()
+    );
+  });
+
+  it('upserts by compound key instead of creating duplicate records', async () => {
+    await db.scores.put({
+      shooterId: 1,
+      roundIndex: 0,
+      passeIndex: 0,
+      arrowIndex: 0,
+      value: '8',
+      finalized: false,
+    });
+    await db.scores.put({
+      shooterId: 1,
+      roundIndex: 0,
+      passeIndex: 0,
+      arrowIndex: 0,
+      value: '9',
+      finalized: false,
+    });
+
+    expect(await db.scores.count()).toBe(1);
+    const [record] = await db.scores.toArray();
+    expect(record.value).toBe('9');
   });
 });
