@@ -23,6 +23,12 @@
   // file. Wrapped in overflow-x-auto so phone-width viewports scroll horizontally
   // instead of switching to a card layout (deliberately different from
   // Registration.svelte's phone card-list pattern per 03-UI-SPEC.md).
+  // Phone-width compaction (260705-p25): below the app's existing 768px/`md`
+  // breakpoint (same one used by the nav shell), the Klasse column (header + cells)
+  // is hidden entirely and header/data cell padding is tightened, so the WA
+  // 3-arrow preset fits without horizontal scrolling. `overflow-x-auto` remains as a
+  // safety net for narrower devices or larger arrow counts, not the primary
+  // phone-fit strategy anymore.
   let {
     rows,
     arrowsPerPasse,
@@ -54,7 +60,7 @@
     <thead>
       <tr class="border-b border-slate-200 text-left dark:border-slate-600">
         <th
-          class="p-4 text-[14px] font-normal leading-[1.4] text-slate-500 dark:text-slate-400"
+          class="p-2 md:p-4 text-[14px] font-normal leading-[1.4] text-slate-500 dark:text-slate-400"
           aria-sort={ariaSortFor('line')}
         >
           <button type="button" class="flex items-center gap-1" onclick={() => onsort('line')}>
@@ -68,7 +74,7 @@
           </button>
         </th>
         <th
-          class="p-4 text-[14px] font-normal leading-[1.4] text-slate-500 dark:text-slate-400"
+          class="p-2 md:p-4 text-[14px] font-normal leading-[1.4] text-slate-500 dark:text-slate-400"
           aria-sort={ariaSortFor('name')}
         >
           <button type="button" class="flex items-center gap-1" onclick={() => onsort('name')}>
@@ -82,7 +88,7 @@
           </button>
         </th>
         <th
-          class="p-4 text-[14px] font-normal leading-[1.4] text-slate-500 dark:text-slate-400"
+          class="hidden md:table-cell p-2 md:p-4 text-[14px] font-normal leading-[1.4] text-slate-500 dark:text-slate-400"
           aria-sort={ariaSortFor('class')}
         >
           <button type="button" class="flex items-center gap-1" onclick={() => onsort('class')}>
@@ -97,12 +103,12 @@
         </th>
         {#each Array.from({ length: arrowsPerPasse }) as _, i (i)}
           <th
-            class="p-4 text-center text-[14px] font-normal leading-[1.4] text-slate-500 dark:text-slate-400"
+            class="p-2 md:p-4 text-center text-[14px] font-normal leading-[1.4] text-slate-500 dark:text-slate-400"
             >{i + 1}</th
           >
         {/each}
         <th
-          class="p-4 text-right text-[14px] font-normal leading-[1.4] text-slate-500 dark:text-slate-400"
+          class="p-2 md:p-4 text-right text-[14px] font-normal leading-[1.4] text-slate-500 dark:text-slate-400"
           aria-sort={ariaSortFor('sum')}
         >
           <button
@@ -124,11 +130,11 @@
     <tbody>
       {#each rows as row (row.shooterId)}
         <tr class="border-b border-slate-100 dark:border-slate-700">
-          <td class="px-3 py-2">{row.line ?? '—'}</td>
-          <td class="px-3 py-2">{row.name}</td>
-          <td class="px-3 py-2">{row.className}</td>
+          <td class="px-1.5 py-1.5 md:px-3 md:py-2">{row.line ?? '—'}</td>
+          <td class="px-1.5 py-1.5 md:px-3 md:py-2">{row.name}</td>
+          <td class="hidden md:table-cell px-1.5 py-1.5 md:px-3 md:py-2">{row.className}</td>
           {#each row.arrows as arrow, i (i)}
-            <td class="px-3 py-2 text-center">
+            <td class="px-1.5 py-1.5 md:px-3 md:py-2 text-center">
               <button
                 type="button"
                 disabled={finalized}
@@ -142,7 +148,7 @@
               </button>
             </td>
           {/each}
-          <td class="px-3 py-2 text-right font-semibold"
+          <td class="px-1.5 py-1.5 md:px-3 md:py-2 text-right font-semibold"
             >{row.sum ?? strings.scoring.sumIncomplete}</td
           >
         </tr>
