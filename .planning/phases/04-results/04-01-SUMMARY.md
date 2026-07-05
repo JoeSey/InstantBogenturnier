@@ -135,3 +135,8 @@ Each task was committed atomically:
 ---
 *Phase: 04-results*
 *Completed: 2026-07-05*
+
+## Self-Check: PASSED
+
+All 12 created/modified files verified present on disk; all 5 referenced commit hashes
+(`61a27a0`, `7810469`, `3bf5251`, `dc97415`, `11bcf41`) verified present in `git log --oneline --all`.
