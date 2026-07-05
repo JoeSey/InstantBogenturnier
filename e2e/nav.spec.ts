@@ -45,11 +45,16 @@ test.describe('nav sections', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Schützen' })).toBeVisible();
   });
 
-  test('clicking Ergebnisse shows the Ergebnisse placeholder heading', async ({ page }) => {
+  test('clicking Ergebnisse shows the Ergebnisse view', async ({ page }) => {
+    // Phase 4 (04-01) replaced ResultsPlaceholder with the real Results view — its
+    // <h1> reads "Ergebnisse" (strings.results.heading), not the Phase 1
+    // "Ergebnisse kommt bald" placeholder text. With no shooters registered, the
+    // empty state (strings.results.emptyHeading) renders below the heading.
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
     await page.getByTestId('sidebar-nav').getByText('Ergebnisse').click();
-    await expect(page.getByRole('heading', { name: 'Ergebnisse kommt bald' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Ergebnisse' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Noch keine Ergebnisse' })).toBeVisible();
   });
 });
 

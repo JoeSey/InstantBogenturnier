@@ -158,4 +158,28 @@ export const strings = {
     finalizeConfirmCancel: 'Abbrechen',
     finalizedMessage: 'Erfassung abgeschlossen. Die Ergebnisse sind jetzt gesperrt.',
   },
+  // Phase 4 section — the single append point for ALL Phase 4 strings, including the
+  // reset/guard strings consumed by Plans 02/03 of this phase. Added verbatim per
+  // 04-UI-SPEC.md's "Strings Module Extension" block.
+  results: {
+    heading: 'Ergebnisse',
+    columnRank: 'Rang',
+    columnName: 'Name',
+    columnLine: 'Schießplatz',
+    columnTotal: 'Gesamt',
+    classDropdownLabel: 'Klasse',
+    inProgressLegend: '* Ergebnis noch nicht vollständig — Erfassung läuft.',
+    inProgressAria: 'Ergebnis noch nicht vollständig',
+    emptyHeading: 'Noch keine Ergebnisse',
+    emptyBody: 'Registrieren Sie Schützen und erfassen Sie Punkte, um Ergebnisse zu sehen.',
+    resetButton: 'Neues Turnier starten',
+    resetConfirmTitle: 'Neues Turnier starten?',
+    resetConfirmBody:
+      'Alle Schützen und Punkte werden gelöscht. Klassen, Schießplätze und Runden/Passen bleiben erhalten. Diese Aktion kann nicht rückgängig gemacht werden. Fortfahren?',
+    resetConfirmYes: 'Ja, zurücksetzen',
+    resetConfirmCancel: 'Abbrechen',
+    resetSuccess: 'Turnier zurückgesetzt. Klassen, Schießplätze und Runden/Passen sind erhalten.',
+    resetError: 'Zurücksetzen fehlgeschlagen: {error}',
+    guardMessage: 'Turnier abgeschlossen — Zurücksetzen, um zu ändern.',
+  },
 } as const;
