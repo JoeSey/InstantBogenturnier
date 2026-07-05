@@ -37,7 +37,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **RES-02**: Tied scores share the same rank; the next rank is skipped (standard "1-2-2-4" competition ranking)
 - [ ] **RES-03**: On phone-sized screens, results are shown one class at a time via a dropdown selector
 - [ ] **RES-04**: On tablet/desktop screens, results for multiple/all classes are shown in a single- or multi-column layout depending on screen width
-- [ ] **RES-05**: Trainer can explicitly start a new tournament via a dedicated "reset" action that clears all shooters and scores (not saved presets), after a confirmation warning
+- [x] **RES-05**: Trainer can explicitly start a new tournament via a dedicated "reset" action that clears all shooters and scores (not saved presets), after a confirmation warning
 - [ ] **RES-06**: App blocks destructive edits (deleting shooters, changing rounds/passes configuration) while finalized tournament data exists, directing the trainer to reset first rather than silently cascading the reset
 
 ### Platform
@@ -99,7 +99,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | RES-02 | Phase 4 | Pending |
 | RES-03 | Phase 4 | Pending |
 | RES-04 | Phase 4 | Pending |
-| RES-05 | Phase 4 | Pending |
+| RES-05 | Phase 4 | Complete |
 | RES-06 | Phase 4 | Pending |
 | PLAT-01 | Phase 1 | Complete |
 | PLAT-02 | Phase 1 | Complete |

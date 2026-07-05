@@ -70,6 +70,34 @@ async function setUpTournamentWithResults(page: Page) {
   await expect(page.getByRole('heading', { level: 1, name: 'Ergebnisse' })).toBeVisible();
 }
 
+test.describe('reset flow (RES-05)', () => {
+  test('reset clears shooters/scores (survives reload) while classes/lines/rounds remain configured', async ({
+    page,
+  }) => {
+    await setUpTournamentWithResults(page);
+
+    // Confirm results are present before resetting.
+    await expect(page.getByRole('cell', { name: 'Anna' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Neues Turnier starten' }).click();
+    await expect(page.getByRole('heading', { name: 'Neues Turnier starten?' })).toBeVisible();
+    await page.getByRole('button', { name: 'Ja, zurücksetzen' }).click();
+
+    await expect(page.getByText('Noch keine Ergebnisse')).toBeVisible();
+
+    // Reload proves the clear persisted in IndexedDB, not just in-memory component state.
+    await page.reload();
+    await expect(page.getByTestId('sidebar-nav').getByText('Ergebnisse')).toBeVisible();
+    await page.getByTestId('sidebar-nav').getByText('Ergebnisse').click();
+    await expect(page.getByText('Noch keine Ergebnisse')).toBeVisible();
+
+    // D-10: classes/lines/rounds configured in Einrichtung are still present.
+    await page.getByTestId('sidebar-nav').getByText('Einrichtung').click();
+    await expect(page.locator('ul li').first()).toBeVisible();
+    await expect(page.getByLabel('Schießplätze')).toHaveValue('2');
+  });
+});
+
 test.describe('Results responsive layout (RES-03/RES-04, D-04/D-05)', () => {
   test('phone width (375px): class dropdown visible, no grid card visible', async ({ page }) => {
     await setUpTournamentWithResults(page);

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/svelte';
+import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import Results from './Results.svelte';
 import { db } from '../db/schema';
 import { resetDb } from '../db/testHelpers';
@@ -91,5 +91,62 @@ describe('Results', () => {
       expect(screen.getAllByText(strings.results.inProgressAria).length).toBeGreaterThan(0);
     });
     expect(screen.getAllByText(strings.results.inProgressLegend).length).toBeGreaterThan(0);
+  });
+
+  describe('reset (RES-05, D-10)', () => {
+    async function seedTournament() {
+      const classId = await db.classes.add({ name: 'RCV-U14' });
+      await db.rounds.put({
+        id: 1,
+        arrowsPerPasse: 1,
+        passesPerRound: 1,
+        numberOfRounds: 1,
+        distance: '18m',
+      });
+      const shooterId = await db.shooters.add({ name: 'Anna', classId, lineAssignment: 1 });
+      await db.scores.add({
+        shooterId,
+        roundIndex: 0,
+        passeIndex: 0,
+        arrowIndex: 0,
+        value: '8',
+        finalized: false,
+      });
+    }
+
+    it('cancel leaves shooters and scores unchanged', async () => {
+      await seedTournament();
+      render(Results);
+      await screen.findAllByText('Anna');
+
+      await fireEvent.click(screen.getByRole('button', { name: strings.results.resetButton }));
+      await screen.findByText(strings.results.resetConfirmTitle);
+
+      await fireEvent.click(screen.getByRole('button', { name: strings.results.resetConfirmCancel }));
+
+      expect(await db.shooters.count()).toBe(1);
+      expect(await db.scores.count()).toBe(1);
+    });
+
+    it('confirming clears only shooters/scores, leaves classes/rounds intact, and shows success', async () => {
+      await seedTournament();
+      render(Results);
+      await screen.findAllByText('Anna');
+
+      await fireEvent.click(screen.getByRole('button', { name: strings.results.resetButton }));
+      await screen.findByText(strings.results.resetConfirmTitle);
+
+      await fireEvent.click(screen.getByRole('button', { name: strings.results.resetConfirmYes }));
+
+      await waitFor(async () => {
+        expect(await db.shooters.count()).toBe(0);
+      });
+      expect(await db.scores.count()).toBe(0);
+      expect(await db.classes.count()).toBe(1);
+      expect(await db.rounds.get(1)).toBeDefined();
+
+      await screen.findByText(strings.results.emptyHeading);
+      await screen.findByText(strings.results.resetSuccess);
+    });
   });
 });
