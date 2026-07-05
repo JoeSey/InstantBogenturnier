@@ -1,5 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitForElementToBeRemoved } from '@testing-library/svelte';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  waitForElementToBeRemoved,
+} from '@testing-library/svelte';
 import ShooterForm from './ShooterForm.svelte';
 import Registration from '../views/Registration.svelte';
 import { db } from '../db/schema';
@@ -69,7 +75,7 @@ describe('Registration round-robin regression', () => {
     await resetDb();
   });
 
-  it('distributes 3 sequentially-registered shooters round-robin (1,2,1) with lineCount=2', async () => {
+  it('distributes 3 sequentially-registered shooters round-robin (1,2,1) with lineCount=2, modal shown only once', async () => {
     const classId = await db.classes.add({ name: 'RCV-U14' });
     await db.shootingLines.put({ id: 1, count: 2 });
 
@@ -86,10 +92,16 @@ describe('Registration round-robin regression', () => {
       const submitButton = screen.getByRole('button', { name: 'Schütze hinzufügen' });
       await fireEvent.click(submitButton);
 
-      const saveButton = await screen.findByRole('button', { name: 'Speichern' });
-      await fireEvent.click(saveButton);
+      if (i === 0) {
+        const saveButton = await screen.findByRole('button', { name: 'Speichern' });
+        await fireEvent.click(saveButton);
 
-      await waitForElementToBeRemoved(() => screen.queryByRole('button', { name: 'Speichern' }));
+        await waitForElementToBeRemoved(() => screen.queryByRole('button', { name: 'Speichern' }));
+      } else {
+        await waitFor(async () => {
+          expect(await db.shooters.count()).toBe(i + 1);
+        });
+      }
     }
 
     const shooters = await db.shooters.toArray();
@@ -121,13 +133,62 @@ describe('Registration mode indicator', () => {
       const submitButton = screen.getByRole('button', { name: 'Schütze hinzufügen' });
       await fireEvent.click(submitButton);
 
-      const saveButton = await screen.findByRole('button', { name: 'Speichern' });
-      await fireEvent.click(saveButton);
+      if (i === 0) {
+        const saveButton = await screen.findByRole('button', { name: 'Speichern' });
+        await fireEvent.click(saveButton);
 
-      // Wait for the modal to close (and shooter to be persisted) before continuing.
-      await waitForElementToBeRemoved(() => screen.queryByRole('button', { name: 'Speichern' }));
+        // Wait for the modal to close (and shooter to be persisted) before continuing.
+        await waitForElementToBeRemoved(() => screen.queryByRole('button', { name: 'Speichern' }));
+      } else {
+        await waitFor(async () => {
+          expect(await db.shooters.count()).toBe(i + 1);
+        });
+      }
     }
 
     await screen.findByText('Modus: AB/CD');
+  });
+});
+
+describe('Auto-assign once-per-session', () => {
+  beforeEach(async () => {
+    await resetDb();
+  });
+
+  it('does not reopen the modal for a second auto-assigned registration in the same session', async () => {
+    const classId = await db.classes.add({ name: 'RCV-U14' });
+    await db.shootingLines.put({ id: 1, count: 2 });
+
+    render(Registration);
+    await screen.findByRole('option', { name: 'RCV-U14' });
+
+    // First blank-line registration: modal shows, confirm via Speichern.
+    const nameInput1 = screen.getByLabelText('Name');
+    await fireEvent.input(nameInput1, { target: { value: 'Schütze 0' } });
+    const classSelect1 = screen.getByLabelText(/Klasse/) as HTMLSelectElement;
+    await fireEvent.change(classSelect1, { target: { value: String(classId) } });
+    const submitButton1 = screen.getByRole('button', { name: 'Schütze hinzufügen' });
+    await fireEvent.click(submitButton1);
+
+    const saveButton = await screen.findByRole('button', { name: 'Speichern' });
+    await fireEvent.click(saveButton);
+    await waitForElementToBeRemoved(() => screen.queryByRole('button', { name: 'Speichern' }));
+
+    // Second blank-line registration: no modal this time — written silently.
+    const nameInput2 = screen.getByLabelText('Name');
+    await fireEvent.input(nameInput2, { target: { value: 'Schütze 1' } });
+    const classSelect2 = screen.getByLabelText(/Klasse/) as HTMLSelectElement;
+    await fireEvent.change(classSelect2, { target: { value: String(classId) } });
+    const submitButton2 = screen.getByRole('button', { name: 'Schütze hinzufügen' });
+    await fireEvent.click(submitButton2);
+
+    await waitFor(async () => {
+      expect(await db.shooters.count()).toBe(2);
+    });
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+
+    const shooters = await db.shooters.toArray();
+    expect(shooters.map((s) => s.lineAssignment)).toEqual([1, 2]);
   });
 });

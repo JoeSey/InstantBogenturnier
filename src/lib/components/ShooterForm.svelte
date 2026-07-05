@@ -4,16 +4,7 @@
   import type { ShooterRecord } from '../db/schema';
   import { strings } from '../i18n/strings.de';
   import { detectMode } from '../utils/modeDetection';
-  import AutoAssignModal from './AutoAssignModal.svelte';
-
-  // Structurally identical to AutoAssignModal's internal RosterEntry — kept local since
-  // Svelte 5 instance scripts only expose `$props()`-declared props, not plain exports.
-  interface RosterEntry {
-    id?: number;
-    name: string;
-    classId: number;
-    lineNum: number | null;
-  }
+  import AutoAssignModal, { applyRosterAssignments, type RosterEntry } from './AutoAssignModal.svelte';
 
   // `editingShooter` is set by Registration.svelte when the trainer clicks the Pencil
   // (edit) action on an existing shooter — pre-fills the form; submit then updates the
@@ -51,6 +42,12 @@
   // just-completed write from the previous registration's AutoAssignModal save, which
   // would otherwise make this count stale by exactly one registration.
   let stagedAlreadyAssignedCount = $state(0);
+
+  // Once-per-session flag: the AutoAssignModal confirmation is shown only the first
+  // time a registration needs auto-assignment; every subsequent auto-assign-needing
+  // registration in this same ShooterForm/Registration mount writes silently via
+  // applyRosterAssignments. Resets on a fresh component render (e.g. full page reload).
+  let hasShownAutoAssignOnce = $state(false);
 
   let editingId = $state<number | undefined>(undefined);
   let errorFeedback = $state('');
@@ -108,9 +105,10 @@
       .filter((s) => s.lineAssignment == null)
       .map((s) => ({ id: s.id, name: s.name, classId: s.classId, lineNum: null }));
 
-    stagedAlreadyAssignedCount = freshShooters.filter((s) => s.lineAssignment != null).length;
+    const alreadyAssignedCount = freshShooters.filter((s) => s.lineAssignment != null).length;
+    stagedAlreadyAssignedCount = alreadyAssignedCount;
 
-    stagedRoster = [
+    const roster: RosterEntry[] = [
       ...unassigned,
       {
         name: trimmedName,
@@ -118,10 +116,30 @@
         lineNum: lineNum === '' ? null : Number(lineNum),
       },
     ];
+
+    const needsAutoAssign = roster.some((r) => r.lineNum === null);
+
+    if (!needsAutoAssign || hasShownAutoAssignOnce) {
+      try {
+        await applyRosterAssignments(roster, lineCount, mode, alreadyAssignedCount);
+      } catch (err) {
+        // WR-04: surface write failures instead of failing silently.
+        errorFeedback = strings.common.saveError.replace(
+          '{error}',
+          err instanceof Error ? err.message : String(err)
+        );
+        return;
+      }
+      resetForm();
+      return;
+    }
+
+    stagedRoster = roster;
     showModal = true;
   }
 
   function handleModalSave() {
+    hasShownAutoAssignOnce = true;
     showModal = false;
     stagedRoster = [];
     resetForm();
