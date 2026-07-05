@@ -10,6 +10,8 @@
   import ScoreTable from '../components/ScoreTable.svelte';
   import type { ScoreRow } from '../components/ScoreTable.svelte';
   import ScorePicker from '../components/ScorePicker.svelte';
+  import { sortRows } from '../utils/sortComparators';
+  import type { SortColumn, SortDirection } from '../utils/sortComparators';
 
   // Score entry vertical slice (03-01-PLAN.md Task 2, SCORE-01/02/03/05). Loads the
   // full scores table (not scoped to the current round/passe) and filters in-memory —
@@ -32,6 +34,11 @@
   let pickerCell = $state<{ shooterId: number; arrowIndex: number } | null>(null);
   let errorFeedback = $state('');
 
+  // SCORE-04: ephemeral (non-persisted) column-header sort state — reloading the app
+  // resets to the default (by Linie, ascending); never written to Dexie.
+  let sortBy = $state<SortColumn>('line');
+  let sortDir = $state<SortDirection>('asc');
+
   // D-09: the trainer only sees the tournament as "finalized" once every score record
   // has finalized: true. Vacuously false when there are no records yet.
   let isFinalized = $derived(allScores.length > 0 && allScores.every((s) => s.finalized));
@@ -44,8 +51,6 @@
     )
   );
 
-  // Default sort by line ascending — intentionally temporary; Plan 03-02 replaces this
-  // with the full sortRows() column-click feature (SCORE-04).
   let rows: ScoreRow[] = $derived.by(() => {
     if (!roundsConfig) return [];
 
@@ -66,10 +71,17 @@
       };
     });
 
-    return built.sort(
-      (a, b) => (a.line ?? Number.MAX_SAFE_INTEGER) - (b.line ?? Number.MAX_SAFE_INTEGER)
-    );
+    return sortRows(built, sortBy, sortDir);
   });
+
+  function handleSort(column: SortColumn) {
+    if (sortBy === column) {
+      sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      sortBy = column;
+      sortDir = 'asc';
+    }
+  }
 
   function openPicker(shooterId: number, arrowIndex: number) {
     if (isFinalized) return;
@@ -134,7 +146,10 @@
       {rows}
       arrowsPerPasse={roundsConfig.arrowsPerPasse}
       finalized={isFinalized}
+      {sortBy}
+      {sortDir}
       oncelltap={openPicker}
+      onsort={handleSort}
     />
 
     <ScorePicker open={pickerCell !== null} onselect={handleScoreSelect} oncancel={cancelPicker} />

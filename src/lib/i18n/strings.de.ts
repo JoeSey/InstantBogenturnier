@@ -143,5 +143,8 @@ export const strings = {
     pickerAriaMiss: 'Fehlschuss (0 Punkte)',
     pickerAriaX: 'X-Ring (10 Punkte)',
     pickerAriaNumeric: (value: string) => `${value} Punkte`,
+    // Phase 3 Plan 02 — sortable column headers (SCORE-04).
+    sortAscending: 'aufsteigend sortiert',
+    sortDescending: 'absteigend sortiert',
   },
 } as const;

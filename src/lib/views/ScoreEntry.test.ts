@@ -118,4 +118,56 @@ describe('ScoreEntry', () => {
     await screen.findByText(strings.scoring.notConfiguredHeading);
     expect(screen.queryByRole('table')).toBeNull();
   });
+
+  // Behavior per 03-02-PLAN.md Task 2 <acceptance_criteria> (SCORE-04).
+  it('sorts rows by clicking column headers, toggling direction, and switching columns', async () => {
+    const classId = await db.classes.add({ name: 'RCV-U14' });
+    await db.rounds.put({
+      id: 1,
+      arrowsPerPasse: 1,
+      passesPerRound: 1,
+      numberOfRounds: 1,
+      distance: '18m',
+    });
+    await db.shooters.add({ name: 'Bob', classId, lineAssignment: 1 });
+    await db.shooters.add({ name: 'Anna', classId, lineAssignment: 2 });
+
+    const { container } = render(ScoreEntry);
+    await screen.findByText('Anna');
+
+    const bodyNameCell = () =>
+      container.querySelectorAll('tbody tr td:nth-child(2)')[0]?.textContent;
+
+    // Default sort: by Linie ascending -> Bob (line 1) before Anna (line 2).
+    expect(bodyNameCell()).toBe('Bob');
+
+    const nameHeaderButton = screen.getByRole('button', { name: strings.scoring.columnName });
+    await fireEvent.click(nameHeaderButton);
+
+    // Ascending by Name -> Anna before Bob.
+    await waitFor(() => {
+      expect(bodyNameCell()).toBe('Anna');
+    });
+    const nameHeaderTh = container.querySelector('thead th:nth-child(2)');
+    expect(nameHeaderTh?.getAttribute('aria-sort')).toBe('ascending');
+
+    await fireEvent.click(nameHeaderButton);
+
+    // Second click reverses to descending -> Bob before Anna.
+    await waitFor(() => {
+      expect(bodyNameCell()).toBe('Bob');
+    });
+    expect(nameHeaderTh?.getAttribute('aria-sort')).toBe('descending');
+
+    const lineHeaderButton = screen.getByRole('button', { name: strings.scoring.columnLine });
+    await fireEvent.click(lineHeaderButton);
+
+    // Switching to Linie resets to ascending -> Bob (line 1) before Anna (line 2).
+    await waitFor(() => {
+      expect(bodyNameCell()).toBe('Bob');
+    });
+    const lineHeaderTh = container.querySelector('thead th:nth-child(1)');
+    expect(lineHeaderTh?.getAttribute('aria-sort')).toBe('ascending');
+    expect(nameHeaderTh?.getAttribute('aria-sort')).toBe('none');
+  });
 });
