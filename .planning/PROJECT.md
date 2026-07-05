@@ -27,6 +27,8 @@ Score entry and results ranking must work correctly and offline, on one device, 
 
 - [ ] Trainer can view results sorted by score descending, with ties sharing a rank and skipping the next rank
 - [ ] Results view adapts by screen size: class-selectable dropdown on phone, multi-column all-classes view on larger screens
+- [ ] Trainer can explicitly start a new tournament via a dedicated reset action that clears all shooters and scores (not saved presets), after a confirmation warning
+- [ ] App blocks destructive edits (deleting shooters, changing rounds/passes configuration) while finalized tournament data exists, directing the trainer to reset first instead of silently cascading
 
 ### Out of Scope
 

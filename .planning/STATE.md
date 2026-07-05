@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: ready_to_plan
-stopped_at: Phase 3 complete (3/3) — ready to discuss Phase 4
-last_updated: 2026-07-05T13:41:17.725Z
-last_activity: 2026-07-05 -- Phase 3 execution started
+status: planning
+stopped_at: Phase 3 UI-SPEC approved
+last_updated: "2026-07-05T17:33:52.015Z"
+last_activity: "2026-07-05 - Completed quick task 260705-lpv: Score entry dialog UX (archer name in title, auto-advance, backdrop-click cancel)"
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 9
   completed_plans: 9
-  percent: 50
+  percent: 75
 ---
 
 # Project State
@@ -55,6 +55,10 @@ Progress: [░░░░░░░░░░] 0%
 *Updated after each plan completion*
 
 ## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 4 edited: added RES-05/RES-06 (tournament reset + destructive-edit guard) requested by user
 
 ### Decisions
 

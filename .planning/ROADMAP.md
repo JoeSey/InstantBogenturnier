@@ -69,11 +69,13 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Goal**: Trainer can view accurate, correctly-ranked results for each class immediately once scoring is complete, on any device at the range.
 **Mode:** mvp
 **Depends on**: Phase 3
-**Requirements**: RES-01, RES-02, RES-03, RES-04
+**Requirements**: RES-01, RES-02, RES-03, RES-04, RES-05, RES-06
 **Success Criteria** (what must be TRUE):
   1. Trainer can view results ranked by total score descending, grouped per class.
   2. Tied scores share the same rank and the next rank is skipped (standard "1-2-2-4" competition ranking).
   3. On phone-sized screens, results are shown one class at a time via a dropdown selector; on tablet/desktop screens, results for multiple/all classes are shown in a single- or multi-column layout depending on screen width.
+  4. Trainer can start a new tournament via an explicit reset action that clears all shooters and scores (not saved presets), after confirming a warning.
+  5. Destructive edits (deleting shooters, changing rounds/passes configuration) are blocked while finalized tournament data exists, directing the trainer to reset first rather than silently cascading the reset.
 **Plans**: TBD
 **UI hint**: yes
 
