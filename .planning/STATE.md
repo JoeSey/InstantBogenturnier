@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-07-03)
 Phase: 3
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-07-05 - Completed quick task 260705-bnb: Add "E" abbreviation for "Erwachsene" age-group
+Last activity: 2026-07-05 - Completed quick task 260705-bvu: Right-align Vorlagen import button label; remove redundant class-name suggestion paragraph in ClassForm
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -82,6 +82,7 @@ None yet.
 | 260705-aux | Change auto-assign confirmation UX in Registration to show once per session instead of every registration | 2026-07-05 | 8dfc8b9 | [260705-aux-change-the-shooter-auto-assignment-confi](./quick/260705-aux-change-the-shooter-auto-assignment-confi/) |
 | 260705-bht | Add 10m as a predefined distance option | 2026-07-05 | 6f5a293 | [260705-bht-add-10m-as-a-predefined-distance-option-](./quick/260705-bht-add-10m-as-a-predefined-distance-option-/) |
 | 260705-bnb | Add "E" abbreviation for "Erwachsene" age-group in generated class names | 2026-07-05 | 783d100 | [260705-bnb-add-e-as-abbreviation-for-erwachsene-age](./quick/260705-bnb-add-e-as-abbreviation-for-erwachsene-age/) |
+| 260705-bvu | Right-align Vorlagen import button label; remove redundant class-name suggestion paragraph in ClassForm | 2026-07-05 | 3468f64 | [260705-bvu-two-small-ui-cleanups-1-in-presetlist-sv](./quick/260705-bvu-two-small-ui-cleanups-1-in-presetlist-sv/) |
 
 ## Deferred Items
 
