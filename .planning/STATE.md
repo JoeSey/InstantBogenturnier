@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-07-03)
 Phase: 4
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-07-05 - Completed quick task 260705-jda: Score entry UI fixes (WA tap-button colors, remove 0 button, passe-advance button)
+Last activity: 2026-07-05 - Completed quick task 260705-lpv: Score entry dialog UX (archer name in title, auto-advance, backdrop-click cancel)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -85,6 +85,7 @@ None yet.
 | 260705-bnb | Add "E" abbreviation for "Erwachsene" age-group in generated class names | 2026-07-05 | 783d100 | [260705-bnb-add-e-as-abbreviation-for-erwachsene-age](./quick/260705-bnb-add-e-as-abbreviation-for-erwachsene-age/) |
 | 260705-bvu | Right-align Vorlagen import button label; remove redundant class-name suggestion paragraph in ClassForm | 2026-07-05 | 3468f64 | [260705-bvu-two-small-ui-cleanups-1-in-presetlist-sv](./quick/260705-bvu-two-small-ui-cleanups-1-in-presetlist-sv/) |
 | 260705-jda | Score entry UI fixes: WA tap-button colors, remove "0" button, passe-advance ">" button | 2026-07-05 | b42f905 | [260705-jda-score-entry-ui-fixes-1-color-the-scorepi](./quick/260705-jda-score-entry-ui-fixes-1-color-the-scorepi/) |
+| 260705-lpv | Score entry dialog UX: archer name in picker title, auto-advance through arrows, backdrop-click cancel | 2026-07-05 | e4975be | [260705-lpv-score-entry-dialog-ux-improvements-1-sho](./quick/260705-lpv-score-entry-dialog-ux-improvements-1-sho/) |
 
 ## Deferred Items
 
