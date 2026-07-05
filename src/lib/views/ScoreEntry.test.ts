@@ -30,6 +30,35 @@ describe('ScoreEntry', () => {
     await screen.findByText('3');
   });
 
+  // Static class-presence check only (260705-p25) — jsdom does not evaluate real
+  // media queries, so this only proves the responsive utility classes are present
+  // on the Klasse th/td; e2e/scoring.spec.ts proves actual hide/show behavior in a
+  // real browser at 375px/1024px.
+  it('marks the Klasse column th and td with responsive hidden md:table-cell classes', async () => {
+    const classId = await db.classes.add({ name: 'RCV-U14' });
+    await db.shootingLines.put({ id: 1, count: 2 });
+    await db.rounds.put({
+      id: 1,
+      arrowsPerPasse: 2,
+      passesPerRound: 1,
+      numberOfRounds: 1,
+      distance: '18m',
+    });
+    await db.shooters.add({ name: 'Anna', classId, lineAssignment: 3 });
+
+    const { container } = render(ScoreEntry);
+    await screen.findByText('Anna');
+
+    const classHeaderTh = container.querySelector('thead th:nth-child(3)') as HTMLElement;
+    expect(classHeaderTh).not.toBeNull();
+    expect(classHeaderTh.className).toContain('hidden');
+    expect(classHeaderTh.className).toContain('md:table-cell');
+
+    const classDataTd = container.querySelectorAll('tbody tr')[0].querySelectorAll('td')[2];
+    expect(classDataTd.className).toContain('hidden');
+    expect(classDataTd.className).toContain('md:table-cell');
+  });
+
   it('opens the picker on cell tap and autosaves the selected value', async () => {
     const classId = await db.classes.add({ name: 'RCV-U14' });
     await db.rounds.put({
