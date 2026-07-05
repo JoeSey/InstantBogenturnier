@@ -4,7 +4,7 @@
   import { db } from '../db/schema';
   import type { ScoreValue } from '../db/schema';
   import { strings } from '../i18n/strings.de';
-  import { calculatePasseSum, areAllScoresEntered } from '../utils/scoreCompletion';
+  import { calculatePasseSum, areAllScoresEntered, isPasseComplete } from '../utils/scoreCompletion';
   import PlaceholderScreen from '../components/PlaceholderScreen.svelte';
   import RoundPasseSelector from '../components/RoundPasseSelector.svelte';
   import ScoreTable from '../components/ScoreTable.svelte';
@@ -60,6 +60,32 @@
   );
 
   let finalizeDialogOpen = $state(false);
+
+  // Quick task 260705-jda: gates the ">" advance button next to Runde/Passe — shown
+  // once the current passe is fully filled, hidden once finalized or at the very
+  // last passe of the last round (nowhere left to advance to).
+  let currentPasseComplete = $derived(
+    roundsConfig
+      ? isPasseComplete(
+          shooters.map((s) => s.id!),
+          selectedRound,
+          selectedPasse,
+          roundsConfig.arrowsPerPasse,
+          allScores
+        )
+      : false
+  );
+
+  let isLastPasseOfTournament = $derived(
+    roundsConfig
+      ? selectedRound === roundsConfig.numberOfRounds - 1 &&
+          selectedPasse === roundsConfig.passesPerRound - 1
+      : false
+  );
+
+  let showAdvanceButton = $derived(
+    !isFinalized && currentPasseComplete && !isLastPasseOfTournament
+  );
 
   let currentPasseScoreByKey = $derived(
     new Map(
@@ -133,6 +159,16 @@
     pickerCell = null;
   }
 
+  function handleAdvance() {
+    if (!roundsConfig) return;
+    if (selectedPasse < roundsConfig.passesPerRound - 1) {
+      selectedPasse += 1;
+    } else {
+      selectedPasse = 0;
+      selectedRound += 1;
+    }
+  }
+
   async function handleFinalizeClick() {
     finalizeDialogOpen = true;
   }
@@ -182,6 +218,8 @@
       disabled={isFinalized}
       onRoundChange={(index) => (selectedRound = index)}
       onPasseChange={(index) => (selectedPasse = index)}
+      showAdvance={showAdvanceButton}
+      onAdvance={handleAdvance}
     />
 
     <ScoreTable
