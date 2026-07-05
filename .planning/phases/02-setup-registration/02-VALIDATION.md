@@ -1,9 +1,9 @@
 ---
 phase: 2
 slug: setup-registration
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: verified
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-07-04
 ---
 
@@ -38,18 +38,18 @@ created: 2026-07-04
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 02-0X-0X | TBD | TBD | SETUP-01 | — | Class form accepts age-group/bow-type/distance with custom escape hatch | component | `npm run test -- src/lib/components/ClassForm.test.ts` | ❌ W0 | ⬜ pending |
-| 02-0X-0X | TBD | TBD | SETUP-02 | — | Class name suggestion generated from tuple; collision auto-suffixed | unit | `npm run test -- src/lib/utils/classNameGenerator.test.ts` | ❌ W0 | ⬜ pending |
-| 02-0X-0X | TBD | TBD | SETUP-03 | — | Shooting line count persists to DB | unit | `npm run test -- src/lib/db/schema.test.ts -t "shootingLines"` | ❌ W0 | ⬜ pending |
-| 02-0X-0X | TBD | TBD | SETUP-04 | — | WA presets load; custom rounds/passes config saves | component | `npm run test -- src/lib/views/SetupRounds.test.ts` | ❌ W0 | ⬜ pending |
-| 02-0X-0X | TBD | TBD | SETUP-05 | — | Preset save with name, checks collision, confirms overwrite | component | `npm run test -- src/lib/components/PresetSave.test.ts` | ❌ W0 | ⬜ pending |
-| 02-0X-0X | TBD | TBD | SETUP-06 | — | Preset load/delete removes old setup, applies selected preset | integration | `npm run test -- src/lib/views/PresetList.test.ts` | ❌ W0 | ⬜ pending |
-| 02-0X-0X | TBD | TBD | REG-01 | — | Shooter form accepts name, class (dropdown), optional line (dropdown) | component | `npm run test -- src/lib/components/ShooterForm.test.ts` | ❌ W0 | ⬜ pending |
-| 02-0X-0X | TBD | TBD | REG-02 | — | AB/AB-CD mode computed from shooter count vs. line count, updates live | unit | `npm run test -- src/lib/utils/modeDetection.test.ts` | ❌ W0 | ⬜ pending |
+| 02-01-T2 | 02-01 | 1 | SETUP-01 | T-02-01 | Class form accepts age-group/bow-type/distance with custom escape hatch; requires at least one field before save | component | `npm run test -- src/lib/components/ClassForm.test.ts` | ✅ | ✅ green |
+| 02-01-T1 | 02-01 | 1 | SETUP-02 | — | Class name suggestion generated from tuple; collision auto-suffixed | unit | `npm run test -- src/lib/utils/classNameGenerator.test.ts src/lib/db/schema.test.ts` | ✅ | ✅ green |
+| 02-02-T1 | 02-02 | 2 | SETUP-03 | T-02-04, T-02-05 | Shooting line count persists to DB, clamped 1-10 | unit | `npm run test -- src/lib/db/schema.test.ts` | ✅ | ✅ green |
+| 02-02-T2 | 02-02 | 2 | SETUP-04 | T-02-04, T-02-05 | WA presets load; custom rounds/passes config saves, bounds-validated | component | `npm run test -- src/lib/views/SetupRounds.test.ts src/lib/db/schema.test.ts` | ✅ | ✅ green |
+| 02-04-T1 | 02-04 | 3 | SETUP-05 | — | Preset save with name, capacity indicator (cap 8), collision overwrite confirm | component | `npm run test -- src/lib/components/PresetSave.test.ts` | ✅ | ✅ green |
+| 02-04-T2 | 02-04 | 3 | SETUP-06 | T-02-08, T-02-09 | Preset load/delete/export/import round trip; defensive validation + 8-item cap on import | integration + e2e | `npm run test -- src/lib/views/PresetList.test.ts && npm run test:e2e -- presetExportImport` | ✅ | ✅ green |
+| 02-03-T2 | 02-03 | 2 | REG-01 | T-02-06 | Shooter form accepts name, class (dropdown), optional line (dropdown); auto-assign modal preview | component | `npm run test -- src/lib/components/ShooterForm.test.ts` | ✅ | ✅ green |
+| 02-03-T1 | 02-03 | 2 | REG-02 | — | AB/AB-CD mode computed from shooter count vs. line count, updates live; round-robin auto-assignment | unit | `npm run test -- src/lib/utils/modeDetection.test.ts src/lib/utils/shooterAutoAssignment.test.ts` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
-*Task IDs, plan IDs, and waves will be filled in by the planner once PLAN.md files are created.*
+*Also present, not requirement-mapped: `02-01-T0` (blocking human-verify checkpoint approving `fake-indexeddb` before install) — resolved, confirmed in `02-01-SUMMARY.md`.*
 
 ---
 
@@ -79,11 +79,24 @@ created: 2026-07-04
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 120s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 120s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** verified 2026-07-05
+
+---
+
+## Validation Audit 2026-07-05
+
+| Metric | Count |
+|--------|-------|
+| Requirements checked | 8 |
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
+
+All 8 requirement test files existed and passed on full-suite run: `npm run test` (34/34 unit + component tests green) and `npm run test:e2e` (13/13 e2e tests green, incl. `presetExportImport.spec.ts`). No auditor spawn needed — reconstructed and confirmed directly from PLAN/SUMMARY artifacts and a live test run.
