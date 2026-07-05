@@ -8,18 +8,24 @@
   // (quick task 260705-lpv) — unlike ConfirmDialog.svelte, which stays non-dismissible
   // because it guards destructive/overwriting actions — plus an Escape-key path in
   // addition to the explicit "Abbrechen" button, since this modal has no destructive
-  // default action to guard against.
+  // default action to guard against. Quick task 260705-ok7: the dialog title now shows
+  // a live rowPreview-driven per-arrow preview of the current row (dashes for unfilled
+  // arrows), recomputed on every pick while the dialog stays open.
   let {
     open,
     shooterName,
+    rowPreview,
     onselect,
     oncancel,
   }: {
     open: boolean;
     shooterName: string;
+    rowPreview: (ScoreValue | null)[];
     onselect: (value: ScoreValue) => void;
     oncancel: () => void;
   } = $props();
+
+  let previewText = $derived(rowPreview.map((v) => v ?? '-').join(' '));
 
   const SCORE_VALUES: ScoreValue[] = [
     '1',
@@ -89,7 +95,7 @@
             id="score-picker-title"
             class="mb-4 text-[20px] font-semibold leading-[1.2] text-slate-900 dark:text-slate-100"
           >
-            {strings.scoring.pickerTitle(shooterName)}
+            {strings.scoring.pickerTitle(shooterName, previewText)}
           </h2>
 
           <div class="grid grid-cols-5 gap-2">
