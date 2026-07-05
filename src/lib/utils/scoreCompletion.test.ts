@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { arrowScoreValue, calculatePasseSum, areAllScoresEntered } from './scoreCompletion';
+import {
+  arrowScoreValue,
+  calculatePasseSum,
+  areAllScoresEntered,
+  isPasseComplete,
+} from './scoreCompletion';
 import type { ScoreRecord } from '../db/schema';
 
 function record(
@@ -61,5 +66,34 @@ describe('areAllScoresEntered', () => {
   it('is false when only some shooters have entered scores', () => {
     const scores = [record(1, 0, 0, 0)];
     expect(areAllScoresEntered([1, 2], 1, 1, 1, scores)).toBe(false);
+  });
+});
+
+// Behavior per 260705-jda-PLAN.md Task 2 <behavior> block: single-passe completion
+// check used to gate the new advance button (distinct from areAllScoresEntered's
+// whole-tournament check).
+describe('isPasseComplete', () => {
+  it('is vacuously true when no shooters are registered', () => {
+    expect(isPasseComplete([], 0, 0, 3, [])).toBe(true);
+  });
+
+  it('is true when the shooter has all arrows for the given round/passe', () => {
+    const scores = [record(1, 0, 0, 0), record(1, 0, 0, 1)];
+    expect(isPasseComplete([1], 0, 0, 2, scores)).toBe(true);
+  });
+
+  it('is false when an arrow of the given passe is missing', () => {
+    const scores = [record(1, 0, 0, 0)];
+    expect(isPasseComplete([1], 0, 0, 2, scores)).toBe(false);
+  });
+
+  it('is false when the recorded scores belong to a different passe', () => {
+    const scores = [record(1, 0, 0, 0), record(1, 0, 0, 1)];
+    expect(isPasseComplete([1], 0, 1, 2, scores)).toBe(false);
+  });
+
+  it('is false when only some shooters have entered scores', () => {
+    const scores = [record(1, 0, 0, 0)];
+    expect(isPasseComplete([1, 2], 0, 0, 1, scores)).toBe(false);
   });
 });

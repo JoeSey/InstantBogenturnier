@@ -133,6 +133,7 @@ export const strings = {
     notConfiguredBody: 'Gehen Sie zu Einrichtung, um zu beginnen.',
     roundLabel: 'Runde',
     passeLabel: 'Passe',
+    advanceButtonAria: 'Nächste Passe',
     columnLine: 'Linie',
     columnName: 'Name',
     columnClass: 'Klasse',

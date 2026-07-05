@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ScoreValue } from '../db/schema';
   import { strings } from '../i18n/strings.de';
+  import { scoreColorCategory } from '../utils/scoreColor';
   import GlassCard from './GlassCard.svelte';
 
   // Tap-button score picker (D-01, D-02, 03-01-PLAN.md Task 2). Non-dismissible by
@@ -18,7 +19,6 @@
   } = $props();
 
   const SCORE_VALUES: ScoreValue[] = [
-    '0',
     '1',
     '2',
     '3',
@@ -42,13 +42,23 @@
   function buttonClass(value: ScoreValue): string {
     const base =
       'flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-[16px] font-semibold leading-[1.5]';
-    if (value === 'X') {
+    const category = scoreColorCategory(value);
+    if (category === 'yellow') {
       return `${base} border border-amber-200 bg-amber-400 text-slate-900 hover:bg-amber-500 dark:border-amber-300/40 dark:bg-amber-500 dark:text-slate-900`;
     }
-    if (value === 'M') {
+    if (category === 'miss') {
       return `${base} border border-gray-200 bg-gray-300 text-slate-900 hover:bg-gray-400 dark:border-gray-400/40 dark:bg-gray-500 dark:text-slate-900`;
     }
-    return `${base} bg-teal-500 text-white hover:bg-teal-600 dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300`;
+    if (category === 'red') {
+      return `${base} border border-red-400 bg-red-500 text-white hover:bg-red-600 dark:border-red-400/40 dark:bg-red-600 dark:text-white`;
+    }
+    if (category === 'blue') {
+      return `${base} border border-blue-400 bg-blue-500 text-white hover:bg-blue-600 dark:border-blue-400/40 dark:bg-blue-600 dark:text-white`;
+    }
+    if (category === 'black') {
+      return `${base} border border-slate-700 bg-slate-900 text-white hover:bg-slate-950 dark:border-slate-600/40 dark:bg-slate-950 dark:text-white`;
+    }
+    return `${base} border border-slate-300 bg-white text-slate-900 hover:bg-slate-100 dark:border-slate-400/40 dark:bg-slate-100 dark:text-slate-900`;
   }
 
   function handleKeydown(event: KeyboardEvent) {

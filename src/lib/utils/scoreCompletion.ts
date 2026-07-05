@@ -42,3 +42,31 @@ export function areAllScoresEntered(
 
   return true;
 }
+
+// Quick task 260705-jda: single-passe counterpart used to gate the new advance
+// button — distinct from areAllScoresEntered's whole-tournament check used for
+// "Abschließen". Vacuously true when there are no shooters registered.
+export function isPasseComplete(
+  shooterIds: number[],
+  roundIndex: number,
+  passeIndex: number,
+  arrowsPerPasse: number,
+  scores: ScoreRecord[]
+): boolean {
+  const existingCells = new Set(
+    scores
+      .filter((s) => s.roundIndex === roundIndex && s.passeIndex === passeIndex)
+      .map((s) => `${s.shooterId}-${s.arrowIndex}`)
+  );
+
+  for (const shooterId of shooterIds) {
+    for (let arrowIndex = 0; arrowIndex < arrowsPerPasse; arrowIndex++) {
+      const key = `${shooterId}-${arrowIndex}`;
+      if (!existingCells.has(key)) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
