@@ -522,22 +522,25 @@ $effect(async () => {
 | A4 | Sort order is ephemeral (not persisted to DB); only the in-memory table view is sorted | Common Pitfalls | MEDIUM — if sort order is persisted, it will confuse the data model. Clear documentation/comments will prevent this. |
 | A5 | Finalization is all-or-nothing (all scores lock together, not per-shooter) | Architecture Patterns | LOW — locked decision in D-09/D-10. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Passe configuration: does "passe" refer to an index into the round, or is it a separate dimension?**
    - What we know: Phase 2 CONTEXT.md D-01 defines "Passe" as "one end (Durchgang)" — a set of arrows shot together. Phase 2 schema has `passesPerRound` and `arrowsPerPasse`.
    - What's unclear: Is a "passe" identified by a sequential index (0, 1, 2, ..., passesPerRound-1), or does it have its own ID in the DB?
    - Recommendation: Use sequential 0-based indexing (see `passeIndex` in the ScoreRecord interface above). This matches how rounds and passes are conceptually grouped in the score table UI.
+   - RESOLVED: Sequential 0-based indexing adopted — `roundIndex`/`passeIndex`/`arrowIndex` key against the Phase 2 singleton round-config row, no separate per-round DB record needed. Implemented in 03-01-PLAN.md.
 
 2. **Efficiency of the completion check: should it query the DB, or compute from the in-memory scores array?**
    - What we know: Completion check needs to iterate all shooters × all rounds × all passes. IndexedDB queries are async.
    - What's unclear: Is it better to load all scores into memory and compute, or to query the DB for each cell?
    - Recommendation: Load all scores once (`db.scores.toArray()`), then compute in-memory. Fewer DB round-trips, faster (IndexedDB transactions can be slow on mobile). Cache the result in a `$derived` for reactivity.
+   - RESOLVED: Load-once-and-compute-in-memory adopted, cached via `$derived`. Implemented in `areAllScoresEntered()` (03-03-PLAN.md).
 
 3. **Error recovery: if a cell autosave fails mid-entry, what should the UI show?**
    - What we know: WR-04 (Phase 2 pattern) surfaces errors via a message div.
    - What's unclear: Should the UI block further cell edits until the error is cleared? Or allow the trainer to keep tapping and accumulate errors?
    - Recommendation: Surface the error in a message div (non-blocking), but allow further cell edits. The trainer can dismiss the error message and retry the problematic cell. This matches the "keep moving" philosophy of range use.
+   - RESOLVED: Non-blocking error message div adopted, matching Phase 2's WR-04 pattern. Implemented in 03-01-PLAN.md.
 
 ## Environment Availability
 
