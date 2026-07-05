@@ -5,6 +5,7 @@
   import type { ShooterRecord } from '../db/schema';
   import { strings } from '../i18n/strings.de';
   import { detectMode } from '../utils/modeDetection';
+  import { computeIsFinalized } from '../utils/scoreCompletion';
   import GlassCard from '../components/GlassCard.svelte';
   import ShooterForm from '../components/ShooterForm.svelte';
 
@@ -17,6 +18,13 @@
 
   const lineConfigQuery = liveQuery(() => db.shootingLines.get(1));
   let lineCount = $derived($lineConfigQuery?.count ?? 2);
+
+  // RES-06/D-11/D-12 (04-03-PLAN.md Task 2): disable delete-shooter once the
+  // tournament is finalized, guarded via the shared computeIsFinalized so the
+  // permanent-lock boolean is never re-derived inline per view.
+  const scoresQuery = liveQuery(() => db.scores.toArray());
+  let allScores = $derived($scoresQuery ?? []);
+  let isFinalized = $derived(computeIsFinalized(allScores));
 
   let shooterCount = $derived(shooters.length);
   let mode = $derived(detectMode(shooterCount, lineCount));
@@ -58,6 +66,12 @@
 
   {#if errorFeedback}
     <p class="text-[14px] leading-[1.4] text-red-600 dark:text-red-400">{errorFeedback}</p>
+  {/if}
+
+  {#if isFinalized}
+    <p role="status" class="text-[14px] leading-[1.4] text-slate-500 dark:text-slate-400">
+      {strings.results.guardMessage}
+    </p>
   {/if}
 
   <GlassCard class="p-4 md:p-6">
@@ -129,7 +143,8 @@
                     type="button"
                     onclick={() => deleteShooter(shooter.id)}
                     aria-label={strings.registration.deleteAction}
-                    class="flex min-h-[44px] min-w-[44px] items-center justify-center"
+                    disabled={isFinalized} aria-disabled={isFinalized}
+                    class="flex min-h-[44px] min-w-[44px] items-center justify-center disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <Trash2 size={20} strokeWidth={1.75} class="text-red-600 dark:text-red-400" />
                   </button>
@@ -164,7 +179,8 @@
                   type="button"
                   onclick={() => deleteShooter(shooter.id)}
                   aria-label={strings.registration.deleteAction}
-                  class="flex min-h-[44px] min-w-[44px] items-center justify-center"
+                  disabled={isFinalized} aria-disabled={isFinalized}
+                  class="flex min-h-[44px] min-w-[44px] items-center justify-center disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Trash2 size={20} strokeWidth={1.75} class="text-red-600 dark:text-red-400" />
                 </button>
