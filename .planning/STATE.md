@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-07-03)
 Phase: 3
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-07-05 - Completed quick task 260705-aux: Change auto-assign confirmation UX in Registration to show once per session
+Last activity: 2026-07-05 - Completed quick task 260705-bht: Add 10m as a predefined distance option
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -80,6 +80,7 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260705-aux | Change auto-assign confirmation UX in Registration to show once per session instead of every registration | 2026-07-05 | 8dfc8b9 | [260705-aux-change-the-shooter-auto-assignment-confi](./quick/260705-aux-change-the-shooter-auto-assignment-confi/) |
+| 260705-bht | Add 10m as a predefined distance option | 2026-07-05 | 6f5a293 | [260705-bht-add-10m-as-a-predefined-distance-option-](./quick/260705-bht-add-10m-as-a-predefined-distance-option-/) |
 
 ## Deferred Items
 
