@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Installable offline PWA shell with the responsive, themeable glassmorphism visual system (completed 2026-07-04)
 - [x] **Phase 2: Setup & Registration** - Trainer configures classes, lines, rounds/passes, presets, and registers shooters (completed 2026-07-04)
-- [ ] **Phase 3: Score Entry** - Trainer enters, saves, and finalizes per-arrow scores live, with zero data loss
+- [x] **Phase 3: Score Entry** - Trainer enters, saves, and finalizes per-arrow scores live, with zero data loss (completed 2026-07-05)
 - [ ] **Phase 4: Results** - Trainer views correctly-ranked, per-class results adapted to any screen size
 
 ## Phase Details
@@ -63,7 +63,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans
 - [x] 03-01-PLAN.md — Score entry vertical slice: tap-button autosave, table, round/passe nav (SCORE-01, SCORE-02, SCORE-03, SCORE-05)
 - [x] 03-02-PLAN.md — Sortable column headers (SCORE-04)
-- [ ] 03-03-PLAN.md — Completion detection + finalize/permanent lock (SCORE-06, SCORE-07)
+- [x] 03-03-PLAN.md — Completion detection + finalize/permanent lock (SCORE-06, SCORE-07)
 
 ### Phase 4: Results
 **Goal**: Trainer can view accurate, correctly-ranked results for each class immediately once scoring is complete, on any device at the range.
@@ -86,5 +86,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete   | 2026-07-04 |
 | 2. Setup & Registration | 4/4 | Complete    | 2026-07-04 |
-| 3. Score Entry | 2/3 | In Progress|  |
+| 3. Score Entry | 3/3 | Complete   | 2026-07-05 |
 | 4. Results | 0/TBD | Not started | - |
