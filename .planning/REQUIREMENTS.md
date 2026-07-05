@@ -33,12 +33,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Results
 
-- [ ] **RES-01**: Trainer can view results ranked by total score descending, grouped per class
-- [ ] **RES-02**: Tied scores share the same rank; the next rank is skipped (standard "1-2-2-4" competition ranking)
-- [ ] **RES-03**: On phone-sized screens, results are shown one class at a time via a dropdown selector
-- [ ] **RES-04**: On tablet/desktop screens, results for multiple/all classes are shown in a single- or multi-column layout depending on screen width
+- [x] **RES-01**: Trainer can view results ranked by total score descending, grouped per class
+- [x] **RES-02**: Tied scores share the same rank; the next rank is skipped (standard "1-2-2-4" competition ranking)
+- [x] **RES-03**: On phone-sized screens, results are shown one class at a time via a dropdown selector
+- [x] **RES-04**: On tablet/desktop screens, results for multiple/all classes are shown in a single- or multi-column layout depending on screen width
 - [x] **RES-05**: Trainer can explicitly start a new tournament via a dedicated "reset" action that clears all shooters and scores (not saved presets), after a confirmation warning
-- [ ] **RES-06**: App blocks destructive edits (deleting shooters, changing rounds/passes configuration) while finalized tournament data exists, directing the trainer to reset first rather than silently cascading the reset
+- [x] **RES-06**: App blocks destructive edits (deleting shooters, changing rounds/passes configuration) while finalized tournament data exists, directing the trainer to reset first rather than silently cascading the reset
 
 ### Platform
 
@@ -95,12 +95,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SCORE-05 | Phase 3 | Complete |
 | SCORE-06 | Phase 3 | Complete |
 | SCORE-07 | Phase 3 | Complete |
-| RES-01 | Phase 4 | Pending |
-| RES-02 | Phase 4 | Pending |
-| RES-03 | Phase 4 | Pending |
-| RES-04 | Phase 4 | Pending |
+| RES-01 | Phase 4 | Complete |
+| RES-02 | Phase 4 | Complete |
+| RES-03 | Phase 4 | Complete |
+| RES-04 | Phase 4 | Complete |
 | RES-05 | Phase 4 | Complete |
-| RES-06 | Phase 4 | Pending |
+| RES-06 | Phase 4 | Complete |
 | PLAT-01 | Phase 1 | Complete |
 | PLAT-02 | Phase 1 | Complete |
 | PLAT-03 | Phase 1 | Complete |

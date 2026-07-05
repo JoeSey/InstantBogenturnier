@@ -70,3 +70,12 @@ export function isPasseComplete(
 
   return true;
 }
+
+// 04-03-PLAN.md Task 1 (D-09/D-10 per 03-CONTEXT.md, D-12 per 04-CONTEXT.md): single
+// source of truth for the permanent-lock boolean. Every RES-06-guarded view (Setup,
+// SetupRounds, ClassForm, Registration) and ScoreEntry must call this instead of
+// re-deriving the same expression inline a second time. Vacuously false when there are
+// no score records yet — a tournament with nothing recorded is never "finalized".
+export function computeIsFinalized(scores: ScoreRecord[]): boolean {
+  return scores.length > 0 && scores.every((s) => s.finalized);
+}

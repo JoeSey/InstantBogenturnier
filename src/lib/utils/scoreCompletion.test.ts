@@ -4,6 +4,7 @@ import {
   calculatePasseSum,
   areAllScoresEntered,
   isPasseComplete,
+  computeIsFinalized,
 } from './scoreCompletion';
 import type { ScoreRecord } from '../db/schema';
 
@@ -95,5 +96,30 @@ describe('isPasseComplete', () => {
   it('is false when only some shooters have entered scores', () => {
     const scores = [record(1, 0, 0, 0)];
     expect(isPasseComplete([1, 2], 0, 0, 1, scores)).toBe(false);
+  });
+});
+
+// Behavior per 04-03-PLAN.md Task 1 <behavior> block (D-09/D-10, D-12): the single
+// shared source of truth for the permanent-lock boolean every RES-06-guarded view
+// and ScoreEntry must call instead of re-deriving the expression inline.
+describe('computeIsFinalized', () => {
+  it('is vacuously false when there are no score records yet', () => {
+    expect(computeIsFinalized([])).toBe(false);
+  });
+
+  it('is true when every record has finalized: true', () => {
+    const scores: ScoreRecord[] = [
+      { shooterId: 1, roundIndex: 0, passeIndex: 0, arrowIndex: 0, value: '8', finalized: true },
+      { shooterId: 1, roundIndex: 0, passeIndex: 0, arrowIndex: 1, value: '9', finalized: true },
+    ];
+    expect(computeIsFinalized(scores)).toBe(true);
+  });
+
+  it('is false when at least one record has finalized: false (mixed state)', () => {
+    const scores: ScoreRecord[] = [
+      { shooterId: 1, roundIndex: 0, passeIndex: 0, arrowIndex: 0, value: '8', finalized: true },
+      { shooterId: 1, roundIndex: 0, passeIndex: 0, arrowIndex: 1, value: '9', finalized: false },
+    ];
+    expect(computeIsFinalized(scores)).toBe(false);
   });
 });

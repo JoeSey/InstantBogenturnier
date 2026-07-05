@@ -3,6 +3,11 @@
   import { WA_PRESETS } from '../fixtures/waPresets';
   import { strings } from '../i18n/strings.de';
 
+  // RES-06/D-11/D-12 (04-03-PLAN.md Task 3): once finalized, the entire rounds/passes
+  // config form is disabled — the parent Setup.svelte derives and passes this down via
+  // the shared computeIsFinalized so the boolean is never re-derived here.
+  let { isFinalized = false }: { isFinalized?: boolean } = $props();
+
   const presetLabels: Record<string, string> = {
     'wa-18m': strings.setup.wa18m,
     'wa-25m': strings.setup.wa25m,
@@ -74,6 +79,7 @@
         value="preset"
         checked={selectedMode === 'preset'}
         onchange={() => (selectedMode = 'preset')}
+        disabled={isFinalized}
       />
       {strings.setup.waPresetsLabel}
     </label>
@@ -86,6 +92,7 @@
         value="custom"
         checked={selectedMode === 'custom'}
         onchange={() => (selectedMode = 'custom')}
+        disabled={isFinalized}
       />
       {strings.setup.customLabel}
     </label>
@@ -103,6 +110,7 @@
             value={preset.id}
             checked={selectedPresetId === preset.id}
             onchange={() => (selectedPresetId = preset.id)}
+            disabled={isFinalized}
           />
           {presetLabels[preset.id]}
         </label>
@@ -117,7 +125,8 @@
           min="1"
           step="1"
           bind:value={customRounds}
-          class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+          disabled={isFinalized}
+          class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
         />
       </label>
       <label class="block text-[14px] leading-[1.4] text-slate-700 dark:text-slate-200">
@@ -128,7 +137,8 @@
           max="30"
           step="1"
           bind:value={customPassesPerRound}
-          class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+          disabled={isFinalized}
+          class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
         />
       </label>
       <label class="block text-[14px] leading-[1.4] text-slate-700 dark:text-slate-200">
@@ -139,7 +149,8 @@
           max="20"
           step="1"
           bind:value={customArrowsPerPasse}
-          class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+          disabled={isFinalized}
+          class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
         />
       </label>
       <label class="block text-[14px] leading-[1.4] text-slate-700 dark:text-slate-200">
@@ -147,7 +158,8 @@
         <input
           type="text"
           bind:value={customDistance}
-          class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+          disabled={isFinalized}
+          class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
         />
       </label>
     </div>
@@ -160,7 +172,8 @@
   <button
     type="button"
     onclick={save}
-    class="min-h-[44px] rounded-lg bg-teal-500 px-4 py-2 text-[16px] font-semibold leading-[1.5] text-white hover:bg-teal-600 dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300"
+    disabled={isFinalized}
+    class="min-h-[44px] rounded-lg bg-teal-500 px-4 py-2 text-[16px] font-semibold leading-[1.5] text-white hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300"
   >
     {strings.setup.saveButton}
   </button>
