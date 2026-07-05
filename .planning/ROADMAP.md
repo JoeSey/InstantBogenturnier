@@ -77,7 +77,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. Trainer can start a new tournament via an explicit reset action that clears all shooters and scores (not saved presets), after confirming a warning.
   5. Destructive edits (deleting shooters, changing rounds/passes configuration) are blocked while finalized tournament data exists, directing the trainer to reset first rather than silently cascading the reset.
 **Plans**: 3 plans
-- [ ] 04-01-PLAN.md — Ranking utility + live per-class results view, phone dropdown + tablet/desktop responsive grid (RES-01, RES-02, RES-03, RES-04)
+- [x] 04-01-PLAN.md — Ranking utility + live per-class results view, phone dropdown + tablet/desktop responsive grid (RES-01, RES-02, RES-03, RES-04)
 - [ ] 04-02-PLAN.md — Reset flow: destructive "Neues Turnier starten" action with atomic Dexie clear (RES-05)
 - [ ] 04-03-PLAN.md — Destructive-edit guard: shared isFinalized + disabled controls across Registration/Setup/SetupRounds/ClassForm (RES-06)
 **UI hint**: yes
@@ -92,4 +92,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Foundation | 2/2 | Complete   | 2026-07-04 |
 | 2. Setup & Registration | 4/4 | Complete    | 2026-07-04 |
 | 3. Score Entry | 3/3 | Complete    | 2026-07-05 |
-| 4. Results | 0/3 | Not started | - |
+| 4. Results | 1/3 | In Progress|  |
