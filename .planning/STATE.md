@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-07-03)
 Phase: 4
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-07-05 - Completed quick task 260705-ok7: Score-picker auto-advance refinements (close on edit-existing, same-row-only advance, live title preview)
+Last activity: 2026-07-05 - Completed quick task 260705-p25: Score table phone-view compaction (hide Klasse column, tighter padding below md breakpoint)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -91,6 +91,7 @@ None yet.
 | 260705-jda | Score entry UI fixes: WA tap-button colors, remove "0" button, passe-advance ">" button | 2026-07-05 | b42f905 | [260705-jda-score-entry-ui-fixes-1-color-the-scorepi](./quick/260705-jda-score-entry-ui-fixes-1-color-the-scorepi/) |
 | 260705-lpv | Score entry dialog UX: archer name in picker title, auto-advance through arrows, backdrop-click cancel | 2026-07-05 | e4975be | [260705-lpv-score-entry-dialog-ux-improvements-1-sho](./quick/260705-lpv-score-entry-dialog-ux-improvements-1-sho/) |
 | 260705-ok7 | Score-picker auto-advance refinements: close on edit-existing, same-row-only advance, live title preview | 2026-07-05 | 9a00506 | [260705-ok7-score-picker-auto-advance-refinements-fo](./quick/260705-ok7-score-picker-auto-advance-refinements-fo/) |
+| 260705-p25 | Score table phone-view compaction: hide Klasse column, tighter padding below md breakpoint | 2026-07-05 | f3cf656 | [260705-p25-score-table-phone-view-compaction-on-pho](./quick/260705-p25-score-table-phone-view-compaction-on-pho/) |
 
 ## Deferred Items
 
