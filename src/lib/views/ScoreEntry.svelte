@@ -5,6 +5,7 @@
   import type { ScoreValue } from '../db/schema';
   import { strings } from '../i18n/strings.de';
   import { calculatePasseSum, areAllScoresEntered, isPasseComplete } from '../utils/scoreCompletion';
+  import { findNextEmptyArrow } from '../utils/scoreAdvance';
   import PlaceholderScreen from '../components/PlaceholderScreen.svelte';
   import RoundPasseSelector from '../components/RoundPasseSelector.svelte';
   import ScoreTable from '../components/ScoreTable.svelte';
@@ -33,6 +34,13 @@
   let selectedRound = $state(0);
   let selectedPasse = $state(0);
   let pickerCell = $state<{ shooterId: number; arrowIndex: number } | null>(null);
+  // Quick task 260705-lpv: resolves the archer name for the currently-open picker
+  // cell, driving ScorePicker's dialog title.
+  let pickerShooterName = $derived.by(() => {
+    const cell = pickerCell;
+    if (!cell) return '';
+    return shooters.find((s) => s.id === cell.shooterId)?.name ?? '';
+  });
   let errorFeedback = $state('');
 
   // SCORE-04: ephemeral (non-persisted) column-header sort state — reloading the app
@@ -133,9 +141,8 @@
   }
 
   function handleScoreSelect(value: ScoreValue) {
-    if (!pickerCell) return;
+    if (!pickerCell || !roundsConfig) return;
     const { shooterId, arrowIndex } = pickerCell;
-    pickerCell = null;
     // D-06: deliberately no `await` — autosave must be non-blocking. Errors are
     // surfaced via errorFeedback (WR-04) without blocking further cell edits.
     db.scores
@@ -153,6 +160,16 @@
           err instanceof Error ? err.message : String(err)
         );
       });
+
+    // Quick task 260705-lpv: auto-advance to the next empty arrow. `justPickedKey`
+    // compensates for currentPasseScoreByKey not yet reflecting the write above
+    // (liveQuery refresh is async) since db.scores.put isn't awaited.
+    const justPickedKey = `${shooterId}-${arrowIndex}`;
+    const isFilled = (sId: number, aIdx: number) => {
+      const key = `${sId}-${aIdx}`;
+      return key === justPickedKey || currentPasseScoreByKey.has(key);
+    };
+    pickerCell = findNextEmptyArrow(rows, roundsConfig.arrowsPerPasse, shooterId, arrowIndex, isFilled);
   }
 
   function cancelPicker() {
@@ -232,7 +249,12 @@
       onsort={handleSort}
     />
 
-    <ScorePicker open={pickerCell !== null} onselect={handleScoreSelect} oncancel={cancelPicker} />
+    <ScorePicker
+      open={pickerCell !== null}
+      shooterName={pickerShooterName}
+      onselect={handleScoreSelect}
+      oncancel={cancelPicker}
+    />
 
     {#if isFinalized}
       <p class="text-[16px] leading-[1.5] text-slate-700 dark:text-slate-200">
