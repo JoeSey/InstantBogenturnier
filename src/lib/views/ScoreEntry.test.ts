@@ -34,7 +34,7 @@ describe('ScoreEntry', () => {
     const classId = await db.classes.add({ name: 'RCV-U14' });
     await db.rounds.put({
       id: 1,
-      arrowsPerPasse: 2,
+      arrowsPerPasse: 1,
       passesPerRound: 1,
       numberOfRounds: 1,
       distance: '18m',
@@ -45,13 +45,13 @@ describe('ScoreEntry', () => {
     await screen.findByText('Anna');
 
     const arrowButtons = container.querySelectorAll('tbody button');
-    expect(arrowButtons.length).toBe(2);
+    expect(arrowButtons.length).toBe(1);
     await fireEvent.click(arrowButtons[0]);
 
     const eightButton = await screen.findByRole('button', { name: '8 Punkte' });
     await fireEvent.click(eightButton);
 
-    // Picker closes.
+    // Picker closes — no empty arrow left to auto-advance to (260705-lpv).
     expect(screen.queryByRole('button', { name: '8 Punkte' })).toBeNull();
 
     await waitFor(async () => {
@@ -64,6 +64,133 @@ describe('ScoreEntry', () => {
       passeIndex: 0,
       arrowIndex: 0,
       value: '8',
+    });
+  });
+
+  // Behavior per 260705-lpv-PLAN.md Task 2/3 <done> criteria: dialog title, backdrop
+  // dismiss, and auto-advance (same row -> next row -> close when nothing remains).
+  describe('picker title, backdrop dismiss, and auto-advance (260705-lpv)', () => {
+    it("shows the tapped archer's name in the picker dialog title", async () => {
+      const classId = await db.classes.add({ name: 'RCV-U14' });
+      await db.rounds.put({
+        id: 1,
+        arrowsPerPasse: 1,
+        passesPerRound: 1,
+        numberOfRounds: 1,
+        distance: '18m',
+      });
+      await db.shooters.add({ name: 'Anna', classId, lineAssignment: 1 });
+
+      const { container } = render(ScoreEntry);
+      await screen.findByText('Anna');
+
+      const arrowButtons = container.querySelectorAll('tbody button');
+      await fireEvent.click(arrowButtons[0]);
+
+      await screen.findByText('Punkte von Anna');
+    });
+
+    it('clicking the backdrop cancels the picker without writing a score', async () => {
+      const classId = await db.classes.add({ name: 'RCV-U14' });
+      await db.rounds.put({
+        id: 1,
+        arrowsPerPasse: 1,
+        passesPerRound: 1,
+        numberOfRounds: 1,
+        distance: '18m',
+      });
+      await db.shooters.add({ name: 'Anna', classId, lineAssignment: 1 });
+
+      const { container } = render(ScoreEntry);
+      await screen.findByText('Anna');
+
+      const arrowButtons = container.querySelectorAll('tbody button');
+      await fireEvent.click(arrowButtons[0]);
+
+      const dialog = await screen.findByRole('dialog');
+      const backdrop = dialog.closest('.fixed.inset-0') as HTMLElement;
+      await fireEvent.click(backdrop);
+
+      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(await db.scores.count()).toBe(0);
+    });
+
+    it('auto-advances to the next empty arrow in the same row after a selection', async () => {
+      const classId = await db.classes.add({ name: 'RCV-U14' });
+      await db.rounds.put({
+        id: 1,
+        arrowsPerPasse: 2,
+        passesPerRound: 1,
+        numberOfRounds: 1,
+        distance: '18m',
+      });
+      const shooterId = await db.shooters.add({ name: 'Anna', classId, lineAssignment: 1 });
+
+      const { container } = render(ScoreEntry);
+      await screen.findByText('Anna');
+
+      const arrowButtons = container.querySelectorAll('tbody button');
+      await fireEvent.click(arrowButtons[0]);
+      const eightButton = await screen.findByRole('button', { name: '8 Punkte' });
+      await fireEvent.click(eightButton);
+
+      // Picker reopens for the same shooter (still one empty arrow left).
+      await screen.findByText('Punkte von Anna');
+      await waitFor(async () => {
+        expect(await db.scores.count()).toBe(1);
+      });
+
+      const sevenButton = await screen.findByRole('button', { name: '7 Punkte' });
+      await fireEvent.click(sevenButton);
+
+      // Both arrows filled — picker closes.
+      expect(screen.queryByRole('dialog')).toBeNull();
+      await waitFor(async () => {
+        expect(await db.scores.count()).toBe(2);
+      });
+      const records = await db.scores.toArray();
+      expect(records).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ shooterId, arrowIndex: 0, value: '8' }),
+          expect.objectContaining({ shooterId, arrowIndex: 1, value: '7' }),
+        ])
+      );
+    });
+
+    it("auto-advances to the next shooter's first empty arrow once a row completes", async () => {
+      const classId = await db.classes.add({ name: 'RCV-U14' });
+      await db.rounds.put({
+        id: 1,
+        arrowsPerPasse: 1,
+        passesPerRound: 1,
+        numberOfRounds: 1,
+        distance: '18m',
+      });
+      await db.shooters.add({ name: 'Bob', classId, lineAssignment: 1 });
+      const shooterIdAnna = await db.shooters.add({ name: 'Anna', classId, lineAssignment: 2 });
+
+      const { container } = render(ScoreEntry);
+      await screen.findByText('Anna');
+
+      // Default sort is by Linie ascending -> Bob (line 1) is the first row.
+      const arrowButtons = container.querySelectorAll('tbody button');
+      await fireEvent.click(arrowButtons[0]);
+      await screen.findByText('Punkte von Bob');
+
+      const eightButton = await screen.findByRole('button', { name: '8 Punkte' });
+      await fireEvent.click(eightButton);
+
+      // Bob's only arrow is now filled -> auto-advances to Anna's first empty arrow.
+      await screen.findByText('Punkte von Anna');
+      const sevenButton = await screen.findByRole('button', { name: '7 Punkte' });
+      await fireEvent.click(sevenButton);
+
+      expect(screen.queryByRole('dialog')).toBeNull();
+      await waitFor(async () => {
+        expect(await db.scores.count()).toBe(2);
+      });
+      const annaRecord = (await db.scores.toArray()).find((s) => s.shooterId === shooterIdAnna);
+      expect(annaRecord).toMatchObject({ arrowIndex: 0, value: '7' });
     });
   });
 
