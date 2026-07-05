@@ -4,7 +4,12 @@
   import { db } from '../db/schema';
   import type { ScoreValue } from '../db/schema';
   import { strings } from '../i18n/strings.de';
-  import { calculatePasseSum, areAllScoresEntered, isPasseComplete } from '../utils/scoreCompletion';
+  import {
+    calculatePasseSum,
+    areAllScoresEntered,
+    isPasseComplete,
+    computeIsFinalized,
+  } from '../utils/scoreCompletion';
   import { findNextEmptyArrowInRow } from '../utils/scoreAdvance';
   import PlaceholderScreen from '../components/PlaceholderScreen.svelte';
   import RoundPasseSelector from '../components/RoundPasseSelector.svelte';
@@ -71,8 +76,10 @@
   let sortDir = $state<SortDirection>('asc');
 
   // D-09: the trainer only sees the tournament as "finalized" once every score record
-  // has finalized: true. Vacuously false when there are no records yet.
-  let isFinalized = $derived(allScores.length > 0 && allScores.every((s) => s.finalized));
+  // has finalized: true. Vacuously false when there are no records yet. 04-03-PLAN.md
+  // Task 1: delegates to the shared computeIsFinalized (single source of truth) rather
+  // than re-deriving the expression inline.
+  let isFinalized = $derived(computeIsFinalized(allScores));
 
   // D-09: distinct from isFinalized above — isComplete gates whether Abschließen is
   // enabled (every shooter x round x passe x arrow has a value); isFinalized reflects
