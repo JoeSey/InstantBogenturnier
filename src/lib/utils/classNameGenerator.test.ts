@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { generateClassName, autoSuffixOnCollision, getBowTypeAbbr } from './classNameGenerator';
+import {
+  generateClassName,
+  autoSuffixOnCollision,
+  getBowTypeAbbr,
+  getAgeGroupAbbr,
+} from './classNameGenerator';
 import type { ClassRecord } from '../db/schema';
 
 // Behavior per 02-01-PLAN.md Task 1 <behavior> block (D-04 through D-07).
@@ -15,6 +20,10 @@ describe('generateClassName', () => {
   it('joins only the populated fields', () => {
     expect(generateClassName('U14', '', '')).toBe('U14');
   });
+
+  it('abbreviates "Erwachsene" age-group to "E"', () => {
+    expect(generateClassName('Erwachsene', 'RCV', '18m')).toBe('RCV-E-18m');
+  });
 });
 
 describe('getBowTypeAbbr', () => {
@@ -28,6 +37,24 @@ describe('getBowTypeAbbr', () => {
 
   it('returns unrecognized input unchanged', () => {
     expect(getBowTypeAbbr('Compound Custom')).toBe('Compound Custom');
+  });
+});
+
+describe('getAgeGroupAbbr', () => {
+  it('maps "Erwachsene" to "E"', () => {
+    expect(getAgeGroupAbbr('Erwachsene')).toBe('E');
+  });
+
+  it('returns an already-abbreviated value unchanged', () => {
+    expect(getAgeGroupAbbr('U14')).toBe('U14');
+  });
+
+  it('returns custom free text unchanged', () => {
+    expect(getAgeGroupAbbr('Andere-Freitext')).toBe('Andere-Freitext');
+  });
+
+  it('returns empty string unchanged', () => {
+    expect(getAgeGroupAbbr('')).toBe('');
   });
 });
 
@@ -61,5 +88,17 @@ describe('autoSuffixOnCollision', () => {
       existing
     );
     expect(result).toBe('RCV-U14-2');
+  });
+
+  it('appends the abbreviated age-group ("E", not "Erwachsene") when ageGroup is the differing field', () => {
+    const existing: ClassRecord[] = [
+      { id: 1, name: 'RCV-U14', ageGroup: 'U14', bowType: 'RCV', distance: '18m' },
+    ];
+    const result = autoSuffixOnCollision(
+      'RCV-U14',
+      { ageGroup: 'Erwachsene', bowType: 'RCV', distance: '18m' },
+      existing
+    );
+    expect(result).toBe('RCV-U14-E');
   });
 });
