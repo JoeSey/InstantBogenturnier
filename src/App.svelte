@@ -8,7 +8,7 @@
   import Setup from './lib/views/Setup.svelte';
   import Registration from './lib/views/Registration.svelte';
   import ScoreEntry from './lib/views/ScoreEntry.svelte';
-  import ResultsPlaceholder from './lib/views/ResultsPlaceholder.svelte';
+  import Results from './lib/views/Results.svelte';
   import { strings } from './lib/i18n/strings.de';
   import { updateAvailable } from './lib/stores/updateBanner.svelte';
 
@@ -25,7 +25,7 @@
     setup: Setup,
     registration: Registration,
     scoring: ScoreEntry,
-    results: ResultsPlaceholder,
+    results: Results,
   };
 
   let activeSection = $state<SectionId>('setup');
