@@ -7,7 +7,7 @@
   import Sidebar from './lib/components/Sidebar.svelte';
   import Setup from './lib/views/Setup.svelte';
   import Registration from './lib/views/Registration.svelte';
-  import ScoringPlaceholder from './lib/views/ScoringPlaceholder.svelte';
+  import ScoreEntry from './lib/views/ScoreEntry.svelte';
   import ResultsPlaceholder from './lib/views/ResultsPlaceholder.svelte';
   import { strings } from './lib/i18n/strings.de';
   import { updateAvailable } from './lib/stores/updateBanner.svelte';
@@ -24,7 +24,7 @@
   const views: Record<SectionId, Component> = {
     setup: Setup,
     registration: Registration,
-    scoring: ScoringPlaceholder,
+    scoring: ScoreEntry,
     results: ResultsPlaceholder,
   };
 
