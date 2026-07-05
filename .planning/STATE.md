@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-07-03)
 Phase: 3
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-07-04
+Last activity: 2026-07-05 - Completed quick task 260705-aux: Change auto-assign confirmation UX in Registration to show once per session
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -74,6 +74,12 @@ None yet.
 - Research flag: Tie-break convention (shared-rank/skip-next "1-2-2-4", no X-ring countback) should be explicitly confirmed as final before Phase 4 implementation.
 - Research flag: vite-plugin-pwa registerType decision (autoUpdate vs. prompt) is unresolved — needs an explicit call during Phase 1 planning, safety-leaning toward 'prompt' per research.
 - Research flag: Post-completion score correction policy (disallowed vs. discouraged after "Abschließen") needs clarifying during Phase 3/4 planning.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260705-aux | Change auto-assign confirmation UX in Registration to show once per session instead of every registration | 2026-07-05 | 8dfc8b9 | [260705-aux-change-the-shooter-auto-assignment-confi](./quick/260705-aux-change-the-shooter-auto-assignment-confi/) |
 
 ## Deferred Items
 
