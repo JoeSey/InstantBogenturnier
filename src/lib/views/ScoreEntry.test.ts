@@ -170,4 +170,111 @@ describe('ScoreEntry', () => {
     expect(lineHeaderTh?.getAttribute('aria-sort')).toBe('ascending');
     expect(nameHeaderTh?.getAttribute('aria-sort')).toBe('none');
   });
+
+  // Behavior per 03-03-PLAN.md Task 2 <acceptance_criteria> (SCORE-06/07, D-09/D-10).
+  describe('finalize (Abschließen)', () => {
+    async function setupOneShooterOneArrow() {
+      const classId = await db.classes.add({ name: 'RCV-U14' });
+      await db.rounds.put({
+        id: 1,
+        arrowsPerPasse: 1,
+        passesPerRound: 1,
+        numberOfRounds: 1,
+        distance: '18m',
+      });
+      await db.shooters.add({ name: 'Anna', classId, lineAssignment: 1 });
+    }
+
+    it('disables Turnier abschließen until every cell is filled, then enables it', async () => {
+      await setupOneShooterOneArrow();
+
+      const { container } = render(ScoreEntry);
+      await screen.findByText('Anna');
+
+      const finalizeButton = screen.getByRole('button', {
+        name: strings.scoring.finalizeButton,
+      }) as HTMLButtonElement;
+      expect(finalizeButton.disabled).toBe(true);
+      screen.getByText(strings.scoring.completionHelper);
+
+      const arrowButtons = container.querySelectorAll('tbody button');
+      await fireEvent.click(arrowButtons[0]);
+      const eightButton = await screen.findByRole('button', { name: '8 Punkte' });
+      await fireEvent.click(eightButton);
+
+      await waitFor(() => {
+        expect(finalizeButton.disabled).toBe(false);
+      });
+      expect(screen.queryByText(strings.scoring.completionHelper)).toBeNull();
+    });
+
+    it('confirming the finalize dialog locks every record and disables all cells', async () => {
+      await setupOneShooterOneArrow();
+
+      const { container } = render(ScoreEntry);
+      await screen.findByText('Anna');
+
+      const arrowButtons = container.querySelectorAll('tbody button');
+      await fireEvent.click(arrowButtons[0]);
+      const eightButton = await screen.findByRole('button', { name: '8 Punkte' });
+      await fireEvent.click(eightButton);
+
+      const finalizeButton = (await screen.findByRole('button', {
+        name: strings.scoring.finalizeButton,
+      })) as HTMLButtonElement;
+      await waitFor(() => expect(finalizeButton.disabled).toBe(false));
+      await fireEvent.click(finalizeButton);
+
+      await screen.findByText(strings.scoring.finalizeModalTitle);
+
+      const confirmButton = screen.getByRole('button', {
+        name: strings.scoring.finalizeConfirmYes,
+      });
+      await fireEvent.click(confirmButton);
+
+      await waitFor(async () => {
+        const records = await db.scores.toArray();
+        expect(records.length).toBeGreaterThan(0);
+        expect(records.every((r) => r.finalized)).toBe(true);
+      });
+
+      await screen.findByText(strings.scoring.finalizedMessage);
+      const lockedArrowButtons = container.querySelectorAll('tbody button');
+      lockedArrowButtons.forEach((btn) => expect((btn as HTMLButtonElement).disabled).toBe(true));
+      expect(screen.queryByRole('button', { name: strings.scoring.finalizeButton })).toBeNull();
+    });
+
+    it('canceling the finalize dialog leaves records unfinalized and cells tappable', async () => {
+      await setupOneShooterOneArrow();
+
+      const { container } = render(ScoreEntry);
+      await screen.findByText('Anna');
+
+      const arrowButtons = container.querySelectorAll('tbody button');
+      await fireEvent.click(arrowButtons[0]);
+      const eightButton = await screen.findByRole('button', { name: '8 Punkte' });
+      await fireEvent.click(eightButton);
+
+      const finalizeButton = (await screen.findByRole('button', {
+        name: strings.scoring.finalizeButton,
+      })) as HTMLButtonElement;
+      await waitFor(() => expect(finalizeButton.disabled).toBe(false));
+      await fireEvent.click(finalizeButton);
+
+      await screen.findByText(strings.scoring.finalizeModalTitle);
+      const cancelButton = screen.getByRole('button', {
+        name: strings.scoring.finalizeConfirmCancel,
+      });
+      await fireEvent.click(cancelButton);
+
+      expect(screen.queryByText(strings.scoring.finalizeModalTitle)).toBeNull();
+      const records = await db.scores.toArray();
+      expect(records.every((r) => !r.finalized)).toBe(true);
+
+      const stillTappableArrowButtons = container.querySelectorAll('tbody button');
+      stillTappableArrowButtons.forEach((btn) =>
+        expect((btn as HTMLButtonElement).disabled).toBe(false)
+      );
+    });
+  });
 });

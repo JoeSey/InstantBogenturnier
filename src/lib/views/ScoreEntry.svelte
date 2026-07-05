@@ -4,12 +4,13 @@
   import { db } from '../db/schema';
   import type { ScoreValue } from '../db/schema';
   import { strings } from '../i18n/strings.de';
-  import { calculatePasseSum } from '../utils/scoreCompletion';
+  import { calculatePasseSum, areAllScoresEntered } from '../utils/scoreCompletion';
   import PlaceholderScreen from '../components/PlaceholderScreen.svelte';
   import RoundPasseSelector from '../components/RoundPasseSelector.svelte';
   import ScoreTable from '../components/ScoreTable.svelte';
   import type { ScoreRow } from '../components/ScoreTable.svelte';
   import ScorePicker from '../components/ScorePicker.svelte';
+  import ConfirmDialog from '../components/ConfirmDialog.svelte';
   import { sortRows } from '../utils/sortComparators';
   import type { SortColumn, SortDirection } from '../utils/sortComparators';
 
@@ -42,6 +43,23 @@
   // D-09: the trainer only sees the tournament as "finalized" once every score record
   // has finalized: true. Vacuously false when there are no records yet.
   let isFinalized = $derived(allScores.length > 0 && allScores.every((s) => s.finalized));
+
+  // D-09: distinct from isFinalized above — isComplete gates whether Abschließen is
+  // enabled (every shooter x round x passe x arrow has a value); isFinalized reflects
+  // whether the trainer has already confirmed the permanent lock.
+  let isComplete = $derived(
+    roundsConfig
+      ? areAllScoresEntered(
+          shooters.map((s) => s.id!),
+          roundsConfig.numberOfRounds,
+          roundsConfig.passesPerRound,
+          roundsConfig.arrowsPerPasse,
+          allScores
+        )
+      : false
+  );
+
+  let finalizeDialogOpen = $state(false);
 
   let currentPasseScoreByKey = $derived(
     new Map(
@@ -114,6 +132,30 @@
   function cancelPicker() {
     pickerCell = null;
   }
+
+  async function handleFinalizeClick() {
+    finalizeDialogOpen = true;
+  }
+
+  // T-03-06: the only code path that ever sets finalized: true — gated behind
+  // isComplete (button disabled otherwise) and this explicit non-dismissible confirm.
+  async function handleFinalizeConfirm() {
+    errorFeedback = '';
+    try {
+      const all = await db.scores.toArray();
+      await db.scores.bulkPut(all.map((s) => ({ ...s, finalized: true })));
+    } catch (err) {
+      errorFeedback = strings.common.saveError.replace(
+        '{error}',
+        err instanceof Error ? err.message : String(err)
+      );
+    }
+    finalizeDialogOpen = false;
+  }
+
+  function handleFinalizeCancel() {
+    finalizeDialogOpen = false;
+  }
 </script>
 
 {#if !roundsConfig}
@@ -153,5 +195,37 @@
     />
 
     <ScorePicker open={pickerCell !== null} onselect={handleScoreSelect} oncancel={cancelPicker} />
+
+    {#if isFinalized}
+      <p class="text-[16px] leading-[1.5] text-slate-700 dark:text-slate-200">
+        {strings.scoring.finalizedMessage}
+      </p>
+    {:else}
+      <button
+        type="button"
+        disabled={!isComplete}
+        onclick={handleFinalizeClick}
+        class="min-h-[44px] rounded-lg bg-teal-500 px-4 py-2 text-[16px] font-semibold leading-[1.5] text-white hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300"
+      >
+        {strings.scoring.finalizeButton}
+      </button>
+
+      {#if !isComplete}
+        <p role="status" aria-live="polite" class="text-[14px] leading-[1.4] text-slate-600 dark:text-slate-300">
+          {strings.scoring.completionHelper}
+        </p>
+      {/if}
+    {/if}
   </div>
+
+  <ConfirmDialog
+    open={finalizeDialogOpen}
+    title={strings.scoring.finalizeModalTitle}
+    body={strings.scoring.finalizeModalBody}
+    confirmLabel={strings.scoring.finalizeConfirmYes}
+    cancelLabel={strings.scoring.finalizeConfirmCancel}
+    destructive={true}
+    onconfirm={handleFinalizeConfirm}
+    oncancel={handleFinalizeCancel}
+  />
 {/if}
