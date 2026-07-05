@@ -122,10 +122,6 @@
     onchange={(v) => (distance = v)}
   />
 
-  <p class="text-[16px] leading-[1.5] text-slate-600 dark:text-slate-300">
-    {strings.setup.classNameSuggestion.replace('{name}', finalSuggestedName)}
-  </p>
-
   <label class="block text-[14px] leading-[1.4] text-slate-700 dark:text-slate-200">
     {strings.setup.classNameLabel}
     <input

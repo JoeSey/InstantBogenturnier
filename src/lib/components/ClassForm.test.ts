@@ -19,7 +19,7 @@ describe('ClassForm', () => {
     await fireEvent.change(ageSelect, { target: { value: 'U14' } });
 
     // Live suggestion updates before submit (per Interaction Specifics step 6).
-    await screen.findByText('Vorschlag: RCV-U14');
+    expect(screen.getByPlaceholderText('RCV-U14')).toBeTruthy();
 
     const submitButton = screen.getByRole('button', { name: 'Klasse hinzufügen' });
     await fireEvent.click(submitButton);

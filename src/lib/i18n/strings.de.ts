@@ -38,7 +38,6 @@ export const strings = {
     distanceOptions: ['10m', '18m', '25m', '70m'],
     distanceCustom: 'Andere',
     classNameLabel: 'Klassenname',
-    classNameSuggestion: 'Vorschlag: {name}',
     classNameCollisionSuffix: '(Entfernung unterscheidet)',
     addClassButton: 'Klasse hinzufügen',
     linesLabel: 'Schießplätze',
