@@ -139,7 +139,7 @@ export const strings = {
     columnClass: 'Klasse',
     columnSum: 'Summe',
     sumIncomplete: '–',
-    pickerTitle: 'Punktzahl wählen',
+    pickerTitle: (name: string) => `Punkte von ${name}`,
     pickerCancel: 'Abbrechen',
     pickerAriaMiss: 'Fehlschuss (0 Punkte)',
     pickerAriaX: 'X-Ring (10 Punkte)',

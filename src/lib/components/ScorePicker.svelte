@@ -4,16 +4,19 @@
   import { scoreColorCategory } from '../utils/scoreColor';
   import GlassCard from './GlassCard.svelte';
 
-  // Tap-button score picker (D-01, D-02, 03-01-PLAN.md Task 2). Non-dismissible by
-  // backdrop click — matches ConfirmDialog.svelte's overlay pattern — but adds an
-  // Escape-key path in addition to the explicit "Abbrechen" button, since this modal
-  // (unlike ConfirmDialog) has no destructive default action to guard against.
+  // Tap-button score picker (D-01, D-02, 03-01-PLAN.md Task 2). Backdrop-dismissible
+  // (quick task 260705-lpv) — unlike ConfirmDialog.svelte, which stays non-dismissible
+  // because it guards destructive/overwriting actions — plus an Escape-key path in
+  // addition to the explicit "Abbrechen" button, since this modal has no destructive
+  // default action to guard against.
   let {
     open,
+    shooterName,
     onselect,
     oncancel,
   }: {
     open: boolean;
+    shooterName: string;
     onselect: (value: ScoreValue) => void;
     oncancel: () => void;
   } = $props();
@@ -71,39 +74,48 @@
 <svelte:window onkeydown={handleKeydown} />
 
 {#if open}
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-    <GlassCard class="w-full max-w-[360px] p-6">
-      <div role="dialog" aria-modal="true" aria-labelledby="score-picker-title">
-        <h2
-          id="score-picker-title"
-          class="mb-4 text-[20px] font-semibold leading-[1.2] text-slate-900 dark:text-slate-100"
-        >
-          {strings.scoring.pickerTitle}
-        </h2>
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+    onclick={oncancel}
+  >
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div onclick={(event) => event.stopPropagation()}>
+      <GlassCard class="w-full max-w-[360px] p-6">
+        <div role="dialog" aria-modal="true" aria-labelledby="score-picker-title">
+          <h2
+            id="score-picker-title"
+            class="mb-4 text-[20px] font-semibold leading-[1.2] text-slate-900 dark:text-slate-100"
+          >
+            {strings.scoring.pickerTitle(shooterName)}
+          </h2>
 
-        <div class="grid grid-cols-5 gap-2">
-          {#each SCORE_VALUES as value (value)}
+          <div class="grid grid-cols-5 gap-2">
+            {#each SCORE_VALUES as value (value)}
+              <button
+                type="button"
+                class={buttonClass(value)}
+                aria-label={ariaLabelFor(value)}
+                onclick={() => onselect(value)}
+              >
+                {value}
+              </button>
+            {/each}
+          </div>
+
+          <div class="mt-6 flex justify-end">
             <button
               type="button"
-              class={buttonClass(value)}
-              aria-label={ariaLabelFor(value)}
-              onclick={() => onselect(value)}
+              onclick={oncancel}
+              class="min-h-[44px] rounded-lg px-4 py-2 text-[16px] leading-[1.5] text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100"
             >
-              {value}
+              {strings.scoring.pickerCancel}
             </button>
-          {/each}
+          </div>
         </div>
-
-        <div class="mt-6 flex justify-end">
-          <button
-            type="button"
-            onclick={oncancel}
-            class="min-h-[44px] rounded-lg px-4 py-2 text-[16px] leading-[1.5] text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100"
-          >
-            {strings.scoring.pickerCancel}
-          </button>
-        </div>
-      </div>
-    </GlassCard>
+      </GlassCard>
+    </div>
   </div>
 {/if}
