@@ -62,7 +62,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. App detects when all configured rounds/passes are fully entered and offers a distinct "Abschließen" (finalize) action separate from "Speichern" (save); once finalized, entries are locked and cannot be further edited.
 **Plans**: 3 plans
 - [x] 03-01-PLAN.md — Score entry vertical slice: tap-button autosave, table, round/passe nav (SCORE-01, SCORE-02, SCORE-03, SCORE-05)
-- [ ] 03-02-PLAN.md — Sortable column headers (SCORE-04)
+- [x] 03-02-PLAN.md — Sortable column headers (SCORE-04)
 - [ ] 03-03-PLAN.md — Completion detection + finalize/permanent lock (SCORE-06, SCORE-07)
 
 ### Phase 4: Results
@@ -86,5 +86,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete   | 2026-07-04 |
 | 2. Setup & Registration | 4/4 | Complete    | 2026-07-04 |
-| 3. Score Entry | 1/3 | In Progress|  |
+| 3. Score Entry | 2/3 | In Progress|  |
 | 4. Results | 0/TBD | Not started | - |
