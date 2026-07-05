@@ -5,7 +5,7 @@
   import type { ScoreValue } from '../db/schema';
   import { strings } from '../i18n/strings.de';
   import { calculatePasseSum, areAllScoresEntered, isPasseComplete } from '../utils/scoreCompletion';
-  import { findNextEmptyArrow } from '../utils/scoreAdvance';
+  import { findNextEmptyArrowInRow } from '../utils/scoreAdvance';
   import PlaceholderScreen from '../components/PlaceholderScreen.svelte';
   import RoundPasseSelector from '../components/RoundPasseSelector.svelte';
   import ScoreTable from '../components/ScoreTable.svelte';
@@ -33,13 +33,35 @@
 
   let selectedRound = $state(0);
   let selectedPasse = $state(0);
-  let pickerCell = $state<{ shooterId: number; arrowIndex: number } | null>(null);
+  let pickerCell = $state<{ shooterId: number; arrowIndex: number; wasFilled: boolean } | null>(
+    null
+  );
+  // Quick task 260705-ok7: accumulates every pick made during the current
+  // row-filling session so the title preview can show them before
+  // currentPasseScoreByKey (async liveQuery) catches up. Reset on every session
+  // boundary (openPicker/cancelPicker) — never reset when reopening for the next
+  // arrow of the same row.
+  let justPickedValues = $state(new Map<string, ScoreValue>());
   // Quick task 260705-lpv: resolves the archer name for the currently-open picker
   // cell, driving ScorePicker's dialog title.
   let pickerShooterName = $derived.by(() => {
     const cell = pickerCell;
     if (!cell) return '';
     return shooters.find((s) => s.id === cell.shooterId)?.name ?? '';
+  });
+  // Quick task 260705-ok7: live per-arrow preview of the current picker row, feeding
+  // ScorePicker's rowPreview prop and its title preview text.
+  let pickerRowPreview: (ScoreValue | null)[] = $derived.by(() => {
+    const cell = pickerCell;
+    if (!cell || !roundsConfig) return [];
+    const preview: (ScoreValue | null)[] = [];
+    for (let i = 0; i < roundsConfig.arrowsPerPasse; i++) {
+      const key = `${cell.shooterId}-${i}`;
+      preview.push(
+        justPickedValues.get(key) ?? (currentPasseScoreByKey.get(key) as ScoreValue | undefined) ?? null
+      );
+    }
+    return preview;
   });
   let errorFeedback = $state('');
 
@@ -137,12 +159,16 @@
 
   function openPicker(shooterId: number, arrowIndex: number) {
     if (isFinalized) return;
-    pickerCell = { shooterId, arrowIndex };
+    const wasFilled = currentPasseScoreByKey.has(`${shooterId}-${arrowIndex}`);
+    // A fresh tap always starts a new session — never carry over picks from a
+    // previous cell/shooter.
+    justPickedValues = new Map();
+    pickerCell = { shooterId, arrowIndex, wasFilled };
   }
 
   function handleScoreSelect(value: ScoreValue) {
     if (!pickerCell || !roundsConfig) return;
-    const { shooterId, arrowIndex } = pickerCell;
+    const { shooterId, arrowIndex, wasFilled } = pickerCell;
     // D-06: deliberately no `await` — autosave must be non-blocking. Errors are
     // surfaced via errorFeedback (WR-04) without blocking further cell edits.
     db.scores
@@ -161,19 +187,28 @@
         );
       });
 
-    // Quick task 260705-lpv: auto-advance to the next empty arrow. `justPickedKey`
-    // compensates for currentPasseScoreByKey not yet reflecting the write above
-    // (liveQuery refresh is async) since db.scores.put isn't awaited.
-    const justPickedKey = `${shooterId}-${arrowIndex}`;
-    const isFilled = (sId: number, aIdx: number) => {
-      const key = `${sId}-${aIdx}`;
-      return key === justPickedKey || currentPasseScoreByKey.has(key);
+    justPickedValues.set(`${shooterId}-${arrowIndex}`, value);
+
+    // Quick task 260705-ok7: editing an already-filled cell always closes the
+    // dialog — the trainer was correcting a single value, not filling a row.
+    if (wasFilled) {
+      pickerCell = null;
+      return;
+    }
+
+    // Auto-advance to the next empty arrow within the SAME shooter's row only —
+    // cross-row auto-advance is retired.
+    const isFilled = (aIdx: number) => {
+      const key = `${shooterId}-${aIdx}`;
+      return justPickedValues.has(key) || currentPasseScoreByKey.has(key);
     };
-    pickerCell = findNextEmptyArrow(rows, roundsConfig.arrowsPerPasse, shooterId, arrowIndex, isFilled);
+    const nextArrowIndex = findNextEmptyArrowInRow(roundsConfig.arrowsPerPasse, arrowIndex, isFilled);
+    pickerCell = nextArrowIndex !== null ? { shooterId, arrowIndex: nextArrowIndex, wasFilled: false } : null;
   }
 
   function cancelPicker() {
     pickerCell = null;
+    justPickedValues = new Map();
   }
 
   function handleAdvance() {
@@ -252,6 +287,7 @@
     <ScorePicker
       open={pickerCell !== null}
       shooterName={pickerShooterName}
+      rowPreview={pickerRowPreview}
       onselect={handleScoreSelect}
       oncancel={cancelPicker}
     />
