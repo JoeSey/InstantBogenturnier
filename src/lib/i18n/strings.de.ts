@@ -146,5 +146,15 @@ export const strings = {
     // Phase 3 Plan 02 — sortable column headers (SCORE-04).
     sortAscending: 'aufsteigend sortiert',
     sortDescending: 'absteigend sortiert',
+    // Phase 3 Plan 03 — completion detection and the permanent finalize/lock action
+    // (SCORE-06/07, D-09/D-10). Added verbatim per 03-03-PLAN.md Task 2 action text.
+    completionHelper: 'Erfassung ist noch nicht vollständig.',
+    finalizeButton: 'Turnier abschließen',
+    finalizeModalTitle: 'Turnier abschließen?',
+    finalizeModalBody:
+      'Diese Aktion sperrt alle Ergebnisse und kann nicht rückgängig gemacht werden. Fortfahren?',
+    finalizeConfirmYes: 'Ja, abschließen',
+    finalizeConfirmCancel: 'Abbrechen',
+    finalizedMessage: 'Erfassung abgeschlossen. Die Ergebnisse sind jetzt gesperrt.',
   },
 } as const;
