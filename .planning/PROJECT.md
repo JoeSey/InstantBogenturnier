@@ -20,11 +20,11 @@ Score entry and results ranking must work correctly and offline, on one device, 
 - [x] Trainer can register shooters with name, class, and optional shooting line assignment — Validated in Phase 2: Setup & Registration
 - [x] App indicates during shooter registration whether the tournament is running in mode AB or AB/CD (derived from shooter count vs. shooting line count) — Validated in Phase 2: Setup & Registration
 - [x] Trainer can save and reload 4-8 named tournament configuration presets (classes, lines, rounds/passes setup) to quickly start a new tournament — Validated in Phase 2: Setup & Registration (implementation also adds full-preset export/import via `dexie-export-import`, pulled forward from the v1 tech-stack recommendation — see 02-CONTEXT.md D-15)
+- [x] Trainer can enter scores per round/passe in a table (line, name, class, per-arrow scores, sum) sortable by clicking column headers (line, name, class, sum) — Validated in Phase 3: Score Entry
+- [x] Trainer can save score entries mid-entry (interim save, via true per-cell autosave) and the app detects when all rounds/passes are complete, revealing an "Abschließen" (finalize/lock) action distinct from saving — Validated in Phase 3: Score Entry
 
 ### Active
 
-- [ ] Trainer can enter scores per round/passe in a table (line, name, class, per-arrow scores, sum) sortable by clicking column headers (line, name, class, sum)
-- [ ] Trainer can save score entries mid-entry (interim save) and the app detects when all rounds/passes are complete, revealing a "complete tournament" action distinct from "save"
 - [ ] Trainer can view results sorted by score descending, with ties sharing a rank and skipping the next rank
 - [ ] Results view adapts by screen size: class-selectable dropdown on phone, multi-column all-classes view on larger screens
 
@@ -80,4 +80,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-04 — Phase 2: Setup & Registration complete*
+*Last updated: 2026-07-05 — Phase 3: Score Entry complete*
