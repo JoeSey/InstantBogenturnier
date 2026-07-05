@@ -1,21 +1,87 @@
-<script lang="ts">
+<script module lang="ts">
   import { db } from '../db/schema';
-  import { assignShootersToLines, previewAssignmentSummary } from '../utils/shooterAutoAssignment';
+  import { assignShootersToLines } from '../utils/shooterAutoAssignment';
   import type { TournamentMode } from '../utils/modeDetection';
-  import { strings } from '../i18n/strings.de';
 
   // A roster entry is either an already-registered-but-unassigned shooter (has `id`,
   // updated in place on save) or a freshly staged shooter (no `id` yet, bulkAdd'ed on
   // save). `lineNum` is the trainer's manual entry, or null to auto-assign (D-10).
-  // Not exported: Svelte 5 instance scripts only expose props via $props(), so this
-  // type is duplicated (structurally) wherever a roster array is built — see
-  // ShooterForm.svelte's local RosterEntry.
-  interface RosterEntry {
+  // Exported from the module context so other files (e.g. ShooterForm.svelte) can
+  // import both the type and the shared write logic below without duplicating them.
+  export interface RosterEntry {
     id?: number;
     name: string;
     classId: number;
     lineNum: number | null;
   }
+
+  // Shared write logic used by both this modal's own Speichern action and
+  // ShooterForm's silent (once-per-session) auto-assign path. Splits `roster` into
+  // manual (lineNum !== null) and blank (lineNum === null) entries, computes the
+  // round-robin assignment for the blank ones, and writes everything to db.shooters.
+  // Errors propagate — callers handle their own errorFeedback per WR-04.
+  export async function applyRosterAssignments(
+    roster: RosterEntry[],
+    lineCount: number,
+    mode: TournamentMode,
+    alreadyAssignedCount: number
+  ): Promise<void> {
+    const manualEntries = roster.filter((r) => r.lineNum !== null);
+    const blankEntries = roster.filter((r) => r.lineNum === null);
+    const computedAssignments = assignShootersToLines(
+      blankEntries.length,
+      lineCount,
+      mode,
+      alreadyAssignedCount
+    );
+
+    const toAdd: Array<{
+      name: string;
+      classId: number;
+      lineAssignment: number | null;
+      flight: 'A/B' | 'C/D' | null;
+    }> = [];
+
+    for (const entry of manualEntries) {
+      if (entry.id !== undefined) {
+        await db.shooters.update(entry.id, { lineAssignment: entry.lineNum, flight: null });
+      } else {
+        toAdd.push({
+          name: entry.name,
+          classId: entry.classId,
+          lineAssignment: entry.lineNum,
+          flight: null,
+        });
+      }
+    }
+
+    for (let i = 0; i < blankEntries.length; i++) {
+      const entry = blankEntries[i];
+      const assignment = computedAssignments[i];
+      if (entry.id !== undefined) {
+        await db.shooters.update(entry.id, {
+          lineAssignment: assignment.lineNum,
+          flight: assignment.flight,
+        });
+      } else {
+        toAdd.push({
+          name: entry.name,
+          classId: entry.classId,
+          lineAssignment: assignment.lineNum,
+          flight: assignment.flight,
+        });
+      }
+    }
+
+    if (toAdd.length > 0) {
+      await db.shooters.bulkAdd(toAdd);
+    }
+  }
+</script>
+
+<script lang="ts">
+  import { previewAssignmentSummary } from '../utils/shooterAutoAssignment';
+  import { strings } from '../i18n/strings.de';
 
   let {
     roster,
@@ -49,48 +115,9 @@
 
   async function handleSave() {
     errorFeedback = '';
-    const toAdd: Array<{
-      name: string;
-      classId: number;
-      lineAssignment: number | null;
-      flight: 'A/B' | 'C/D' | null;
-    }> = [];
 
     try {
-      for (const entry of manualEntries) {
-        if (entry.id !== undefined) {
-          await db.shooters.update(entry.id, { lineAssignment: entry.lineNum, flight: null });
-        } else {
-          toAdd.push({
-            name: entry.name,
-            classId: entry.classId,
-            lineAssignment: entry.lineNum,
-            flight: null,
-          });
-        }
-      }
-
-      for (let i = 0; i < blankEntries.length; i++) {
-        const entry = blankEntries[i];
-        const assignment = computedAssignments[i];
-        if (entry.id !== undefined) {
-          await db.shooters.update(entry.id, {
-            lineAssignment: assignment.lineNum,
-            flight: assignment.flight,
-          });
-        } else {
-          toAdd.push({
-            name: entry.name,
-            classId: entry.classId,
-            lineAssignment: assignment.lineNum,
-            flight: assignment.flight,
-          });
-        }
-      }
-
-      if (toAdd.length > 0) {
-        await db.shooters.bulkAdd(toAdd);
-      }
+      await applyRosterAssignments(roster, lineCount, mode, alreadyAssignedCount);
     } catch (err) {
       // WR-04: surface write failures instead of failing silently -- a failed roster
       // save here would otherwise leave the trainer believing shooters were assigned.
