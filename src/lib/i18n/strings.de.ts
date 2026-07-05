@@ -35,7 +35,7 @@ export const strings = {
     bowTypeOptions: ['Recurve', 'trad. Recurve', 'Langbogen', 'Blankbogen', 'Compound'],
     bowTypeCustom: 'Andere',
     distanceLabel: 'Entfernung',
-    distanceOptions: ['18m', '25m', '70m'],
+    distanceOptions: ['10m', '18m', '25m', '70m'],
     distanceCustom: 'Andere',
     classNameLabel: 'Klassenname',
     classNameSuggestion: 'Vorschlag: {name}',
