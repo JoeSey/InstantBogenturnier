@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/svelte';
 import ClassForm from './ClassForm.svelte';
 import { db } from '../db/schema';
 import { resetDb } from '../db/testHelpers';
+import { strings } from '../i18n/strings.de';
 
 describe('ClassForm', () => {
   beforeEach(async () => {
@@ -49,5 +50,31 @@ describe('ClassForm', () => {
 
     // The pre-existing "RCV-U14" (18m) must remain untouched and distinct.
     expect(screen.getByText('RCV-U14')).toBeTruthy();
+  });
+
+  // Behavior per 04-03-PLAN.md Task 3 <action>/<acceptance_criteria> block (RES-06):
+  // once the tournament is finalized, delete-class is disabled with an inline guard
+  // message, kept independent of CR-02's dependent-shooter block.
+  it('disables delete-class and shows the guard message once the tournament is finalized', async () => {
+    const classId = await db.classes.add({ name: 'RCV-U14', ageGroup: 'U14', bowType: 'RCV', distance: '18m' });
+    await db.shooters.add({ name: 'Anna', classId });
+    await db.scores.put({
+      shooterId: 1,
+      roundIndex: 0,
+      passeIndex: 0,
+      arrowIndex: 0,
+      value: '8',
+      finalized: true,
+    });
+
+    render(ClassForm);
+
+    // Wait for the finalized-guard message to appear first — it only renders once the
+    // liveQuery(db.scores) subscription has caught up, same async boundary the
+    // disabled attribute below depends on.
+    await screen.findByText(strings.results.guardMessage);
+
+    const deleteButton = screen.getByLabelText(strings.setup.classDeleteAction) as HTMLButtonElement;
+    expect(deleteButton.disabled).toBe(true);
   });
 });

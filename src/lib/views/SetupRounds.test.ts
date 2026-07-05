@@ -63,4 +63,45 @@ describe('SetupRounds', () => {
       presetId: undefined,
     });
   });
+
+  // Behavior per 04-03-PLAN.md Task 3 <action>/<acceptance_criteria> block (RES-06):
+  // once isFinalized is passed as true, every radio, every custom input, and the
+  // Speichern button must be disabled.
+  it('disables every radio, custom input, and the save button when isFinalized is true', async () => {
+    render(SetupRounds, { isFinalized: true });
+
+    expect((screen.getByLabelText(strings.setup.waPresetsLabel) as HTMLInputElement).disabled).toBe(
+      true
+    );
+    expect((screen.getByLabelText(strings.setup.customLabel) as HTMLInputElement).disabled).toBe(
+      true
+    );
+    expect((screen.getByLabelText(strings.setup.wa18m) as HTMLInputElement).disabled).toBe(true);
+    expect((screen.getByLabelText(strings.setup.wa25m) as HTMLInputElement).disabled).toBe(true);
+    expect((screen.getByLabelText(strings.setup.wa70m) as HTMLInputElement).disabled).toBe(true);
+
+    await fireEvent.click(screen.getByLabelText(strings.setup.customLabel));
+    // Note: the custom-mode radio itself is disabled above, but the underlying
+    // selectedMode state is still toggleable via fireEvent in jsdom regardless of the
+    // disabled attribute (jsdom does not enforce disabled semantics on fireEvent).
+    // The assertion of interest here is that once rendered, the custom inputs also
+    // carry the disabled attribute.
+
+    expect(
+      (screen.getByLabelText(strings.setup.roundsCountLabel) as HTMLInputElement).disabled
+    ).toBe(true);
+    expect(
+      (screen.getByLabelText(strings.setup.passesPerRoundLabel) as HTMLInputElement).disabled
+    ).toBe(true);
+    expect(
+      (screen.getByLabelText(strings.setup.arrowsPerPassLabel) as HTMLInputElement).disabled
+    ).toBe(true);
+    expect(
+      (screen.getByLabelText(strings.setup.customDistanceLabel) as HTMLInputElement).disabled
+    ).toBe(true);
+
+    expect(
+      (screen.getByRole('button', { name: strings.setup.saveButton }) as HTMLButtonElement).disabled
+    ).toBe(true);
+  });
 });

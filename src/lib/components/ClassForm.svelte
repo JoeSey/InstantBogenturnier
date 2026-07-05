@@ -4,6 +4,7 @@
   import { db } from '../db/schema';
   import { AGE_GROUP_OPTIONS, BOW_TYPE_OPTIONS, DISTANCE_OPTIONS } from '../fixtures/classOptions';
   import { generateClassName, autoSuffixOnCollision } from '../utils/classNameGenerator';
+  import { computeIsFinalized } from '../utils/scoreCompletion';
   import { strings } from '../i18n/strings.de';
   import DropdownWithCustom from './DropdownWithCustom.svelte';
 
@@ -20,6 +21,13 @@
 
   const existingClassesQuery = liveQuery(() => db.classes.toArray());
   let existingClasses = $derived($existingClassesQuery ?? []);
+
+  // RES-06/D-11/D-12 (04-03-PLAN.md Task 3): once the tournament is finalized,
+  // delete-class becomes permanently locked until a reset — guarded via the shared
+  // computeIsFinalized, kept independent of CR-02's dependent-shooter guard below.
+  const scoresQuery = liveQuery(() => db.scores.toArray());
+  let allScores = $derived($scoresQuery ?? []);
+  let isFinalized = $derived(computeIsFinalized(allScores));
 
   let tupleName = $derived(generateClassName(ageGroup, bowType, distance));
   let finalSuggestedName = $derived(
@@ -179,6 +187,10 @@
               <span class="text-[14px] leading-[1.4] text-red-600 dark:text-red-400">
                 {strings.setup.classDeleteBlocked(deleteBlocked.count)}
               </span>
+            {:else if isFinalized}
+              <span role="status" class="text-[14px] leading-[1.4] text-slate-500 dark:text-slate-400">
+                {strings.results.guardMessage}
+              </span>
             {/if}
           </div>
           {#if deleteBlocked?.id === cls.id}
@@ -194,7 +206,8 @@
               type="button"
               onclick={() => requestDelete(cls.id)}
               aria-label={strings.setup.classDeleteAction}
-              class="flex min-h-[44px] min-w-[44px] items-center justify-center"
+              disabled={isFinalized}
+              class="flex min-h-[44px] min-w-[44px] items-center justify-center disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Trash2 size={20} strokeWidth={1.75} class="text-red-600 dark:text-red-400" />
             </button>

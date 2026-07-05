@@ -7,10 +7,18 @@
   import PresetList from './PresetList.svelte';
   import { db } from '../db/schema';
   import { strings } from '../i18n/strings.de';
+  import { computeIsFinalized } from '../utils/scoreCompletion';
 
   // SETUP-03: shooting-line count, singleton row (id: 1), clamped 1-10.
   const lineConfigQuery = liveQuery(() => db.shootingLines.get(1));
   let lineCount = $derived($lineConfigQuery?.count ?? 2);
+
+  // RES-06/D-11/D-12 (04-03-PLAN.md Task 3): once the tournament is finalized, the
+  // shooting-line count and the entire rounds/passes config become permanently
+  // locked until a reset — guarded via the shared computeIsFinalized.
+  const scoresQuery = liveQuery(() => db.scores.toArray());
+  let allScores = $derived($scoresQuery ?? []);
+  let isFinalized = $derived(computeIsFinalized(allScores));
 
   async function handleLineCountChange(e: Event) {
     const value = Number((e.target as HTMLInputElement).value);
@@ -47,9 +55,15 @@
           step="1"
           value={lineCount}
           onchange={handleLineCountChange}
-          class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+          disabled={isFinalized}
+          class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
         />
       </label>
+      {#if isFinalized}
+        <p role="status" class="mt-2 text-[14px] leading-[1.4] text-slate-500 dark:text-slate-400">
+          {strings.results.guardMessage}
+        </p>
+      {/if}
     </GlassCard>
   </section>
 
@@ -58,7 +72,12 @@
       <h3 class="mb-4 text-[20px] font-semibold leading-[1.2] text-slate-900 dark:text-slate-100">
         {strings.setup.roundsLabel}
       </h3>
-      <SetupRounds />
+      <SetupRounds isFinalized={isFinalized} />
+      {#if isFinalized}
+        <p role="status" class="mt-2 text-[14px] leading-[1.4] text-slate-500 dark:text-slate-400">
+          {strings.results.guardMessage}
+        </p>
+      {/if}
     </GlassCard>
   </section>
 
