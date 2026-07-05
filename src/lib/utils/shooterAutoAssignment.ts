@@ -12,13 +12,20 @@ export interface LineAssignment {
 // Distributes `unassignedCount` shooters round-robin across `lineCount` lines, in
 // registration order. In AB mode every assignment is flight 'A/B'. In AB/CD mode the
 // flight flips every full pass through all lines (first pass A/B, second pass C/D, ...).
+//
+// `startIndex` continues the round-robin cursor across separate calls (i.e. separate
+// registration submissions): pass the count of shooters that already occupy a line slot
+// (from prior auto/manual assignments) so a new batch of 1 doesn't always restart at line
+// 1. Defaults to 0 for a from-scratch computation (e.g. tests, or a single big batch).
 export function assignShootersToLines(
   unassignedCount: number,
   lineCount: number,
-  mode: TournamentMode
+  mode: TournamentMode,
+  startIndex = 0
 ): LineAssignment[] {
   const assignments: LineAssignment[] = [];
-  for (let index = 0; index < unassignedCount; index++) {
+  for (let offset = 0; offset < unassignedCount; offset++) {
+    const index = startIndex + offset;
     const lineNum = (index % lineCount) + 1;
     const flight: 'A/B' | 'C/D' =
       mode === 'AB/CD' && Math.floor(index / lineCount) % 2 === 1 ? 'C/D' : 'A/B';

@@ -14,6 +14,17 @@ describe('assignShootersToLines', () => {
     expect(result.map((r) => r.lineNum)).toEqual([1, 2, 1, 2, 1]);
     expect(result.map((r) => r.flight)).toEqual(['A/B', 'A/B', 'C/D', 'C/D', 'A/B']);
   });
+
+  // Regression test for auto-assign-modal-round-robin debug session: separate
+  // registration submissions each call assignShootersToLines with a batch of 1 — without
+  // a startIndex offset, every call restarts at line 1 instead of continuing the
+  // round-robin from where the previous submission left off.
+  it('continues the round-robin from startIndex across separate single-shooter calls', () => {
+    const first = assignShootersToLines(1, 2, 'AB', 0);
+    const second = assignShootersToLines(1, 2, 'AB', 1);
+    const third = assignShootersToLines(1, 2, 'AB', 2);
+    expect([first[0].lineNum, second[0].lineNum, third[0].lineNum]).toEqual([1, 2, 1]);
+  });
 });
 
 describe('previewAssignmentSummary', () => {

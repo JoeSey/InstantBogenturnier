@@ -43,6 +43,14 @@
 
   let showModal = $state(false);
   let stagedRoster = $state<RosterEntry[]>([]);
+  // How many shooters already occupy a line slot (from prior auto/manual assignments) —
+  // passed to AutoAssignModal so the round-robin cursor continues across separate
+  // registration submissions instead of restarting at line 1 every time. Snapshotted
+  // from a fresh `db.shooters` query at submit time (NOT derived from the `allShooters`
+  // liveQuery above) — liveQuery's change notification is async and can lag behind a
+  // just-completed write from the previous registration's AutoAssignModal save, which
+  // would otherwise make this count stale by exactly one registration.
+  let stagedAlreadyAssignedCount = $state(0);
 
   let editingId = $state<number | undefined>(undefined);
   let errorFeedback = $state('');
@@ -90,9 +98,17 @@
       return;
     }
 
-    const unassigned: RosterEntry[] = allShooters
+    // Query fresh instead of using the `allShooters` liveQuery-derived value: liveQuery's
+    // change notification is asynchronous and may not yet reflect a write that was just
+    // committed (e.g. the previous registration's AutoAssignModal save), which would
+    // otherwise make the unassigned-carry-over list and the round-robin offset stale.
+    const freshShooters = await db.shooters.toArray();
+
+    const unassigned: RosterEntry[] = freshShooters
       .filter((s) => s.lineAssignment == null)
       .map((s) => ({ id: s.id, name: s.name, classId: s.classId, lineNum: null }));
+
+    stagedAlreadyAssignedCount = freshShooters.filter((s) => s.lineAssignment != null).length;
 
     stagedRoster = [
       ...unassigned,
@@ -178,6 +194,7 @@
     roster={stagedRoster}
     {lineCount}
     {mode}
+    alreadyAssignedCount={stagedAlreadyAssignedCount}
     onSave={handleModalSave}
     onBack={handleModalBack}
   />

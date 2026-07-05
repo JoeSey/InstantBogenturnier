@@ -57,6 +57,46 @@ describe('ShooterForm', () => {
   });
 });
 
+// Regression test for the auto-assign-modal-round-robin debug session. Note: an earlier
+// revision of this fix also added a re-entrancy guard (+ regression test) against
+// double-clicking "Speichern" causing a duplicate db record. That guard was explicitly
+// descoped per user decision: displaying/processing the confirmation exactly once per
+// normal submission is the only requirement, and the guard implementation caused an
+// unrelated unresponsiveness issue on iPadOS Safari. See
+// .planning/debug/resolved/auto-assign-modal-round-robin.md for the full history.
+describe('Registration round-robin regression', () => {
+  beforeEach(async () => {
+    await resetDb();
+  });
+
+  it('distributes 3 sequentially-registered shooters round-robin (1,2,1) with lineCount=2', async () => {
+    const classId = await db.classes.add({ name: 'RCV-U14' });
+    await db.shootingLines.put({ id: 1, count: 2 });
+
+    render(Registration);
+    await screen.findByRole('option', { name: 'RCV-U14' });
+
+    for (let i = 0; i < 3; i++) {
+      const nameInput = screen.getByLabelText('Name');
+      await fireEvent.input(nameInput, { target: { value: `Schütze ${i}` } });
+
+      const classSelect = screen.getByLabelText(/Klasse/) as HTMLSelectElement;
+      await fireEvent.change(classSelect, { target: { value: String(classId) } });
+
+      const submitButton = screen.getByRole('button', { name: 'Schütze hinzufügen' });
+      await fireEvent.click(submitButton);
+
+      const saveButton = await screen.findByRole('button', { name: 'Speichern' });
+      await fireEvent.click(saveButton);
+
+      await waitForElementToBeRemoved(() => screen.queryByRole('button', { name: 'Speichern' }));
+    }
+
+    const shooters = await db.shooters.toArray();
+    expect(shooters.map((s) => s.lineAssignment)).toEqual([1, 2, 1]);
+  });
+});
+
 describe('Registration mode indicator', () => {
   beforeEach(async () => {
     await resetDb();

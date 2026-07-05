@@ -21,12 +21,17 @@
     roster,
     lineCount,
     mode,
+    alreadyAssignedCount = 0,
     onSave,
     onBack,
   }: {
     roster: RosterEntry[];
     lineCount: number;
     mode: TournamentMode;
+    // Count of shooters that already occupy a line slot from prior registrations (auto
+    // or manual) — continues the round-robin cursor across separate submissions instead
+    // of restarting at line 1 every time (see shooterAutoAssignment.ts `startIndex`).
+    alreadyAssignedCount?: number;
     onSave: () => void;
     onBack: () => void;
   } = $props();
@@ -35,7 +40,9 @@
   // blank ones are distributed via the transparent round-robin preview (Pitfall 4).
   let manualEntries = $derived(roster.filter((r) => r.lineNum !== null));
   let blankEntries = $derived(roster.filter((r) => r.lineNum === null));
-  let computedAssignments = $derived(assignShootersToLines(blankEntries.length, lineCount, mode));
+  let computedAssignments = $derived(
+    assignShootersToLines(blankEntries.length, lineCount, mode, alreadyAssignedCount)
+  );
   let summary = $derived(previewAssignmentSummary(computedAssignments));
   let count = $derived(blankEntries.length);
   let errorFeedback = $state('');
