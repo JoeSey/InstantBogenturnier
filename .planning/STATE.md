@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Phase 4 context gathered
-last_updated: "2026-07-05T18:39:58.684Z"
+stopped_at: Phase 4 UI-SPEC approved
+last_updated: "2026-07-05T18:51:10.911Z"
 last_activity: "2026-07-05 - Completed quick task 260705-p25: Score table phone-view compaction (hide Klasse column, tighter padding below md breakpoint)"
 progress:
   total_phases: 4
@@ -103,6 +103,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-05T18:39:58.634Z
-Stopped at: Phase 4 context gathered
-Resume file: .planning/phases/04-results/04-CONTEXT.md
+Last session: 2026-07-05T18:51:10.860Z
+Stopped at: Phase 4 UI-SPEC approved
+Resume file: .planning/phases/04-results/04-UI-SPEC.md

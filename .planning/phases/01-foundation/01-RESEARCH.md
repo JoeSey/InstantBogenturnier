@@ -289,6 +289,7 @@ import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { appName, themeColor, backgroundColor } from './src/lib/config/app.config';
 
 export default defineConfig({
   plugins: [
@@ -301,11 +302,11 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
       },
       manifest: {
-        name: 'InstantBogenturnier',
-        short_name: 'InstantBogenturnier',
+        name: appName,
+        short_name: appName,
         description: 'Bogen-Trainingsturnier Verwaltung',
-        theme_color: '#14B8A6',
-        background_color: '#F8FAFC',
+        theme_color: themeColor,
+        background_color: backgroundColor,
         display: 'standalone',
         scope: '/',
         start_url: '/',
@@ -430,8 +431,10 @@ Tailwind's default palette already supplies every named color in the UI-SPEC (`s
 ### Centralized German strings module (D-08)
 ```ts
 // src/lib/i18n/strings.de.ts
+import { appName } from '../config/app.config';
+
 export const strings = {
-  appName: 'InstantBogenturnier',
+  appName,
   nav: {
     setup: 'Einrichtung',
     registration: 'Schützen',
