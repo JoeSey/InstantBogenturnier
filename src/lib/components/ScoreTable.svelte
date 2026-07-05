@@ -17,6 +17,7 @@
 
 <script lang="ts">
   import { strings } from '../i18n/strings.de';
+  import type { SortColumn, SortDirection } from '../utils/sortComparators';
 
   // Fully opaque score table (Phase 1 D-11) — NO glass-surface class anywhere in this
   // file. Wrapped in overflow-x-auto so phone-width viewports scroll horizontally
@@ -26,28 +27,74 @@
     rows,
     arrowsPerPasse,
     finalized,
+    sortBy,
+    sortDir,
     oncelltap,
+    onsort,
   }: {
     rows: ScoreRow[];
     arrowsPerPasse: number;
     finalized: boolean;
+    sortBy: SortColumn;
+    sortDir: SortDirection;
     oncelltap: (shooterId: number, arrowIndex: number) => void;
+    onsort: (column: SortColumn) => void;
   } = $props();
+
+  // SCORE-04: Linie/Name/Klasse/Summe are the only sortable columns — the
+  // per-arrow-number columns (1..N) stay plain text with no onsort/onclick handler.
+  function ariaSortFor(column: SortColumn): 'ascending' | 'descending' | 'none' {
+    if (sortBy !== column) return 'none';
+    return sortDir === 'asc' ? 'ascending' : 'descending';
+  }
 </script>
 
 <div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-600">
   <table class="w-full bg-white text-[16px] leading-[1.5] text-slate-900 dark:bg-slate-800 dark:text-slate-100">
     <thead>
       <tr class="border-b border-slate-200 text-left dark:border-slate-600">
-        <th class="p-4 text-[14px] font-normal leading-[1.4] text-slate-500 dark:text-slate-400"
-          >{strings.scoring.columnLine}</th
+        <th
+          class="p-4 text-[14px] font-normal leading-[1.4] text-slate-500 dark:text-slate-400"
+          aria-sort={ariaSortFor('line')}
         >
-        <th class="p-4 text-[14px] font-normal leading-[1.4] text-slate-500 dark:text-slate-400"
-          >{strings.scoring.columnName}</th
+          <button type="button" class="flex items-center gap-1" onclick={() => onsort('line')}>
+            {strings.scoring.columnLine}
+            {#if sortBy === 'line'}
+              <span aria-hidden="true">{sortDir === 'asc' ? '▲' : '▼'}</span>
+              <span class="sr-only"
+                >{sortDir === 'asc' ? strings.scoring.sortAscending : strings.scoring.sortDescending}</span
+              >
+            {/if}
+          </button>
+        </th>
+        <th
+          class="p-4 text-[14px] font-normal leading-[1.4] text-slate-500 dark:text-slate-400"
+          aria-sort={ariaSortFor('name')}
         >
-        <th class="p-4 text-[14px] font-normal leading-[1.4] text-slate-500 dark:text-slate-400"
-          >{strings.scoring.columnClass}</th
+          <button type="button" class="flex items-center gap-1" onclick={() => onsort('name')}>
+            {strings.scoring.columnName}
+            {#if sortBy === 'name'}
+              <span aria-hidden="true">{sortDir === 'asc' ? '▲' : '▼'}</span>
+              <span class="sr-only"
+                >{sortDir === 'asc' ? strings.scoring.sortAscending : strings.scoring.sortDescending}</span
+              >
+            {/if}
+          </button>
+        </th>
+        <th
+          class="p-4 text-[14px] font-normal leading-[1.4] text-slate-500 dark:text-slate-400"
+          aria-sort={ariaSortFor('class')}
         >
+          <button type="button" class="flex items-center gap-1" onclick={() => onsort('class')}>
+            {strings.scoring.columnClass}
+            {#if sortBy === 'class'}
+              <span aria-hidden="true">{sortDir === 'asc' ? '▲' : '▼'}</span>
+              <span class="sr-only"
+                >{sortDir === 'asc' ? strings.scoring.sortAscending : strings.scoring.sortDescending}</span
+              >
+            {/if}
+          </button>
+        </th>
         {#each Array.from({ length: arrowsPerPasse }) as _, i (i)}
           <th
             class="p-4 text-center text-[14px] font-normal leading-[1.4] text-slate-500 dark:text-slate-400"
@@ -56,8 +103,22 @@
         {/each}
         <th
           class="p-4 text-right text-[14px] font-normal leading-[1.4] text-slate-500 dark:text-slate-400"
-          >{strings.scoring.columnSum}</th
+          aria-sort={ariaSortFor('sum')}
         >
+          <button
+            type="button"
+            class="flex items-center justify-end gap-1"
+            onclick={() => onsort('sum')}
+          >
+            {strings.scoring.columnSum}
+            {#if sortBy === 'sum'}
+              <span aria-hidden="true">{sortDir === 'asc' ? '▲' : '▼'}</span>
+              <span class="sr-only"
+                >{sortDir === 'asc' ? strings.scoring.sortAscending : strings.scoring.sortDescending}</span
+              >
+            {/if}
+          </button>
+        </th>
       </tr>
     </thead>
     <tbody>
