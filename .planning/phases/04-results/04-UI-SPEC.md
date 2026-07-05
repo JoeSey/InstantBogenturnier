@@ -42,7 +42,7 @@ reviewed_at: ~
 
 **Phase 4 exceptions:**
 - Podium rank badge: **24×24px** minimum (small, purely visual numeral badge, not a touch target — exempt from the 44px touch-target floor since it is not independently interactive).
-- Results table cells: reuse Phase 3's `ScoreTable.svelte` cell padding exactly — data cells `px-1.5 py-1.5 md:px-3 md:py-2`, header cells `p-2 md:p-4` — for visual consistency between the two opaque, high-contrast data tables in the app.
+- Results table cells: visually consistent, spacing-grid-compliant with Phase 3's `ScoreTable.svelte` — data cells `px-2 py-2 md:px-3 md:py-2` (8px/8px mobile, 12px/8px desktop), header cells `p-2 md:p-4` — for visual consistency between the two opaque, high-contrast data tables in the app, without propagating `ScoreTable.svelte`'s pre-existing non-grid-compliant mobile padding.
 - Multi-class grid gap: **md (16px)** on tablet (`md`–`lg`), **lg (24px)** on desktop (`xl`+).
 - Reset action: **44×44px minimum** touch target (same floor as all primary actions).
 - Class card (per-class results container): **md (16px)** internal padding on phone/tablet, **lg (24px)** on desktop — matches Phase 2's card-padding convention.
@@ -413,7 +413,7 @@ The whole view uses `liveQuery()` + `$derived` (same established pattern from Ph
 | Section | Source | Notes |
 |---------|--------|-------|
 | Design System | Phase 1–3 UI-SPEC.md | No changes; reuses icon library, font, component conventions; adds `RotateCcw` icon for reset |
-| Spacing Scale | Phase 1–3 UI-SPEC.md | Inherited; new exceptions: podium badge 24px, table cells reuse `ScoreTable.svelte` exact padding, grid gaps 16/24px |
+| Spacing Scale | Phase 1–3 UI-SPEC.md | Inherited; new exceptions: podium badge 24px, `ResultsTable.svelte` cells visually consistent with `ScoreTable.svelte` using spacing-grid-compliant values (`px-2 py-2 md:px-3 md:py-2`), grid gaps 16/24px |
 | Typography | Phase 1–3 UI-SPEC.md | Inherited unchanged; 4 sizes, 2 weights; podium badge and in-progress marker reuse existing Label combination |
 | Color | Phase 1–3 UI-SPEC.md + CONTEXT.md D-06/D-07 | Inherited 60/30/10 split + destructive token; new podium gold/silver/bronze badge tints (Claude's discretion, resolved above) |
 | Results table structure | CONTEXT.md D-01–D-07 + REQUIREMENTS.md RES-01/RES-02 | Opaque table, tournament-wide sum, fixed rank order, no Klasse column (grouping replaces it) |
