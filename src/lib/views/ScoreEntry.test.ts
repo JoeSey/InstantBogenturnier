@@ -67,10 +67,10 @@ describe('ScoreEntry', () => {
     });
   });
 
-  // Behavior per 260705-lpv-PLAN.md Task 2/3 <done> criteria: dialog title, backdrop
-  // dismiss, and auto-advance (same row -> next row -> close when nothing remains).
-  describe('picker title, backdrop dismiss, and auto-advance (260705-lpv)', () => {
-    it("shows the tapped archer's name in the picker dialog title", async () => {
+  // Behavior per 260705-ok7-PLAN.md Task 3 <behavior> block: same-row-only
+  // auto-advance, wasFilled short-circuit for edits, and the live row preview.
+  describe('picker title, backdrop dismiss, and auto-advance (260705-ok7)', () => {
+    it("shows the tapped archer's name and a live row preview in the picker dialog title", async () => {
       const classId = await db.classes.add({ name: 'RCV-U14' });
       await db.rounds.put({
         id: 1,
@@ -87,7 +87,7 @@ describe('ScoreEntry', () => {
       const arrowButtons = container.querySelectorAll('tbody button');
       await fireEvent.click(arrowButtons[0]);
 
-      await screen.findByText('Punkte von Anna');
+      await screen.findByText('Punkte von Anna (-)');
     });
 
     it('clicking the backdrop cancels the picker without writing a score', async () => {
@@ -134,8 +134,10 @@ describe('ScoreEntry', () => {
       const eightButton = await screen.findByRole('button', { name: '8 Punkte' });
       await fireEvent.click(eightButton);
 
-      // Picker reopens for the same shooter (still one empty arrow left).
-      await screen.findByText('Punkte von Anna');
+      // Picker reopens for the same shooter (still one empty arrow left), and the
+      // title preview reflects the just-made pick even though the Dexie write above
+      // was never awaited.
+      await screen.findByText('Punkte von Anna (8 -)');
       await waitFor(async () => {
         expect(await db.scores.count()).toBe(1);
       });
@@ -143,7 +145,7 @@ describe('ScoreEntry', () => {
       const sevenButton = await screen.findByRole('button', { name: '7 Punkte' });
       await fireEvent.click(sevenButton);
 
-      // Both arrows filled — picker closes.
+      // Both arrows filled — picker closes, it does not jump to another row.
       expect(screen.queryByRole('dialog')).toBeNull();
       await waitFor(async () => {
         expect(await db.scores.count()).toBe(2);
@@ -157,7 +159,7 @@ describe('ScoreEntry', () => {
       );
     });
 
-    it("auto-advances to the next shooter's first empty arrow once a row completes", async () => {
+    it('closes the dialog instead of opening the next shooter\'s row once the current row completes', async () => {
       const classId = await db.classes.add({ name: 'RCV-U14' });
       await db.rounds.put({
         id: 1,
@@ -167,7 +169,7 @@ describe('ScoreEntry', () => {
         distance: '18m',
       });
       await db.shooters.add({ name: 'Bob', classId, lineAssignment: 1 });
-      const shooterIdAnna = await db.shooters.add({ name: 'Anna', classId, lineAssignment: 2 });
+      await db.shooters.add({ name: 'Anna', classId, lineAssignment: 2 });
 
       const { container } = render(ScoreEntry);
       await screen.findByText('Anna');
@@ -175,22 +177,66 @@ describe('ScoreEntry', () => {
       // Default sort is by Linie ascending -> Bob (line 1) is the first row.
       const arrowButtons = container.querySelectorAll('tbody button');
       await fireEvent.click(arrowButtons[0]);
-      await screen.findByText('Punkte von Bob');
+      await screen.findByText('Punkte von Bob (-)');
 
       const eightButton = await screen.findByRole('button', { name: '8 Punkte' });
       await fireEvent.click(eightButton);
 
-      // Bob's only arrow is now filled -> auto-advances to Anna's first empty arrow.
-      await screen.findByText('Punkte von Anna');
-      const sevenButton = await screen.findByRole('button', { name: '7 Punkte' });
-      await fireEvent.click(sevenButton);
+      // Bob's only arrow is now filled — dialog closes, cross-row auto-advance is
+      // retired, so Anna's row must never open automatically.
+      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(screen.queryByText(/Punkte von Anna/)).toBeNull();
+      await waitFor(async () => {
+        expect(await db.scores.count()).toBe(1);
+      });
+    });
+
+    it('editing an already-filled cell closes the dialog immediately without reopening', async () => {
+      const classId = await db.classes.add({ name: 'RCV-U14' });
+      await db.rounds.put({
+        id: 1,
+        arrowsPerPasse: 2,
+        passesPerRound: 1,
+        numberOfRounds: 1,
+        distance: '18m',
+      });
+      const shooterId = await db.shooters.add({ name: 'Anna', classId, lineAssignment: 1 });
+
+      const { container } = render(ScoreEntry);
+      await screen.findByText('Anna');
+
+      // Fill arrow 0 first — picker reopens on arrow 1 (still empty).
+      let arrowButtons = container.querySelectorAll('tbody button');
+      await fireEvent.click(arrowButtons[0]);
+      const eightButton = await screen.findByRole('button', { name: '8 Punkte' });
+      await fireEvent.click(eightButton);
+      await screen.findByText('Punkte von Anna (8 -)');
+      await waitFor(async () => {
+        expect(await db.scores.count()).toBe(1);
+      });
+
+      // Dismiss the reopened dialog (arrow 1 stays empty) so we can re-tap arrow 0.
+      const dialog = await screen.findByRole('dialog');
+      const backdrop = dialog.closest('.fixed.inset-0') as HTMLElement;
+      await fireEvent.click(backdrop);
+      expect(screen.queryByRole('dialog')).toBeNull();
+
+      // Re-tap the already-filled arrow 0 cell and pick a different value. A naive
+      // same-row scan would find arrow 1 still empty and wrongly reopen — the
+      // wasFilled short-circuit must close the dialog instead.
+      arrowButtons = container.querySelectorAll('tbody button');
+      await fireEvent.click(arrowButtons[0]);
+      await screen.findByText('Punkte von Anna (8 -)');
+      const sixButton = await screen.findByRole('button', { name: '6 Punkte' });
+      await fireEvent.click(sixButton);
 
       expect(screen.queryByRole('dialog')).toBeNull();
       await waitFor(async () => {
-        expect(await db.scores.count()).toBe(2);
+        const record = (await db.scores.toArray()).find(
+          (s) => s.shooterId === shooterId && s.arrowIndex === 0
+        );
+        expect(record?.value).toBe('6');
       });
-      const annaRecord = (await db.scores.toArray()).find((s) => s.shooterId === shooterIdAnna);
-      expect(annaRecord).toMatchObject({ arrowIndex: 0, value: '7' });
     });
   });
 
