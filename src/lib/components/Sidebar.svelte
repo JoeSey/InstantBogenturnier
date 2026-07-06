@@ -20,7 +20,7 @@
 <nav
   data-testid="sidebar-nav"
   aria-label="Hauptnavigation"
-  class="glass-surface fixed inset-y-0 left-0 z-10 w-[72px] flex-col items-stretch gap-2 p-3 xl:w-[240px] {className}"
+  class="glass-surface fixed inset-y-0 left-0 z-10 w-[72px] flex-col items-stretch gap-2 p-3 xl:w-[120px] {className}"
 >
   {#each items as item (item.id)}
     <NavItem

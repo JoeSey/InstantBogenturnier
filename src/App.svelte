@@ -51,7 +51,7 @@
   <UpdateBanner />
   <BottomTabBar {items} {activeSection} onselect={selectSection} class="flex md:hidden" />
   <Sidebar {items} {activeSection} onselect={selectSection} class="hidden md:flex" />
-  <main class="pb-24 md:pb-8 md:pl-[88px] xl:pl-[256px]">
+  <main class="pb-24 md:pb-8 md:pl-[88px] xl:pl-[136px]">
     <ActiveView />
   </main>
 </div>

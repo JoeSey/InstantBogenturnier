@@ -27,67 +27,69 @@
   }
 </script>
 
-<div class="mx-auto max-w-[480px] p-4">
+<div class="mx-auto max-w-[480px] p-4 md:max-w-[960px]">
   <h1 class="mb-6 text-[28px] font-semibold leading-[1.2] text-slate-900 dark:text-slate-100">
     {strings.setup.heading}
   </h1>
 
-  <section class="mb-6">
-    <GlassCard class="p-4 md:p-6">
-      <ClassForm />
-    </GlassCard>
-  </section>
+  <div data-testid="setup-grid" class="grid grid-cols-1 gap-6 md:grid-cols-2">
+    <section>
+      <GlassCard class="p-4 md:p-6">
+        <ClassForm />
+      </GlassCard>
+    </section>
 
-  <section class="mb-6">
-    <GlassCard class="p-4 md:p-6">
-      <h3 class="mb-2 text-[20px] font-semibold leading-[1.2] text-slate-900 dark:text-slate-100">
-        {strings.setup.linesLabel}
-      </h3>
-      <p class="mb-4 text-[16px] leading-[1.5] text-slate-600 dark:text-slate-300">
-        {strings.setup.linesHelper}
-      </p>
-      <label class="block text-[14px] leading-[1.4] text-slate-700 dark:text-slate-200">
-        {strings.setup.linesLabel}
-        <input
-          type="number"
-          min="1"
-          max="10"
-          step="1"
-          value={lineCount}
-          onchange={handleLineCountChange}
-          disabled={isFinalized}
-          class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-        />
-      </label>
-      {#if isFinalized}
-        <p role="status" class="mt-2 text-[14px] leading-[1.4] text-slate-500 dark:text-slate-400">
-          {strings.results.guardMessage}
+    <section>
+      <GlassCard class="p-4 md:p-6">
+        <h3 class="mb-2 text-[20px] font-semibold leading-[1.2] text-slate-900 dark:text-slate-100">
+          {strings.setup.linesLabel}
+        </h3>
+        <p class="mb-4 text-[16px] leading-[1.5] text-slate-600 dark:text-slate-300">
+          {strings.setup.linesHelper}
         </p>
-      {/if}
-    </GlassCard>
-  </section>
+        <label class="block text-[14px] leading-[1.4] text-slate-700 dark:text-slate-200">
+          {strings.setup.linesLabel}
+          <input
+            type="number"
+            min="1"
+            max="10"
+            step="1"
+            value={lineCount}
+            onchange={handleLineCountChange}
+            disabled={isFinalized}
+            class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+          />
+        </label>
+        {#if isFinalized}
+          <p role="status" class="mt-2 text-[14px] leading-[1.4] text-slate-500 dark:text-slate-400">
+            {strings.results.guardMessage}
+          </p>
+        {/if}
+      </GlassCard>
+    </section>
 
-  <section class="mb-6">
-    <GlassCard class="p-4 md:p-6">
-      <h3 class="mb-4 text-[20px] font-semibold leading-[1.2] text-slate-900 dark:text-slate-100">
-        {strings.setup.roundsLabel}
-      </h3>
-      <SetupRounds isFinalized={isFinalized} />
-      {#if isFinalized}
-        <p role="status" class="mt-2 text-[14px] leading-[1.4] text-slate-500 dark:text-slate-400">
-          {strings.results.guardMessage}
-        </p>
-      {/if}
-    </GlassCard>
-  </section>
+    <section>
+      <GlassCard class="p-4 md:p-6">
+        <h3 class="mb-4 text-[20px] font-semibold leading-[1.2] text-slate-900 dark:text-slate-100">
+          {strings.setup.roundsLabel}
+        </h3>
+        <SetupRounds isFinalized={isFinalized} />
+        {#if isFinalized}
+          <p role="status" class="mt-2 text-[14px] leading-[1.4] text-slate-500 dark:text-slate-400">
+            {strings.results.guardMessage}
+          </p>
+        {/if}
+      </GlassCard>
+    </section>
 
-  <section class="mb-6">
-    <GlassCard class="p-4 md:p-6">
-      <h3 class="mb-4 text-[20px] font-semibold leading-[1.2] text-slate-900 dark:text-slate-100">
-        {strings.presets.heading}
-      </h3>
-      <PresetSave />
-      <PresetList />
-    </GlassCard>
-  </section>
+    <section>
+      <GlassCard class="p-4 md:p-6">
+        <h3 class="mb-4 text-[20px] font-semibold leading-[1.2] text-slate-900 dark:text-slate-100">
+          {strings.presets.heading}
+        </h3>
+        <PresetSave />
+        <PresetList />
+      </GlassCard>
+    </section>
+  </div>
 </div>

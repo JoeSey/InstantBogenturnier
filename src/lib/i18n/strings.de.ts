@@ -52,7 +52,6 @@ export const strings = {
     passesPerRoundLabel: 'Passen pro Runde',
     arrowsPerPassLabel: 'Pfeile pro Passe',
     customDistanceLabel: 'Entfernung',
-    saveButton: 'Speichern',
     // Additions beyond the UI-SPEC verbatim block — needed for the Classes card's
     // inline delete-confirmation row (plan Task 2 action text); not itself listed in
     // 02-UI-SPEC.md's Strings Module Extension code block.
@@ -150,6 +149,7 @@ export const strings = {
     // Phase 3 Plan 03 — completion detection and the permanent finalize/lock action
     // (SCORE-06/07, D-09/D-10). Added verbatim per 03-03-PLAN.md Task 2 action text.
     completionHelper: 'Erfassung ist noch nicht vollständig.',
+    noShootersHelper: 'Registrieren Sie mindestens einen Schützen, um das Turnier abzuschließen.',
     finalizeButton: 'Turnier abschließen',
     finalizeModalTitle: 'Turnier abschließen?',
     finalizeModalBody:

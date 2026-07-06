@@ -102,7 +102,10 @@
         name="rounds-mode"
         value="preset"
         checked={selectedMode === 'preset'}
-        onchange={() => (selectedMode = 'preset')}
+        onchange={() => {
+          selectedMode = 'preset';
+          save();
+        }}
         disabled={isFinalized}
       />
       {strings.setup.waPresetsLabel}
@@ -115,7 +118,10 @@
         name="rounds-mode"
         value="custom"
         checked={selectedMode === 'custom'}
-        onchange={() => (selectedMode = 'custom')}
+        onchange={() => {
+          selectedMode = 'custom';
+          save();
+        }}
         disabled={isFinalized}
       />
       {strings.setup.customLabel}
@@ -133,7 +139,10 @@
             name="wa-preset"
             value={preset.id}
             checked={selectedPresetId === preset.id}
-            onchange={() => (selectedPresetId = preset.id)}
+            onchange={() => {
+              selectedPresetId = preset.id;
+              save();
+            }}
             disabled={isFinalized}
           />
           {presetLabels[preset.id]}
@@ -149,6 +158,7 @@
           min="1"
           step="1"
           bind:value={customRounds}
+          onchange={save}
           disabled={isFinalized}
           class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
         />
@@ -161,6 +171,7 @@
           max="30"
           step="1"
           bind:value={customPassesPerRound}
+          onchange={save}
           disabled={isFinalized}
           class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
         />
@@ -173,6 +184,7 @@
           max="20"
           step="1"
           bind:value={customArrowsPerPasse}
+          onchange={save}
           disabled={isFinalized}
           class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
         />
@@ -182,6 +194,7 @@
         <input
           type="text"
           bind:value={customDistance}
+          onchange={save}
           disabled={isFinalized}
           class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
         />
@@ -192,13 +205,4 @@
   <p class="text-[16px] leading-[1.5] text-slate-600 dark:text-slate-300">
     {resolvedConfig.passesPerRound} Passen, {resolvedConfig.arrowsPerPasse} Pfeile, {resolvedConfig.distance}
   </p>
-
-  <button
-    type="button"
-    onclick={save}
-    disabled={isFinalized}
-    class="min-h-[44px] rounded-lg bg-teal-500 px-4 py-2 text-[16px] font-semibold leading-[1.5] text-white hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300"
-  >
-    {strings.setup.saveButton}
-  </button>
 </div>

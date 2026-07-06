@@ -478,5 +478,24 @@ describe('ScoreEntry', () => {
         expect((btn as HTMLButtonElement).disabled).toBe(false)
       );
     });
+
+    it('disables Turnier abschließen and shows noShootersHelper when zero shooters are registered', async () => {
+      await db.rounds.put({
+        id: 1,
+        arrowsPerPasse: 1,
+        passesPerRound: 1,
+        numberOfRounds: 1,
+        distance: '18m',
+      });
+
+      render(ScoreEntry);
+
+      const finalizeButton = await screen.findByRole('button', {
+        name: strings.scoring.finalizeButton,
+      });
+      expect((finalizeButton as HTMLButtonElement).disabled).toBe(true);
+      screen.getByText(strings.scoring.noShootersHelper);
+      expect(screen.queryByText(strings.scoring.completionHelper)).toBeNull();
+    });
   });
 });
