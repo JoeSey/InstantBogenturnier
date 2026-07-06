@@ -3,6 +3,7 @@
 </script>
 
 <script lang="ts">
+  import { FileDown } from '@lucide/svelte';
   import { strings } from '../i18n/strings.de';
 
   // Per-class ranked results table (RES-01/RES-02, D-01–D-07). Fixed rank order — no
@@ -10,7 +11,11 @@
   // sortable columns (SCORE-04 does not apply here). Fully opaque (Phase 1 D-11,
   // D-06) — the only color accent is the rank-based (not row-based, D-07) podium
   // badge in the Rang cell.
-  let { rows }: { rows: RankedRow[] } = $props();
+  //
+  // Phase 6 Plan 04: added a per-row certificate action column (D-02/D-04) — the
+  // `oncertexport` callback lets the parent (Results.svelte) supply the class-name-
+  // aware handler, since RankedRow itself has no className field.
+  let { rows, oncertexport }: { rows: RankedRow[]; oncertexport: (row: RankedRow) => void } = $props();
 
   let hasIncomplete = $derived(rows.some((r) => !r.isComplete));
 
@@ -41,6 +46,9 @@
         >
           {strings.results.columnTotal}
         </th>
+        <th class="p-2 md:p-4 text-[14px] font-normal leading-[1.4] text-slate-500 dark:text-slate-400">
+          {strings.results.columnCertificate}
+        </th>
       </tr>
     </thead>
     <tbody>
@@ -65,6 +73,16 @@
           <td class="px-2 py-2 md:px-3 md:py-2 text-right font-semibold">
             {row.sum}{#if !row.isComplete}<span class="text-slate-400 dark:text-slate-500">*</span
               ><span class="sr-only">{strings.results.inProgressAria}</span>{/if}
+          </td>
+          <td class="px-2 py-2 md:px-3 md:py-2 text-center">
+            <button
+              type="button"
+              onclick={() => oncertexport(row)}
+              class="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-teal-500 p-2 text-teal-500 hover:bg-teal-50 dark:border-teal-400 dark:text-teal-400 dark:hover:bg-teal-900/30"
+              aria-label={strings.certificateExport.singleButton}
+            >
+              <FileDown size={20} />
+            </button>
           </td>
         </tr>
       {/each}
