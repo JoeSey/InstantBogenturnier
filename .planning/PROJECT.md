@@ -5,6 +5,7 @@
 A client-side web app (installable PWA) that lets an archery club trainer run informal training tournaments as judge (Kampfrichter) — from pre-tournament setup, through shooter registration and live score entry, to ranked results — fully usable offline on a single device at the shooting range.
 
 **Shipped as v1.0** (2026-07-06): the full setup → registration → live score entry → ranked results flow, installable and offline-capable.
+**Shipped as v1.1** (2026-07-06): PDF export of ranked results, with configurable header images/title in a new Settings section.
 
 ## Core Value
 
@@ -28,14 +29,15 @@ Score entry and results ranking must work correctly and offline, on one device, 
 - [x] Results view adapts by screen size: class-selectable dropdown on phone, multi-column all-classes view on larger screens — Validated in Phase 4: Results
 - [x] Trainer can explicitly start a new tournament via a dedicated reset action that clears all shooters and scores (not saved presets), after a confirmation warning — Validated in Phase 4: Results
 - [x] App blocks destructive edits (deleting shooters, changing rounds/passes configuration) while finalized tournament data exists, directing the trainer to reset first instead of silently cascading — Validated in Phase 4: Results
+- [x] Trainer can export the tournament's ranked results as a single downloadable PDF (one section per class, page break between classes, Rank/Name/Sum columns, optional include-incomplete-shooters toggle) with optional configurable header images and a free-text title, fully offline — Validated in Phase 5: PDF Export
 
 ### Active
 
-(None yet — next milestone requirements to be defined via `/gsd:new-milestone`. Candidates already tracked below in Out of Scope: PDF export/certificates and blank scoresheets for v1.5.)
+(None yet — next milestone requirements to be defined. Candidate already surfaced during Phase 5's SPIDR split: per-shooter PDF certificates, tracked below in Out of Scope as a follow-up phase.)
 
 ### Out of Scope
 
-- PDF export of result lists and per-shooter certificates — deferred to v1.5
+- Per-shooter PDF certificates (top n / all shooters, configurable) — split off from Phase 5 via SPIDR (Interfaces axis) into a follow-up phase; not yet scheduled
 - WhatsApp delivery of certificates — deferred to v2
 - Blank pre-printed scoresheets (DIN A5) — deferred to v1.5
 - Concurrent multi-device score entry — explicitly ruled out; single device/single judge operation confirmed as the usage pattern
@@ -54,6 +56,8 @@ Score entry and results ranking must work correctly and offline, on one device, 
 - Tech stack confirmed as planned: Svelte 5 + Vite 8 + Tailwind 4, `vite-plugin-pwa` (`registerType: 'prompt'`), Dexie.js (v3 schema: classes, shootingLines, roundsConfig, shooters, scores), `dexie-export-import` for preset backup.
 - Post-ship UAT (2026-07-06) surfaced four polish items, all fixed same-day via quick tasks: desktop sidebar nav was too wide (240px→120px, with a stale `xl:pl-[256px]` compensation value on `TopAppBar` missed during that fix and corrected separately), the Setup page's two-column grid stranded dead space under short cards (fixed by giving each column independent flex flow), the "Runden und Passen" section required an undiscoverable explicit save (switched to auto-save matching the rest of the setup page), and ending a tournament with zero registered archers was allowed to look "complete" (now explicitly guarded with a message).
 - Known tech debt: `npm run check`'s `tsc -p tsconfig.node.json` step fails on a pre-existing `vite.config.ts` module-resolution error (`Cannot find module './src/lib/config/app.config'`), unrelated to any v1.0 phase — not yet fixed, logged in `.planning/quick/260706-9iv-.../260706-9iv-deferred-items.md`.
+
+**v1.1 shipped state (2026-07-06):** PDF export added via jsPDF + jspdf-autotable, a new Dexie v4 `settings` table (Blob-backed header logos + title, reused unmodified by `dexie-export-import`), and Canvas-based image downscaling. One gap-closure round (05-03) was needed post-verification: `pdfExport.ts` originally hard-coded the jsPDF image format as `'PNG'` regardless of actual logo encoding, silently breaking JPEG logo uploads (fixed by normalizing all uploads to PNG at `imageDownscale.ts`'s downscale step, per user decision) — bundled with a fix for logo aspect-ratio stretching (`containFit()` helper) found in the same code review pass.
 
 ## Constraints
 
@@ -76,6 +80,8 @@ Score entry and results ranking must work correctly and offline, on one device, 
 | Tie-break convention: shared-rank/skip-next ("1-2-2-4"), no X-ring countback | Explicitly simplified for informal training tournaments per user confirmation | ✓ Good — implemented in Phase 4, matches spec |
 | Post-completion score correction: disallowed, permanent lock (no unlock path) | Confirmed in Phase 3 discussion (2026-07-05) — simplicity over recoverability for a single-session tool | ✓ Good — implemented in Phase 3/4, reused as `computeIsFinalized` guard across delete-shooter/delete-class/rounds-config |
 | `dexie-export-import` for full preset export/import | Pulled forward from v1 tech-stack recommendation as cheap insurance against iOS Safari's IndexedDB eviction | ✓ Good — implemented in Phase 2, scoped strictly to the presets table |
+| PDF export scoped to result-list only; per-shooter certificates split into a separate phase (SPIDR Interfaces axis) | Result-list PDF and certificates are distinct output interfaces sharing the same ranked-data foundation — splitting kept Phase 5 a clean vertical MVP slice | ✓ Good — shipped as scoped in Phase 5, certificate phase deferred without losing the idea |
+| Normalize all uploaded logo images to PNG at downscale time (not format-sniffing at PDF-generation time, not restricting uploads to PNG-only) | Fixes the format mismatch at its source (`imageDownscale.ts`) rather than patching symptoms at both `doc.addImage()` call sites in `pdfExport.ts`; keeps JPEG upload support for trainers | ✓ Good — resolved Phase 5's gap-closure finding (CR-01), zero format-detection code needed downstream |
 
 ## Evolution
 
@@ -95,4 +101,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-06 — after v1.0 milestone*
+*Last updated: 2026-07-06 — after v1.1 milestone (Phase 5: PDF Export)*
