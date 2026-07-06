@@ -1,47 +1,58 @@
-# Svelte + TS + Vite
+# Bogen-Trainingsturnier Verwaltung 🎯
 
-This template should help get you started developing with Svelte and TypeScript in Vite.
+A client-side web app (installable PWA) that lets an archery club trainer run informal training tournaments as judge (Kampfrichter) — from pre-tournament setup, through shooter registration and live score entry, to ranked results. Fully usable **offline**, on a single device, at the shooting range.
 
-## Recommended IDE Setup
+> Score entry and results ranking must work correctly and offline, on one device, during a live tournament — everything else is secondary.
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+## Features
 
-## Need an official Svelte framework?
+- **Setup** — define classes (age group / bow type / distance), shooting lines, and rounds/passes (WA presets or custom), with 4–8 savable/loadable tournament presets (export/import included)
+- **Registration** — register shooters with name, class, and optional shooting-line assignment; app detects AB vs. AB/CD mode automatically
+- **Score Entry** — per-arrow score entry with instant autosave (no explicit save step, no data loss), sortable table, and an explicit "Abschließen" (finalize/lock) step once every arrow is entered
+- **Results** — live-updating, correctly-ranked results per class (standard "1-2-2-4" tie handling), adaptive layout: dropdown class selector on phone, responsive multi-column grid on tablet/desktop
+- **Reset** — explicit "Neues Turnier starten" action clears shooters/scores while keeping classes, lines, rounds, and presets configured
+- **Offline-first PWA** — installable to your device's home screen, fully functional with zero network connectivity, automatic light/dark theme with manual override
+- **Data safety** — once a tournament is finalized, destructive edits (deleting shooters, changing rounds/passes) are blocked until you reset
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+## Tech Stack
 
-## Technical considerations
+- [Svelte 5](https://svelte.dev/) (runes) + [Vite 8](https://vite.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS 4](https://tailwindcss.com/)
+- [Dexie.js](https://dexie.org/) (IndexedDB) for local, offline-first data storage
+- [vite-plugin-pwa](https://vite-pwa-org.netlify.app/) for the installable, offline service worker
+- [Vitest](https://vitest.dev/) + [@testing-library/svelte](https://testing-library.com/docs/svelte-testing-library/intro/) for unit/component tests, [Playwright](https://playwright.dev/) for e2e tests
 
-**Why use this over SvelteKit?**
+## Installation
 
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+**Requirements:** Node.js `^20.19.0` or `>=22.12.0`
 
-This template contains as little as possible to get started with Vite + TypeScript + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
-
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
-
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
-
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
-
-**Why include `.vscode/extensions.json`?**
-
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
-
-**Why enable `allowJs` in the TS template?**
-
-While `allowJs: false` would indeed prevent the use of `.js` files in the project, it does not prevent the use of JavaScript syntax in `.svelte` files. In addition, it would force `checkJs: false`, bringing the worst of both worlds: not being able to guarantee the entire codebase is TypeScript, and also having worse typechecking for the existing JavaScript. In addition, there are valid use cases in which a mixed codebase may be relevant.
-
-**Why is HMR not preserving my local component state?**
-
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/rixo/svelte-hmr#svelte-hmr).
-
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
-
-```ts
-// store.ts
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
+```bash
+git clone https://github.com/JoeSey/InstantBogenturnier.git
+cd InstantBogenturnier
+npm install
 ```
+
+## Development
+
+```bash
+npm run dev       # start the dev server (hot reload)
+npm run build     # production build → dist/
+npm run preview   # preview the production build locally
+```
+
+## Testing
+
+```bash
+npm run check     # type-check (svelte-check + tsc)
+npm run test      # unit/component tests (Vitest)
+npm run test:e2e  # end-to-end tests (Playwright)
+npm run test:all  # unit + e2e
+```
+
+## Project Status
+
+All v1.0 milestone phases are complete: Foundation, Setup & Registration, Score Entry, Results. See [`specs.md`](specs.md) for the original feature spec and [`.planning/`](.planning/) for detailed requirements, decisions, and per-phase implementation records.
+
+## License
+
+[MIT](LICENSE)
