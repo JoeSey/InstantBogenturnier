@@ -10,12 +10,19 @@
   // (edit) action on an existing shooter — pre-fills the form; submit then updates the
   // record directly (no auto-assign preview: a single-shooter correction, not a new
   // registration, per Task 2 action text).
+  // CR-02 (04-REVIEW.md): `isFinalized` closes the RES-06 guard gap — without it, a
+  // trainer could reassign a shooter's classId via this edit path after finalization,
+  // silently corrupting the supposedly-locked per-class rankings that delete-shooter
+  // already protects. Adding a NEW shooter must remain unaffected (per 04-03-PLAN.md's
+  // must_haves), so the guard applies only to the edit branch inside handleSubmit.
   let {
     editingShooter = null,
     onEditComplete,
+    isFinalized = false,
   }: {
     editingShooter?: ShooterRecord | null;
     onEditComplete?: () => void;
+    isFinalized?: boolean;
   } = $props();
 
   const classesQuery = liveQuery(() => db.classes.toArray());
@@ -52,6 +59,11 @@
   let editingId = $state<number | undefined>(undefined);
   let errorFeedback = $state('');
 
+  // CR-02: only the edit path is locked once finalized — adding a new shooter must
+  // remain fully functional (per 04-03-PLAN.md's must_haves), so this must NOT gate on
+  // isFinalized alone.
+  let editLocked = $derived(editingId !== undefined && isFinalized);
+
   // Pre-fill the form whenever a new shooter is selected for editing.
   $effect(() => {
     if (editingShooter) {
@@ -76,6 +88,10 @@
     errorFeedback = '';
 
     if (editingId !== undefined) {
+      if (isFinalized) {
+        errorFeedback = strings.results.guardMessage;
+        return;
+      }
       try {
         await db.shooters.update(editingId, {
           name: trimmedName,
@@ -163,7 +179,8 @@
     <input
       type="text"
       bind:value={name}
-      class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+      disabled={editLocked}
+      class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
     />
   </label>
 
@@ -172,7 +189,8 @@
     {strings.registration.classRequired}
     <select
       bind:value={classId}
-      class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+      disabled={editLocked}
+      class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
     >
       <option value="">— Keine Angabe —</option>
       {#each classes as cls (cls.id)}
@@ -187,7 +205,8 @@
       type="number"
       min="1"
       bind:value={lineNum}
-      class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+      disabled={editLocked}
+      class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
     />
     <span class="mt-1 block text-[14px] leading-[1.4] text-slate-500 dark:text-slate-400">
       {strings.registration.lineHelper}
@@ -197,10 +216,17 @@
   <button
     type="button"
     onclick={handleSubmit}
-    class="min-h-[44px] rounded-lg bg-teal-500 px-4 py-2 text-[16px] font-semibold leading-[1.5] text-white hover:bg-teal-600 dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300"
+    disabled={editLocked}
+    class="min-h-[44px] rounded-lg bg-teal-500 px-4 py-2 text-[16px] font-semibold leading-[1.5] text-white hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300"
   >
     {strings.registration.addShooterButton}
   </button>
+
+  {#if editLocked}
+    <p role="status" class="text-[14px] leading-[1.4] text-slate-500 dark:text-slate-400">
+      {strings.results.guardMessage}
+    </p>
+  {/if}
 
   {#if errorFeedback}
     <p class="text-[14px] leading-[1.4] text-red-600 dark:text-red-400">{errorFeedback}</p>

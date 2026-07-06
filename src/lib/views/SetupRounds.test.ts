@@ -64,6 +64,60 @@ describe('SetupRounds', () => {
     });
   });
 
+  // CR-01 (04-REVIEW.md): App.svelte destroys/recreates views on nav, so this component
+  // remounts on every visit to Einrichtung. It must rehydrate from the persisted
+  // db.rounds record rather than resetting to hardcoded defaults — otherwise a
+  // subsequent Speichern click silently overwrites a real saved configuration.
+  it('rehydrates form fields from an existing db.rounds record instead of resetting to defaults', async () => {
+    await db.rounds.put({
+      id: 1,
+      arrowsPerPasse: 6,
+      passesPerRound: 4,
+      numberOfRounds: 3,
+      distance: '70m',
+      presetId: undefined,
+    });
+
+    render(SetupRounds);
+
+    await screen.findByText('4 Passen, 6 Pfeile, 70m');
+    expect((screen.getByLabelText(strings.setup.customLabel) as HTMLInputElement).checked).toBe(
+      true
+    );
+
+    const saveButton = screen.getByRole('button', { name: strings.setup.saveButton });
+    await fireEvent.click(saveButton);
+
+    const config = await db.rounds.get(1);
+    expect(config).toEqual({
+      id: 1,
+      arrowsPerPasse: 6,
+      passesPerRound: 4,
+      numberOfRounds: 3,
+      distance: '70m',
+      presetId: undefined,
+    });
+  });
+
+  it('rehydrates a preset-based db.rounds record by selecting the matching preset radio', async () => {
+    // resolvedConfig in preset mode looks up the summary text from WA_PRESETS by
+    // presetId (not from the stored numberOfRounds/passesPerRound/arrowsPerPasse
+    // fields), so this must match the real WA 70m preset shape (6 Passen, 6 Pfeile).
+    await db.rounds.put({
+      id: 1,
+      arrowsPerPasse: 6,
+      passesPerRound: 6,
+      numberOfRounds: 1,
+      distance: '70m',
+      presetId: 'wa-70m',
+    });
+
+    render(SetupRounds);
+
+    await screen.findByText('6 Passen, 6 Pfeile, 70m');
+    expect((screen.getByLabelText(strings.setup.wa70m) as HTMLInputElement).checked).toBe(true);
+  });
+
   // Behavior per 04-03-PLAN.md Task 3 <action>/<acceptance_criteria> block (RES-06):
   // once isFinalized is passed as true, every radio, every custom input, and the
   // Speichern button must be disabled.

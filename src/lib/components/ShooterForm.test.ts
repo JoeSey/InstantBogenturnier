@@ -61,6 +61,64 @@ describe('ShooterForm', () => {
     expect(typeof shooter.lineAssignment).toBe('number');
     expect(shooter.flight === 'A/B' || shooter.flight === 'C/D').toBe(true);
   });
+
+  // CR-02 (04-REVIEW.md): once finalized, editing an existing shooter must not be able
+  // to reassign classId — that would silently corrupt the "locked" per-class rankings
+  // that delete-shooter (04-03-PLAN.md Task 2) already protects.
+  it('blocks a classId change via the edit path once isFinalized is true', async () => {
+    const classA = await db.classes.add({ name: 'RCV-U14' });
+    const classB = await db.classes.add({ name: 'RCV-U16' });
+    const shooterId = await db.shooters.add({ name: 'Anna', classId: classA, lineAssignment: 1 });
+    await db.scores.add({
+      shooterId,
+      roundIndex: 0,
+      passeIndex: 0,
+      arrowIndex: 0,
+      value: '10',
+      finalized: true,
+    });
+
+    render(ShooterForm, {
+      editingShooter: { id: shooterId, name: 'Anna', classId: classA, lineAssignment: 1 },
+      isFinalized: true,
+    });
+
+    const classSelect = screen.getByLabelText(/Klasse/) as HTMLSelectElement;
+    expect(classSelect.disabled).toBe(true);
+
+    await fireEvent.change(classSelect, { target: { value: String(classB) } });
+    const submitButton = screen.getByRole('button', { name: 'Schütze hinzufügen' });
+    expect((submitButton as HTMLButtonElement).disabled).toBe(true);
+    await fireEvent.click(submitButton);
+
+    const shooter = await db.shooters.get(shooterId);
+    expect(shooter?.classId).toBe(classA);
+    await screen.findByText('Turnier abgeschlossen — Zurücksetzen, um zu ändern.');
+  });
+
+  it('allows adding a new shooter even when isFinalized is true', async () => {
+    const classId = await db.classes.add({ name: 'RCV-U14' });
+    await db.shootingLines.put({ id: 1, count: 2 });
+
+    render(ShooterForm, { isFinalized: true });
+
+    await screen.findByRole('option', { name: 'RCV-U14' });
+    const nameInput = screen.getByLabelText('Name');
+    await fireEvent.input(nameInput, { target: { value: 'Bea' } });
+    const classSelect = screen.getByLabelText(/Klasse/) as HTMLSelectElement;
+    await fireEvent.change(classSelect, { target: { value: String(classId) } });
+
+    const submitButton = screen.getByRole('button', { name: 'Schütze hinzufügen' });
+    expect((submitButton as HTMLButtonElement).disabled).toBe(false);
+    await fireEvent.click(submitButton);
+
+    const saveButton = await screen.findByRole('button', { name: 'Speichern' });
+    await fireEvent.click(saveButton);
+
+    await waitFor(async () => {
+      expect(await db.shooters.count()).toBe(1);
+    });
+  });
 });
 
 // Regression test for the auto-assign-modal-round-robin debug session. Note: an earlier

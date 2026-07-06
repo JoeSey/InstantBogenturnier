@@ -44,7 +44,12 @@
     if (id === undefined) return;
     errorFeedback = '';
     try {
-      await db.shooters.delete(id);
+      // WR-02 (04-REVIEW.md): delete the shooter's own score rows atomically so a
+      // mid-tournament removal doesn't leave orphaned ScoreRecords in db.scores.
+      await db.transaction('rw', db.shooters, db.scores, async () => {
+        await db.shooters.delete(id);
+        await db.scores.where('shooterId').equals(id).delete();
+      });
     } catch (err) {
       // WR-04: surface write failures instead of failing silently.
       errorFeedback = strings.common.saveError.replace(
@@ -93,7 +98,7 @@
   </GlassCard>
 
   <GlassCard class="p-4 md:p-6">
-    <ShooterForm editingShooter={editingShooter} onEditComplete={clearEdit} />
+    <ShooterForm editingShooter={editingShooter} onEditComplete={clearEdit} isFinalized={isFinalized} />
   </GlassCard>
 
   <section>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { liveQuery } from 'dexie';
   import { db } from '../db/schema';
   import { WA_PRESETS } from '../fixtures/waPresets';
   import { strings } from '../i18n/strings.de';
@@ -21,6 +22,29 @@
   let customPassesPerRound = $state(10);
   let customArrowsPerPasse = $state(3);
   let customDistance = $state('18m');
+
+  // CR-01 (04-REVIEW.md): App.svelte destroys/recreates views on nav, so this component
+  // remounts to hardcoded defaults every time the trainer revisits Einrichtung. Rehydrate
+  // from the persisted db.rounds record once on first load so saving doesn't silently
+  // overwrite a real configuration with defaults.
+  const existingConfigQuery = liveQuery(() => db.rounds.get(1));
+  let existingConfig = $derived($existingConfigQuery);
+  let hydrated = false;
+  $effect(() => {
+    const cfg = existingConfig;
+    if (!cfg || hydrated) return;
+    hydrated = true;
+    if (cfg.presetId) {
+      selectedMode = 'preset';
+      selectedPresetId = cfg.presetId;
+    } else {
+      selectedMode = 'custom';
+      customRounds = cfg.numberOfRounds;
+      customPassesPerRound = cfg.passesPerRound;
+      customArrowsPerPasse = cfg.arrowsPerPasse;
+      customDistance = cfg.distance;
+    }
+  });
 
   // SETUP-04: resolve either the selected WA preset or the custom fields into a single
   // shape ready to persist to db.rounds (and drive the live summary line below).
