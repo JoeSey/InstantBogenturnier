@@ -20,7 +20,7 @@
 {#if updateAvailable.current && !dismissed}
   <div
     role="status"
-    class="glass-surface flex w-full flex-col items-start gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+    class="glass-surface flex w-full flex-col items-start gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between md:pl-[88px] xl:pl-[136px]"
   >
     <p class="text-base text-slate-700 dark:text-slate-200">{strings.updateBanner.body}</p>
     <div class="flex gap-2">
