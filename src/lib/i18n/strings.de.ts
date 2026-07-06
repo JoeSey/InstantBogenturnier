@@ -207,5 +207,16 @@ export const strings = {
     errorUploadFailed: 'Upload fehlgeschlagen',
     errorSaveFailed: 'Speichern fehlgeschlagen',
     errorQuotaExceeded: 'Speicher voll — versuchen Sie kleinere Bilder.',
+    certificateHeadingLabel: 'Urkunden-Überschrift (für PDF)',
+    certificateHeadingPlaceholder: "z.B. 'Urkunde' oder 'Teilnahmeurkunde'",
+  },
+  // Phase 6 Plan 01 section — per-shooter PDF certificate export controls (bulk + single
+  // buttons, error copy). Added verbatim per 06-UI-SPEC.md's Copywriting Contract.
+  certificateExport: {
+    bulkButton: 'Urkunden erstellen',
+    singleButton: 'Urkunde',
+    bulkExportError: 'Urkunden-Export fehlgeschlagen',
+    singleExportError: 'Urkunden-Export fehlgeschlagen',
+    zipCreationError: 'Zip-Datei konnte nicht erstellt werden',
   },
 } as const;
