@@ -71,6 +71,16 @@ export interface ScoreRecord {
   finalized: boolean;
 }
 
+// Phase 5 data model — settings singleton (title + optional header logo Blobs) used by
+// the PDF export feature (Plan 02) and, per 05-CONTEXT.md D-05, built generically now
+// for reuse by the future certificates phase (Phase 6) rather than PDF-export-specific.
+export interface SettingsRecord {
+  id: 1;
+  title?: string;
+  logoLeftBlob?: Blob;
+  logoRightBlob?: Blob;
+}
+
 class InstantBogenturnierDB extends Dexie {
   classes!: Table<ClassRecord, number>;
   // Singleton row tables (always id: 1) — keyed by explicit `id`, not auto-increment.
@@ -79,6 +89,7 @@ class InstantBogenturnierDB extends Dexie {
   shooters!: Table<ShooterRecord, number>;
   presets!: Table<PresetRecord, number>;
   scores!: Table<ScoreRecord, [number, number, number, number]>;
+  settings!: Table<SettingsRecord, number>;
 
   constructor() {
     super('InstantBogenturnierDB');
@@ -100,6 +111,18 @@ class InstantBogenturnierDB extends Dexie {
       shooters: '++id, classId, lineAssignment',
       presets: '++id, name',
       scores: '[shooterId+roundIndex+passeIndex+arrowIndex], shooterId, roundIndex',
+    });
+    // v4 (Phase 5 Plan 01): adds the `settings` singleton table (title + logo Blobs).
+    // Every prior version's stores must be restated unchanged per Dexie's versioning
+    // requirement.
+    this.version(4).stores({
+      classes: '++id, name',
+      shootingLines: 'id',
+      rounds: 'id',
+      shooters: '++id, classId, lineAssignment',
+      presets: '++id, name',
+      scores: '[shooterId+roundIndex+passeIndex+arrowIndex], shooterId, roundIndex',
+      settings: 'id',
     });
   }
 }
