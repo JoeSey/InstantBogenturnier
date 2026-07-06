@@ -5,6 +5,13 @@
   import { strings } from '../i18n/strings.de';
   import { computeClassRankings } from '../utils/ranking';
   import { generateResultsPdf, resultsPdfFilename } from '../utils/pdfExport';
+  import {
+    generateBulkCerts,
+    generateSingleCertPdf,
+    certificatePdfFilename,
+    zipFilename,
+  } from '../utils/certificateExport';
+  import type { RankedRow } from '../utils/ranking';
   import GlassCard from '../components/GlassCard.svelte';
   import ClassSelector from '../components/ClassSelector.svelte';
   import ResultsTable from '../components/ResultsTable.svelte';
@@ -76,6 +83,47 @@
     }
   }
 
+  // Phase 6 Plan 04 (D-01/D-03): bulk certificate ZIP export, mirroring handleExport()'s
+  // settings-fetch + WR-04 append-before-click download pattern exactly.
+  async function handleBulkCertExport() {
+    errorFeedback = '';
+    try {
+      const settings = (await db.settings.get(1)) ?? { id: 1 as const };
+      const blob = await generateBulkCerts(rankings, classesWithResults, settings);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = zipFilename();
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      errorFeedback = strings.certificateExport.bulkExportError;
+    }
+  }
+
+  // Phase 6 Plan 04 (D-02/D-04): per-row single-certificate export. className is passed
+  // explicitly by the caller (T-6-08) — read from the exact same in-scope cls/selected
+  // class variable the row itself was rendered from, no cross-class lookup.
+  async function handleSingleCertExport(row: RankedRow, className: string) {
+    errorFeedback = '';
+    try {
+      const settings = (await db.settings.get(1)) ?? { id: 1 as const };
+      const blob = await generateSingleCertPdf(row, className, settings);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = certificatePdfFilename(row.name);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      errorFeedback = strings.certificateExport.singleExportError;
+    }
+  }
+
   // RES-05/D-08/D-09/D-10: "Neues Turnier starten" reset flow. Reuses ConfirmDialog's
   // non-dismissible confirm pattern (T-4-01) and wraps both clears in a single Dexie
   // transaction (T-4-03) so a mid-operation failure can never leave scores referencing
@@ -137,7 +185,14 @@
         onchange={(id) => (selectedClassId = id)}
       />
       <div class="mt-4">
-        <ResultsTable rows={selectedClassId !== null ? (rankings.get(selectedClassId) ?? []) : []} />
+        <ResultsTable
+          rows={selectedClassId !== null ? (rankings.get(selectedClassId) ?? []) : []}
+          oncertexport={(row) =>
+            handleSingleCertExport(
+              row,
+              classesWithResults.find((c) => c.id === selectedClassId)?.name ?? ''
+            )}
+        />
       </div>
     </div>
 
@@ -147,7 +202,10 @@
           <h2 class="mb-4 text-[20px] font-semibold leading-[1.2] text-slate-900 dark:text-slate-100">
             {cls.name}
           </h2>
-          <ResultsTable rows={rankings.get(cls.id!) ?? []} />
+          <ResultsTable
+            rows={rankings.get(cls.id!) ?? []}
+            oncertexport={(row) => handleSingleCertExport(row, cls.name)}
+          />
         </GlassCard>
       {/each}
     </div>
@@ -170,15 +228,27 @@
       </span>
     </label>
 
-    <button
-      type="button"
-      onclick={handleExport}
-      disabled={classesWithResults.length === 0}
-      class="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-teal-500 px-4 py-2 text-[16px] font-semibold leading-[1.5] text-white hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300"
-    >
-      <FileDown size={20} />
-      {strings.resultsPdf.exportButton}
-    </button>
+    <div class="flex flex-col gap-2 md:flex-row">
+      <button
+        type="button"
+        onclick={handleExport}
+        disabled={classesWithResults.length === 0}
+        class="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-teal-500 px-4 py-2 text-[16px] font-semibold leading-[1.5] text-white hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300"
+      >
+        <FileDown size={20} />
+        {strings.resultsPdf.exportButton}
+      </button>
+
+      <button
+        type="button"
+        onclick={handleBulkCertExport}
+        disabled={classesWithResults.length === 0}
+        class="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-teal-500 px-4 py-2 text-[16px] font-semibold leading-[1.5] text-white hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300"
+      >
+        <FileDown size={20} />
+        {strings.certificateExport.bulkButton}
+      </button>
+    </div>
   </GlassCard>
 
   {#if resetSuccessMessage}
