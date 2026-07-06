@@ -85,7 +85,7 @@
   // enabled (every shooter x round x passe x arrow has a value); isFinalized reflects
   // whether the trainer has already confirmed the permanent lock.
   let isComplete = $derived(
-    roundsConfig
+    roundsConfig && shooters.length > 0
       ? areAllScoresEntered(
           shooters.map((s) => s.id!),
           roundsConfig.numberOfRounds,
@@ -315,7 +315,7 @@
 
       {#if !isComplete}
         <p role="status" aria-live="polite" class="text-[14px] leading-[1.4] text-slate-600 dark:text-slate-300">
-          {strings.scoring.completionHelper}
+          {shooters.length === 0 ? strings.scoring.noShootersHelper : strings.scoring.completionHelper}
         </p>
       {/if}
     {/if}

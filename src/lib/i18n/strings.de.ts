@@ -149,6 +149,7 @@ export const strings = {
     // Phase 3 Plan 03 — completion detection and the permanent finalize/lock action
     // (SCORE-06/07, D-09/D-10). Added verbatim per 03-03-PLAN.md Task 2 action text.
     completionHelper: 'Erfassung ist noch nicht vollständig.',
+    noShootersHelper: 'Registrieren Sie mindestens einen Schützen, um das Turnier abzuschließen.',
     finalizeButton: 'Turnier abschließen',
     finalizeModalTitle: 'Turnier abschließen?',
     finalizeModalBody:
