@@ -49,6 +49,37 @@ npm run test:e2e  # end-to-end tests (Playwright)
 npm run test:all  # unit + e2e
 ```
 
+## Deployment
+
+This is a static, client-only app — deploy the **built output**, not the source tree.
+
+```bash
+npm run build   # writes the deployable site to dist/
+```
+
+Copy the contents of `dist/` to your web server's document root (or a sub-path — see
+below). `npm run preview` serves `dist/` locally if you want to sanity-check a build
+before deploying it.
+
+**Common mistake:** if the browser fails to load `main.ts` with an error like
+`Expected a JavaScript-or-Wasm module script but the server responded with a MIME
+type of "text/vnd.trolltech.linguist"`, the server is serving the *repository source*
+(`index.html` at the project root references `/src/main.ts` directly, which only
+Vite's dev server knows how to transpile) instead of `dist/`. Many Linux systems'
+global MIME database maps the `.ts` extension to Qt Linguist translation files, which
+is where that specific error text comes from. Point your web server at `dist/`, not
+the repo root.
+
+### Deploying to a sub-path
+
+If the app won't be served from your domain's root (e.g.
+`https://example.com/bogenturnier/` instead of `https://example.com/`), set `basePath`
+in `src/lib/config/app.config.ts` to that sub-path (with leading **and** trailing
+slash, e.g. `'/bogenturnier/'`) before running `npm run build`. This value drives both
+Vite's asset base path and the PWA manifest's `scope`/`start_url` — both must match the
+actual hosting path or the installed PWA's service-worker scope will be wrong and
+offline routing will silently break.
+
 ## Project Status
 
 All v1.0 milestone phases are complete: Foundation, Setup & Registration, Score Entry, Results. See [`specs.md`](specs.md) for the original feature spec and [`.planning/`](.planning/) for detailed requirements, decisions, and per-phase implementation records.
