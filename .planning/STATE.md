@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: MVP
 status: Awaiting next milestone
-stopped_at: Phase 4 UI-SPEC approved
-last_updated: "2026-07-06T09:15:51.063Z"
+stopped_at: Phase 5 context gathered
+last_updated: "2026-07-06T13:09:42.742Z"
 last_activity: 2026-07-06 — Milestone v1.0 completed and archived
 progress:
-  total_phases: 4
+  total_phases: 5
   completed_phases: 4
   total_plans: 12
   completed_plans: 12
-  percent: 100
+  percent: 80
 ---
 
 # Project State
@@ -57,6 +57,7 @@ Last activity: 2026-07-06 — Milestone v1.0 completed and archived
 
 ### Roadmap Evolution
 
+- Phase 5 added: PDF Export — result-list PDF export, per-shooter certificates, configurable header images
 - Phase 4 edited: added RES-05/RES-06 (tournament reset + destructive-edit guard) requested by user
 
 ### Decisions
@@ -113,9 +114,9 @@ Items acknowledged and deferred at milestone close on 2026-07-06:
 
 ## Session Continuity
 
-Last session: 2026-07-05T18:51:10.860Z
-Stopped at: Phase 4 UI-SPEC approved
-Resume file: .planning/phases/04-results/04-UI-SPEC.md
+Last session: 2026-07-06T13:09:42.702Z
+Stopped at: Phase 5 context gathered
+Resume file: .planning/phases/05-pdf-export/05-CONTEXT.md
 
 ## Operator Next Steps
 
