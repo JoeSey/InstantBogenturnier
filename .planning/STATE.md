@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: MVP
 status: Awaiting next milestone
-stopped_at: Phase 5 context gathered
-last_updated: "2026-07-06T13:09:42.742Z"
+stopped_at: Phase 5 UI-SPEC approved
+last_updated: "2026-07-06T13:20:24.358Z"
 last_activity: 2026-07-06 — Milestone v1.0 completed and archived
 progress:
   total_phases: 5
@@ -114,9 +114,9 @@ Items acknowledged and deferred at milestone close on 2026-07-06:
 
 ## Session Continuity
 
-Last session: 2026-07-06T13:09:42.702Z
-Stopped at: Phase 5 context gathered
-Resume file: .planning/phases/05-pdf-export/05-CONTEXT.md
+Last session: 2026-07-06T13:20:24.319Z
+Stopped at: Phase 5 UI-SPEC approved
+Resume file: .planning/phases/05-pdf-export/05-UI-SPEC.md
 
 ## Operator Next Steps
 
