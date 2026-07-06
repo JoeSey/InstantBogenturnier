@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: PDF Export
 status: Awaiting next milestone
-stopped_at: Milestone v1.1 completed and archived
-last_updated: "2026-07-06T14:47:54.470Z"
+stopped_at: Phase 6 context gathered
+last_updated: "2026-07-06T20:23:15.314Z"
 last_activity: 2026-07-06 — Milestone v1.1 completed and archived
 progress:
-  total_phases: 5
+  total_phases: 6
   completed_phases: 5
   total_plans: 15
   completed_plans: 15
-  percent: 100
+  percent: 83
 ---
 
 # Project State
@@ -59,6 +59,7 @@ Last activity: 2026-07-06 — Milestone v1.1 completed and archived
 ### Roadmap Evolution
 
 - Phase 5 added: PDF Export — result-list PDF export, per-shooter certificates, configurable header images
+- Phase 6 added: Certificates PDF Export — per-shooter PDF certificates, split off from Phase 5 (v1.1) via SPIDR Interfaces axis
 - Phase 4 edited: added RES-05/RES-06 (tournament reset + destructive-edit guard) requested by user
 
 ### Decisions
@@ -115,9 +116,9 @@ Items acknowledged and deferred at milestone close on 2026-07-06 (v1.0). Re-ackn
 
 ## Session Continuity
 
-Last session: 2026-07-06T13:20:24.319Z
-Stopped at: Phase 5 UI-SPEC approved
-Resume file: .planning/phases/05-pdf-export/05-UI-SPEC.md
+Last session: 2026-07-06T20:23:15.267Z
+Stopped at: Phase 6 context gathered
+Resume file: .planning/phases/06-certificates-pdf-export/06-CONTEXT.md
 
 ## Operator Next Steps
 
