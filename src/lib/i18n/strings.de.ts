@@ -26,7 +26,7 @@ export const strings = {
   // 02-UI-SPEC.md's "Strings Module Extension" block. This is the ONLY plan in Phase 2
   // that edits this file; Plans 02/03/04 only ever import from it.
   setup: {
-    heading: 'Klassen',
+    heading: 'Einrichtung',
     addClassHeading: 'Klasse hinzufügen',
     ageLabel: 'Alter',
     ageOptions: ['U12', 'U14', 'U16', 'U18', 'Erwachsene'],

@@ -65,7 +65,11 @@
       const a = document.createElement('a');
       a.href = url;
       a.download = resultsPdfFilename();
+      // WR-04: some WebKit/iOS Safari versions silently ignore .click() on an anchor
+      // that was never attached to the DOM — append before clicking, then clean up.
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch {
       errorFeedback = strings.resultsPdf.exportError;

@@ -34,11 +34,14 @@ async function setUpOneShooterOneArrowTournament(page: Page) {
   const roundsSection = page.locator('section', {
     has: page.getByRole('heading', { name: 'Runden und Passen' }),
   });
+  // The rounds/passes section auto-saves on each field's change/blur event — there's
+  // no explicit save button (see quick task 260706-9iv). Blur the last field to fire
+  // its onchange handler before navigating away.
   await roundsSection.getByText('Benutzerdefiniert').click();
   await roundsSection.getByLabel('Runden').fill('1');
   await roundsSection.getByLabel('Passen pro Runde').fill('1');
   await roundsSection.getByLabel('Pfeile pro Passe').fill('1');
-  await roundsSection.getByRole('button', { name: 'Speichern' }).click();
+  await roundsSection.getByLabel('Pfeile pro Passe').blur();
 
   // 4. Navigate to Schützen, register 1 shooter with an explicit line (avoids the
   // auto-assign confirmation modal, out of scope for this flow).
@@ -55,6 +58,11 @@ async function setUpOneShooterOneArrowTournament(page: Page) {
   await page.getByTestId('sidebar-nav').getByText('Erfassung').click();
   await expect(page.getByRole('heading', { level: 1, name: 'Erfassung' })).toBeVisible();
   await expect(page.getByText('Anna')).toBeVisible();
+  // Confirms the 1-arrow-per-passe config actually landed before proceeding — the
+  // rounds/passes section auto-saves asynchronously (no button to await), so without
+  // this the table can still be rendering the pre-save 3-arrow default, leaving extra
+  // cells unfilled and Abschließen permanently disabled below.
+  await expect(page.locator('tbody button')).toHaveCount(1);
 }
 
 test.describe('score entry finalize/lock (SCORE-06/07, D-09/D-10)', () => {
@@ -70,7 +78,7 @@ test.describe('score entry finalize/lock (SCORE-06/07, D-09/D-10)', () => {
 
     // Abschließen becomes enabled once the only cell is filled.
     const finalizeButton = page.getByRole('button', { name: 'Turnier abschließen' });
-    await expect(finalizeButton).toBeEnabled();
+    await expect(finalizeButton).toBeEnabled({ timeout: 10000 });
     await finalizeButton.click();
 
     // Non-dismissible confirmation modal.
@@ -93,7 +101,7 @@ test.describe('score entry finalize/lock (SCORE-06/07, D-09/D-10)', () => {
     await page.getByRole('button', { name: '8 Punkte' }).click();
 
     const finalizeButton = page.getByRole('button', { name: 'Turnier abschließen' });
-    await expect(finalizeButton).toBeEnabled();
+    await expect(finalizeButton).toBeEnabled({ timeout: 10000 });
     await finalizeButton.click();
     await page.getByRole('button', { name: 'Ja, abschließen' }).click();
     await expect(arrowButton).toBeDisabled();

@@ -33,11 +33,14 @@ async function setUpTournamentWithResults(page: Page) {
   const roundsSection = page.locator('section', {
     has: page.getByRole('heading', { name: 'Runden und Passen' }),
   });
+  // The rounds/passes section auto-saves on each field's change/blur event — there's
+  // no explicit save button (see quick task 260706-9iv). Blur the last field to fire
+  // its onchange handler before navigating away.
   await roundsSection.getByText('Benutzerdefiniert').click();
   await roundsSection.getByLabel('Runden').fill('1');
   await roundsSection.getByLabel('Passen pro Runde').fill('1');
   await roundsSection.getByLabel('Pfeile pro Passe').fill('1');
-  await roundsSection.getByRole('button', { name: 'Speichern' }).click();
+  await roundsSection.getByLabel('Pfeile pro Passe').blur();
 
   // 4. Register 2 shooters with explicit lines (avoids the auto-assign modal).
   await page.getByTestId('sidebar-nav').getByText('Schützen').click();

@@ -36,10 +36,10 @@ test.describe('Settings form (title + header logos)', () => {
     await expect(settingsSection.locator('img')).toBeVisible();
 
     await settingsSection.getByRole('button', { name: 'Speichern' }).click();
-    // The save writes to IndexedDB asynchronously (fire-and-forget from the click
-    // handler) — give it a moment to complete before reloading, or the reload can
-    // race ahead of the Dexie write.
-    await page.waitForTimeout(300);
+    // Wait on the "Gespeichert." confirmation (WR-05 fix) rather than a fixed sleep —
+    // it only appears after the await db.settings.put(...) call resolves, so this
+    // can't race ahead of the Dexie write like a timeout could.
+    await expect(settingsSection.getByText('Gespeichert.')).toBeVisible();
 
     // Reload the page — the persisted title and logo preview must reappear.
     await page.reload();

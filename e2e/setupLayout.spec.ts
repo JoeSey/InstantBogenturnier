@@ -7,7 +7,7 @@ test.describe('Setup page responsive grid', () => {
   test('2 columns at 1024px (md breakpoint and above)', async ({ page }) => {
     await page.setViewportSize({ width: 1024, height: 900 });
     await page.goto('/');
-    await expect(page.getByRole('heading', { level: 1, name: 'Klassen' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Einrichtung' })).toBeVisible();
     const trackCount = await page
       .getByTestId('setup-grid')
       .evaluate((el) => getComputedStyle(el).gridTemplateColumns.trim().split(' ').length);
@@ -17,7 +17,7 @@ test.describe('Setup page responsive grid', () => {
   test('1 column below md breakpoint (375px)', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 900 });
     await page.goto('/');
-    await expect(page.getByRole('heading', { level: 1, name: 'Klassen' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Einrichtung' })).toBeVisible();
     const trackCount = await page
       .getByTestId('setup-grid')
       .evaluate((el) => getComputedStyle(el).gridTemplateColumns.trim().split(' ').length);

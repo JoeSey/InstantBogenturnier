@@ -37,6 +37,21 @@
     }
   });
 
+  // WR-03: revoke any blob: object URL before it's replaced/discarded, and on
+  // component teardown, so navigating away from Setup doesn't leak one object URL
+  // per previously-saved logo for the life of the SPA session. Data URIs (from
+  // downscaleImageBlob) aren't real object URLs — revokeObjectURL is a documented
+  // no-op for them, so this helper is safe to call unconditionally.
+  function revokePreview(preview: string | undefined) {
+    if (preview?.startsWith('blob:')) URL.revokeObjectURL(preview);
+  }
+  $effect(() => {
+    return () => {
+      revokePreview(logoLeftPreview);
+      revokePreview(logoRightPreview);
+    };
+  });
+
   const MAX_LOGO_BYTES = 200 * 1024;
 
   async function handleLogoChange(side: 'left' | 'right', e: Event) {
@@ -55,10 +70,19 @@
 
     try {
       const { blob, dataUri } = await downscaleImageBlob(file);
+      // WR-01: the pre-flight check above only bounds the *original* file size —
+      // a low-compression image could still downscale to a blob at or above the
+      // 200KB cap the UI promises. Enforce the cap on the actual stored blob too.
+      if (blob.size > MAX_LOGO_BYTES) {
+        errorFeedback = strings.settingsForm.errorTooLarge;
+        return;
+      }
       if (side === 'left') {
+        revokePreview(logoLeftPreview);
         logoLeftBlob = blob;
         logoLeftPreview = dataUri;
       } else {
+        revokePreview(logoRightPreview);
         logoRightBlob = blob;
         logoRightPreview = dataUri;
       }
@@ -71,12 +95,12 @@
     errorFeedback = '';
     successFeedback = '';
     if (side === 'left') {
-      if (logoLeftPreview) URL.revokeObjectURL(logoLeftPreview);
+      revokePreview(logoLeftPreview);
       logoLeftBlob = undefined;
       logoLeftPreview = undefined;
       if (logoLeftInput) logoLeftInput.value = '';
     } else {
-      if (logoRightPreview) URL.revokeObjectURL(logoRightPreview);
+      revokePreview(logoRightPreview);
       logoRightBlob = undefined;
       logoRightPreview = undefined;
       if (logoRightInput) logoRightInput.value = '';

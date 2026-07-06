@@ -68,6 +68,17 @@ Score entry and results ranking must work correctly and offline, on one device, 
 - **Logos couldn't be removed:** added a remove ("X") button next to each logo preview in Settings, wired to clear the local blob/preview (persisted on next save).
 - **Remove button also reopened the file picker on iPad — real bug:** the preview image and remove button were nested inside the `<label for the file input>`, so any click inside the label — including the remove button — bubbled up and re-triggered the associated file input's native picker. Fixed by moving the preview/remove-button pair into a sibling element outside the label.
 
+**Remaining code-review warnings closed (2026-07-06, same fast-track batch):**
+- **WR-01 (no post-downscale size enforcement):** `handleLogoChange()` only checked the *original* file size against the 200KB cap; a low-compression re-encode could exceed it silently. Now checks `blob.size` after `downscaleImageBlob()` resolves too.
+- **WR-03 (object URL leak):** `logoLeftPreview`/`logoRightPreview` blob URLs were never revoked on replacement or component teardown. Added a `revokePreview()` helper (safe no-op on data URIs) called before replacement, on remove, and on component teardown via an `$effect` cleanup function.
+- **WR-04 (Safari/iOS download risk):** the export's anchor `.click()` never appended the element to the DOM, a documented WebKit failure pattern. Now appends before clicking and removes it after.
+- **WR-05 (flaky e2e timeout):** `settingsUpload.spec.ts` used a fixed `waitForTimeout(300)` to paper over the async Dexie write. Now waits on the "Gespeichert." confirmation (added in the batch above) as an observable signal instead.
+
+**Incidental e2e test fixes found while verifying the above:**
+- `scoring.spec.ts` / `results.spec.ts` still clicked a "Runden und Passen" save button that quick task 260706-9iv removed in favor of auto-save — pre-existing regression, unrelated to today's work. Fixed by blurring the last field instead, plus waiting for the score table to render the correct cell count before proceeding (a genuine timing dependency: the config write is fire-and-forget, so navigating to Erfassung too fast could still see the stale default 3-arrows-per-passe config).
+- `setupLayout.spec.ts` asserted an `h1` heading of "Klassen", which no longer exists (renamed to "Einrichtung" at some point, uncommitted until this batch) — fixed the assertion.
+- The full e2e suite shows one or two different, unrelated tests flaking on any given run in this sandboxed single-core environment; direct IndexedDB inspection confirmed the underlying app state is correct when this happens, so it's environmental contention, not a logic bug. Gave the one legitimately timing-sensitive assertion (`finalizeButton.toBeEnabled()`) a longer explicit timeout to absorb it.
+
 ## Constraints
 
 - **Tech stack**: Client-only (no backend/server, no hosted DB) — driven by the offline-at-the-range requirement and the fact that results don't need server-side persistence.
