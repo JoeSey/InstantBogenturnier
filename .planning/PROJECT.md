@@ -4,6 +4,8 @@
 
 A client-side web app (installable PWA) that lets an archery club trainer run informal training tournaments as judge (Kampfrichter) — from pre-tournament setup, through shooter registration and live score entry, to ranked results — fully usable offline on a single device at the shooting range.
 
+**Shipped as v1.0** (2026-07-06): the full setup → registration → live score entry → ranked results flow, installable and offline-capable.
+
 ## Core Value
 
 Score entry and results ranking must work correctly and offline, on one device, during a live tournament at the range — everything else is secondary.
@@ -22,13 +24,14 @@ Score entry and results ranking must work correctly and offline, on one device, 
 - [x] Trainer can save and reload 4-8 named tournament configuration presets (classes, lines, rounds/passes setup) to quickly start a new tournament — Validated in Phase 2: Setup & Registration (implementation also adds full-preset export/import via `dexie-export-import`, pulled forward from the v1 tech-stack recommendation — see 02-CONTEXT.md D-15)
 - [x] Trainer can enter scores per round/passe in a table (line, name, class, per-arrow scores, sum) sortable by clicking column headers (line, name, class, sum) — Validated in Phase 3: Score Entry
 - [x] Trainer can save score entries mid-entry (interim save, via true per-cell autosave) and the app detects when all rounds/passes are complete, revealing an "Abschließen" (finalize/lock) action distinct from saving — Validated in Phase 3: Score Entry
+- [x] Trainer can view results sorted by score descending, with ties sharing a rank and skipping the next rank (shared-rank/skip-next "1-2-2-4" convention) — Validated in Phase 4: Results
+- [x] Results view adapts by screen size: class-selectable dropdown on phone, multi-column all-classes view on larger screens — Validated in Phase 4: Results
+- [x] Trainer can explicitly start a new tournament via a dedicated reset action that clears all shooters and scores (not saved presets), after a confirmation warning — Validated in Phase 4: Results
+- [x] App blocks destructive edits (deleting shooters, changing rounds/passes configuration) while finalized tournament data exists, directing the trainer to reset first instead of silently cascading — Validated in Phase 4: Results
 
 ### Active
 
-- [ ] Trainer can view results sorted by score descending, with ties sharing a rank and skipping the next rank
-- [ ] Results view adapts by screen size: class-selectable dropdown on phone, multi-column all-classes view on larger screens
-- [ ] Trainer can explicitly start a new tournament via a dedicated reset action that clears all shooters and scores (not saved presets), after a confirmation warning
-- [ ] App blocks destructive edits (deleting shooters, changing rounds/passes configuration) while finalized tournament data exists, directing the trainer to reset first instead of silently cascading
+(None yet — next milestone requirements to be defined via `/gsd:new-milestone`. Candidates already tracked below in Out of Scope: PDF export/certificates and blank scoresheets for v1.5.)
 
 ### Out of Scope
 
@@ -46,6 +49,12 @@ Score entry and results ranking must work correctly and offline, on one device, 
 - The trainer (judge) operates from a single device throughout the tournament, including at the range where connectivity may be unavailable or unreliable.
 - Longer-term ambition (not in scope now): open-sourcing this for other archery clubs, tentatively v2.5.
 
+**v1.0 shipped state (2026-07-06):**
+- ~6,100 LOC across Svelte/TypeScript (`src/`), 208 commits, built 2026-07-03 → 2026-07-06.
+- Tech stack confirmed as planned: Svelte 5 + Vite 8 + Tailwind 4, `vite-plugin-pwa` (`registerType: 'prompt'`), Dexie.js (v3 schema: classes, shootingLines, roundsConfig, shooters, scores), `dexie-export-import` for preset backup.
+- Post-ship UAT (2026-07-06) surfaced four polish items, all fixed same-day via quick tasks: desktop sidebar nav was too wide (240px→120px, with a stale `xl:pl-[256px]` compensation value on `TopAppBar` missed during that fix and corrected separately), the Setup page's two-column grid stranded dead space under short cards (fixed by giving each column independent flex flow), the "Runden und Passen" section required an undiscoverable explicit save (switched to auto-save matching the rest of the setup page), and ending a tournament with zero registered archers was allowed to look "complete" (now explicitly guarded with a message).
+- Known tech debt: `npm run check`'s `tsc -p tsconfig.node.json` step fails on a pre-existing `vite.config.ts` module-resolution error (`Cannot find module './src/lib/config/app.config'`), unrelated to any v1.0 phase — not yet fixed, logged in `.planning/quick/260706-9iv-.../260706-9iv-deferred-items.md`.
+
 ## Constraints
 
 - **Tech stack**: Client-only (no backend/server, no hosted DB) — driven by the offline-at-the-range requirement and the fact that results don't need server-side persistence.
@@ -58,11 +67,15 @@ Score entry and results ranking must work correctly and offline, on one device, 
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Client-only PWA, no backend/DB | Matches hard offline-at-range requirement; results don't need persisting beyond the session; simplest path to eventual open-sourcing | — Pending |
-| Single-device score entry (no multi-device sync) | Confirmed actual usage pattern — one judge/trainer enters all scores | — Pending |
-| Svelte + Vite + Tailwind + vite-plugin-pwa + Dexie.js | Small bundle/fast load on range-side tablets/phones; Svelte's built-in reactivity covers score-table sorting and preset state without extra state libraries | — Pending |
-| Club identity kept as configuration, not hardcoded | Enables possible v2.5 open-source distribution to other clubs without a rewrite | — Pending |
-| v1 milestone = core Phases 1-4 only | PDF export (v1.5) and WhatsApp delivery (v2) are explicitly deferred to keep the first milestone focused | — Pending |
+| Client-only PWA, no backend/DB | Matches hard offline-at-range requirement; results don't need persisting beyond the session; simplest path to eventual open-sourcing | ✓ Good — shipped fully offline-capable, verified via Playwright offline tests |
+| Single-device score entry (no multi-device sync) | Confirmed actual usage pattern — one judge/trainer enters all scores | ✓ Good — no gaps surfaced during build or UAT |
+| Svelte + Vite + Tailwind + vite-plugin-pwa + Dexie.js | Small bundle/fast load on range-side tablets/phones; Svelte's built-in reactivity covers score-table sorting and preset state without extra state libraries | ✓ Good — runes-based reactivity handled sorting/completion-detection/ranking cleanly with no extra state library needed |
+| Club identity kept as configuration, not hardcoded | Enables possible v2.5 open-source distribution to other clubs without a rewrite | — Pending — not yet exercised; deferred until v2.5 |
+| v1 milestone = core Phases 1-4 only | PDF export (v1.5) and WhatsApp delivery (v2) are explicitly deferred to keep the first milestone focused | ✓ Good — shipped as scoped, no scope creep |
+| `vite-plugin-pwa` `registerType: 'prompt'` (not `autoUpdate`) | Avoid forcing a reload mid-tournament if the SW updates while the trainer briefly regains signal at the range | ✓ Good — implemented as planned in Phase 1 |
+| Tie-break convention: shared-rank/skip-next ("1-2-2-4"), no X-ring countback | Explicitly simplified for informal training tournaments per user confirmation | ✓ Good — implemented in Phase 4, matches spec |
+| Post-completion score correction: disallowed, permanent lock (no unlock path) | Confirmed in Phase 3 discussion (2026-07-05) — simplicity over recoverability for a single-session tool | ✓ Good — implemented in Phase 3/4, reused as `computeIsFinalized` guard across delete-shooter/delete-class/rounds-config |
+| `dexie-export-import` for full preset export/import | Pulled forward from v1 tech-stack recommendation as cheap insurance against iOS Safari's IndexedDB eviction | ✓ Good — implemented in Phase 2, scoped strictly to the presets table |
 
 ## Evolution
 
@@ -82,4 +95,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-05 — Phase 3: Score Entry complete*
+*Last updated: 2026-07-06 — after v1.0 milestone*

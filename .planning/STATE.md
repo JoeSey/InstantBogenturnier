@@ -1,42 +1,40 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-milestone_name: milestone
-status: milestone_complete
-stopped_at: Milestone complete (Phase 04 was final phase)
-last_updated: 2026-07-06T05:28:55.569Z
-last_activity: 2026-07-05 -- Phase 04 execution started
+milestone_name: MVP
+status: Awaiting next milestone
+stopped_at: Phase 4 UI-SPEC approved
+last_updated: "2026-07-06T09:15:51.063Z"
+last_activity: 2026-07-06 — Milestone v1.0 completed and archived
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 12
   completed_plans: 12
-  percent: 75
+  percent: 100
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-07-03)
+See: .planning/PROJECT.md (updated 2026-07-06)
 
 **Core value:** Score entry and results ranking must work correctly and offline, on one device, during a live tournament at the range — everything else is secondary.
 **Current focus:** Milestone complete
 
 ## Current Position
 
-Phase: 04
-Plan: Not started
-Status: Milestone complete
-Last activity: 2026-07-06 - Completed quick task 260706-9iv: v1.0 final polish (nav width, setup layout, auto-save, zero-shooter finalize guard)
-
-Progress: [░░░░░░░░░░] 0%
+Phase: Milestone v1.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-07-06 — Milestone v1.0 completed and archived
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 10
+- Total plans completed: 12
 - Average duration: - min
 - Total execution time: 0 hours
 
@@ -97,14 +95,28 @@ None yet.
 
 ## Deferred Items
 
-Items acknowledged and carried forward from previous milestone close:
+Items acknowledged and deferred at milestone close on 2026-07-06:
 
-| Category | Item | Status | Deferred At |
-|----------|------|--------|-------------|
-| *(none)* | | | |
+| Category | Item | Status |
+|----------|------|--------|
+| debug_session | knowledge-base | false positive — resolved-session log file, not an open investigation |
+| quick_task | 260705-aux-change-the-shooter-auto-assignment-confi | false positive — complete, missing optional status field |
+| quick_task | 260705-bht-add-10m-as-a-predefined-distance-option- | false positive — complete, missing optional status field |
+| quick_task | 260705-bnb-add-e-as-abbreviation-for-erwachsene-age | false positive — complete, missing optional status field |
+| quick_task | 260705-bvu-two-small-ui-cleanups-1-in-presetlist-sv | false positive — complete, missing optional status field |
+| quick_task | 260705-jda-score-entry-ui-fixes-1-color-the-scorepi | false positive — complete, missing optional status field |
+| quick_task | 260705-lpv-score-entry-dialog-ux-improvements-1-sho | false positive — complete, missing optional status field |
+| quick_task | 260705-ok7-score-picker-auto-advance-refinements-fo | false positive — complete, missing optional status field |
+| quick_task | 260705-p25-score-table-phone-view-compaction-on-pho | false positive — complete, missing optional status field |
+| quick_task | 260706-9iv-v1-0-final-polish-nav-width-setup-respon | false positive — complete, missing optional status field |
+| tech_debt | `npm run check`'s `tsc -p tsconfig.node.json` fails on pre-existing `vite.config.ts` module-resolution error, unrelated to any v1.0 phase | not fixed — logged in `.planning/quick/260706-9iv-.../260706-9iv-deferred-items.md` |
 
 ## Session Continuity
 
 Last session: 2026-07-05T18:51:10.860Z
 Stopped at: Phase 4 UI-SPEC approved
 Resume file: .planning/phases/04-results/04-UI-SPEC.md
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone
