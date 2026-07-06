@@ -86,7 +86,7 @@ describe('generateResultsPdf', () => {
     expect(blob.size).toBeGreaterThan(0);
   });
 
-  it('adds a page for each class after the first (D-01)', async () => {
+  it('packs small classes onto a single page instead of forcing a page break per class', async () => {
     const threeClasses: ClassRecord[] = [
       { id: 1, name: 'A-Klasse' },
       { id: 2, name: 'B-Klasse' },
@@ -99,9 +99,29 @@ describe('generateResultsPdf', () => {
     ]);
 
     const doc = await buildResultsPdfDoc(rankings, threeClasses, { id: 1 }, true);
-    // 3 classes, each with a single-row table that fits on one page => exactly 3 pages,
-    // with doc.addPage() called exactly twice (once before each class after the first).
-    expect(doc.getNumberOfPages()).toBe(3);
+    // 3 tiny classes (1 row each) easily fit together on a single A4 page — no forced
+    // page break between them since none would be torn apart.
+    expect(doc.getNumberOfPages()).toBe(1);
+  });
+
+  it('forces a page break when the next class block would not fit in the remaining space', async () => {
+    // Many classes, each with several rows, so the page fills up and a later class
+    // must start on a new page rather than being split mid-table.
+    const manyClasses: ClassRecord[] = Array.from({ length: 12 }, (_, i) => ({
+      id: i + 1,
+      name: `Klasse-${i + 1}`,
+    }));
+    const rankings = new Map<number, RankedRow[]>(
+      manyClasses.map((cls) => [
+        cls.id!,
+        Array.from({ length: 6 }, (_, i) =>
+          makeRow({ shooterId: cls.id! * 100 + i, name: `Shooter${i}`, sum: 200 - i, rank: i + 1 })
+        ),
+      ])
+    );
+
+    const doc = await buildResultsPdfDoc(rankings, manyClasses, { id: 1 }, true);
+    expect(doc.getNumberOfPages()).toBeGreaterThan(1);
   });
 
   it('respects includeIncomplete=false to exclude incomplete shooters from the table', async () => {

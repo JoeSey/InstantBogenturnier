@@ -59,6 +59,15 @@ Score entry and results ranking must work correctly and offline, on one device, 
 
 **v1.1 shipped state (2026-07-06):** PDF export added via jsPDF + jspdf-autotable, a new Dexie v4 `settings` table (Blob-backed header logos + title, reused unmodified by `dexie-export-import`), and Canvas-based image downscaling. One gap-closure round (05-03) was needed post-verification: `pdfExport.ts` originally hard-coded the jsPDF image format as `'PNG'` regardless of actual logo encoding, silently breaking JPEG logo uploads (fixed by normalizing all uploads to PNG at `imageDownscale.ts`'s downscale step, per user decision) — bundled with a fix for logo aspect-ratio stretching (`containFit()` helper) found in the same code review pass.
 
+**Post-ship UAT fixes (2026-07-06, fast-tracked outside the GSD phase workflow, directly on user request):**
+- **Settings save gave no feedback:** `SettingsForm.svelte`'s save button now shows a "Gespeichert." confirmation (and clears it on further edits), matching the pattern already used for the Results reset action.
+- **No image-size guidance:** added a size hint ("Empfohlen: ca. 500×500 Pixel oder kleiner...") under both logo upload fields.
+- **PDF header (title/logos) never appeared — real bug:** `Results.svelte` read a `liveQuery`-derived `settings` value only from an imperative click handler (`handleExport`), never from the template. This is exactly the Dexie + Svelte 5 runes staleness caveat already flagged in this file's Version Compatibility section — the reactive subscription could still be on its stale initial emission at click time even though the settings record had long since been saved. Fixed by fetching `db.settings.get(1)` directly and freshly at export time instead of relying on the cached reactive value. Found via manual browser reproduction (Playwright), not the existing automated suite — none of the existing tests exercised a saved-then-navigate-then-export sequence.
+- **Forced page break before every result class:** removed; `buildResultsPdfDoc()` now estimates each class block's height and only forces a page break when the block would otherwise be torn apart mid-table, packing small classes onto shared pages.
+- **Title/logos requested larger, bolder, and non-repeating:** title bumped to 18pt bold, rendered once at the top of the document (not per class), with logos placed left/right of the title instead of repeating under every class heading.
+- **Logos couldn't be removed:** added a remove ("X") button next to each logo preview in Settings, wired to clear the local blob/preview (persisted on next save).
+- **Remove button also reopened the file picker on iPad — real bug:** the preview image and remove button were nested inside the `<label for the file input>`, so any click inside the label — including the remove button — bubbled up and re-triggered the associated file input's native picker. Fixed by moving the preview/remove-button pair into a sibling element outside the label.
+
 ## Constraints
 
 - **Tech stack**: Client-only (no backend/server, no hosted DB) — driven by the offline-at-the-range requirement and the fact that results don't need server-side persistence.

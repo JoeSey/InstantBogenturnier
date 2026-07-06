@@ -48,17 +48,18 @@
   // and needs the same error-row shape as ScoreEntry.svelte.
   let errorFeedback = $state('');
 
-  // Phase 5 Plan 02 — PDF export controls (PDF-01/04/05/06/07). Reads the Plan 01
-  // settings singleton (title/logos) at export time via the same liveQuery + $derived
-  // pattern already used above for shooters/classes/rounds/scores.
-  const settingsQuery = liveQuery(() => db.settings.get(1));
-  let settings = $derived($settingsQuery ?? { id: 1 as const });
-
   let includeIncomplete = $state(false); // D-09: default unchecked
 
   async function handleExport() {
     errorFeedback = '';
     try {
+      // Fetch settings directly (not via liveQuery + $derived) — the reactive form was
+      // never read from the template, only from this imperative handler, so Svelte's
+      // store subscription could still be on its initial (stale/undefined) emission at
+      // click time even though the record was long since saved (see CLAUDE.md's Dexie +
+      // Svelte 5 liveQuery caveat). A direct read is also simply more correct here:
+      // export is a one-off action that should see the current persisted state.
+      const settings = (await db.settings.get(1)) ?? { id: 1 as const };
       const blob = await generateResultsPdf(rankings, classesWithResults, settings, includeIncomplete);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');

@@ -67,37 +67,27 @@ export async function buildResultsPdfDoc(
   const logoLeftData = settings?.logoLeftBlob ? await blobToDataUri(settings.logoLeftBlob) : undefined;
   const logoRightData = settings?.logoRightBlob ? await blobToDataUri(settings.logoRightBlob) : undefined;
 
-  let isFirstClass = true;
+  const PAGE_HEIGHT = doc.internal.pageSize.getHeight();
+  const BOTTOM_MARGIN = 20;
+  const CLASS_GAP = 10; // vertical gap between two classes sharing the same page
+  const ROW_HEIGHT_ESTIMATE = 7; // mm — fontSize 10 + jspdf-autotable's default cellPadding
+  const MIN_ROWS_TO_KEEP_TOGETHER = 3; // avoid orphaning a heading with almost no table below it
 
-  for (const cls of classesWithResults) {
-    if (!isFirstClass) {
-      doc.addPage(); // D-01: page break before every class except the first
-    }
-    isFirstClass = false;
+  const LOGO_MAX_WIDTH = 25;
+  const LOGO_MAX_HEIGHT = 20;
 
-    let cursorY = 20;
+  let cursorY = 20;
 
-    if (settings?.title) {
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text(settings.title, 20, cursorY);
-      cursorY += 10;
-    }
-
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text(cls.name, 20, cursorY);
-
-    const LOGO_MAX_WIDTH = 25;
-    const LOGO_MAX_HEIGHT = 20;
-
-    let imageY = cursorY + 5;
+  // Document-level header (title + logos) rendered once at the top of page 1 only —
+  // not repeated per class. Title is bold and larger than the per-class headings so
+  // it reads as the document's title, not another section heading.
+  if (settings?.title || logoLeftData || logoRightData) {
     let tallestLogoHeight = 0;
 
     if (logoLeftData) {
       const { width: natWidth, height: natHeight } = doc.getImageProperties(logoLeftData);
       const { width, height } = containFit(natWidth, natHeight, LOGO_MAX_WIDTH, LOGO_MAX_HEIGHT);
-      doc.addImage(logoLeftData, 'PNG', 20, imageY, width, height);
+      doc.addImage(logoLeftData, 'PNG', 20, cursorY, width, height);
       tallestLogoHeight = Math.max(tallestLogoHeight, height);
     }
     if (logoRightData) {
@@ -107,30 +97,65 @@ export async function buildResultsPdfDoc(
         logoRightData,
         'PNG',
         doc.internal.pageSize.getWidth() - 20 - width,
-        imageY,
+        cursorY,
         width,
         height
       );
       tallestLogoHeight = Math.max(tallestLogoHeight, height);
     }
-    if (logoLeftData || logoRightData) {
-      imageY += tallestLogoHeight;
-    } else {
-      imageY = cursorY + 5;
+
+    if (settings?.title) {
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.text(settings.title, doc.internal.pageSize.getWidth() / 2, cursorY + tallestLogoHeight / 2 + 3, {
+        align: 'center',
+      });
     }
 
+    cursorY += Math.max(tallestLogoHeight, settings?.title ? 12 : 0) + 10;
+  }
+
+  let isFirstClass = true;
+
+  for (const cls of classesWithResults) {
     const rows = classifications.get(cls.id!) ?? [];
     const body = buildClassTableRows(rows, includeIncomplete);
+
+    // No unconditional page break between classes — result blocks share a page when
+    // they fit. Only force a break when the estimated block height (heading + table
+    // header + a few data rows) wouldn't fit in the remaining space, which would
+    // otherwise tear the block apart mid-table.
+    const estimatedHeaderHeight = 10 + 5;
+    const estimatedTableHeight = (Math.min(body.length, MIN_ROWS_TO_KEEP_TOGETHER) + 1) * ROW_HEIGHT_ESTIMATE;
+    const estimatedBlockHeight = estimatedHeaderHeight + estimatedTableHeight;
+
+    if (!isFirstClass) {
+      const remainingSpace = PAGE_HEIGHT - BOTTOM_MARGIN - cursorY;
+      if (remainingSpace < estimatedBlockHeight) {
+        doc.addPage();
+        cursorY = 20;
+      } else {
+        cursorY += CLASS_GAP;
+      }
+    }
+    isFirstClass = false;
+
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text(cls.name, 20, cursorY);
 
     autoTable(doc, {
       head: [['Rang', 'Name', 'Gesamt']],
       body,
-      startY: imageY + 5,
+      startY: cursorY + 5,
       margin: { top: 20, right: 20, bottom: 20, left: 20 },
       theme: 'striped',
       styles: { fontSize: 10, halign: 'left' },
       headStyles: { fillColor: [100, 100, 100], textColor: 255, fontStyle: 'bold' },
     });
+
+    // jspdf-autotable attaches this at runtime; not present in its type definitions.
+    cursorY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
   }
 
   return doc;

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { liveQuery } from 'dexie';
+  import { X } from '@lucide/svelte';
   import { db } from '../db/schema';
   import { downscaleImageBlob } from '../utils/imageDownscale';
   import { strings } from '../i18n/strings.de';
@@ -15,7 +16,10 @@
   let logoRightBlob = $state<Blob | undefined>(undefined);
   let logoLeftPreview = $state<string | undefined>(undefined);
   let logoRightPreview = $state<string | undefined>(undefined);
+  let logoLeftInput = $state<HTMLInputElement | undefined>(undefined);
+  let logoRightInput = $state<HTMLInputElement | undefined>(undefined);
   let errorFeedback = $state('');
+  let successFeedback = $state('');
 
   // Sync local form state from the loaded record once it arrives (liveQuery starts as
   // `undefined` before the first read resolves). Rebuilds object-URL previews for any
@@ -37,6 +41,7 @@
 
   async function handleLogoChange(side: 'left' | 'right', e: Event) {
     errorFeedback = '';
+    successFeedback = '';
     const input = e.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
@@ -62,8 +67,25 @@
     }
   }
 
+  function removeLogo(side: 'left' | 'right') {
+    errorFeedback = '';
+    successFeedback = '';
+    if (side === 'left') {
+      if (logoLeftPreview) URL.revokeObjectURL(logoLeftPreview);
+      logoLeftBlob = undefined;
+      logoLeftPreview = undefined;
+      if (logoLeftInput) logoLeftInput.value = '';
+    } else {
+      if (logoRightPreview) URL.revokeObjectURL(logoRightPreview);
+      logoRightBlob = undefined;
+      logoRightPreview = undefined;
+      if (logoRightInput) logoRightInput.value = '';
+    }
+  }
+
   async function save() {
     errorFeedback = '';
+    successFeedback = '';
     try {
       await db.settings.put({
         id: 1,
@@ -71,6 +93,7 @@
         logoLeftBlob,
         logoRightBlob,
       });
+      successFeedback = strings.settingsForm.saveSuccess;
     } catch (err) {
       errorFeedback =
         err instanceof Error && err.name === 'QuotaExceededError'
@@ -95,31 +118,63 @@
     />
   </label>
 
-  <label class="block text-[14px] leading-[1.4] text-slate-700 dark:text-slate-200">
-    {strings.settingsForm.logoLeftLabel}
-    <input
-      type="file"
-      accept="image/png,image/jpeg"
-      onchange={(e) => handleLogoChange('left', e)}
-      class="mt-1 w-full text-[16px] leading-[1.5] text-slate-900 dark:text-slate-100"
-    />
+  <div class="flex flex-col gap-2">
+    <label class="block text-[14px] leading-[1.4] text-slate-700 dark:text-slate-200">
+      {strings.settingsForm.logoLeftLabel}
+      <input
+        bind:this={logoLeftInput}
+        type="file"
+        accept="image/png,image/jpeg"
+        onchange={(e) => handleLogoChange('left', e)}
+        class="mt-1 w-full text-[16px] leading-[1.5] text-slate-900 dark:text-slate-100"
+      />
+      <span class="mt-1 block text-[14px] leading-[1.4] text-slate-600 dark:text-slate-300">
+        {strings.settingsForm.logoSizeHint}
+      </span>
+    </label>
     {#if logoLeftPreview}
-      <img src={logoLeftPreview} alt="" class="mt-2 max-h-[80px] rounded-lg" />
+      <div class="flex items-start gap-2">
+        <img src={logoLeftPreview} alt="" class="max-h-[80px] rounded-lg" />
+        <button
+          type="button"
+          onclick={() => removeLogo('left')}
+          aria-label={strings.settingsForm.removeLogoLabel}
+          class="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 hover:text-red-600 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-red-400"
+        >
+          <X size={20} />
+        </button>
+      </div>
     {/if}
-  </label>
+  </div>
 
-  <label class="block text-[14px] leading-[1.4] text-slate-700 dark:text-slate-200">
-    {strings.settingsForm.logoRightLabel}
-    <input
-      type="file"
-      accept="image/png,image/jpeg"
-      onchange={(e) => handleLogoChange('right', e)}
-      class="mt-1 w-full text-[16px] leading-[1.5] text-slate-900 dark:text-slate-100"
-    />
+  <div class="flex flex-col gap-2">
+    <label class="block text-[14px] leading-[1.4] text-slate-700 dark:text-slate-200">
+      {strings.settingsForm.logoRightLabel}
+      <input
+        bind:this={logoRightInput}
+        type="file"
+        accept="image/png,image/jpeg"
+        onchange={(e) => handleLogoChange('right', e)}
+        class="mt-1 w-full text-[16px] leading-[1.5] text-slate-900 dark:text-slate-100"
+      />
+      <span class="mt-1 block text-[14px] leading-[1.4] text-slate-600 dark:text-slate-300">
+        {strings.settingsForm.logoSizeHint}
+      </span>
+    </label>
     {#if logoRightPreview}
-      <img src={logoRightPreview} alt="" class="mt-2 max-h-[80px] rounded-lg" />
+      <div class="flex items-start gap-2">
+        <img src={logoRightPreview} alt="" class="max-h-[80px] rounded-lg" />
+        <button
+          type="button"
+          onclick={() => removeLogo('right')}
+          aria-label={strings.settingsForm.removeLogoLabel}
+          class="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 hover:text-red-600 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-red-400"
+        >
+          <X size={20} />
+        </button>
+      </div>
     {/if}
-  </label>
+  </div>
 
   <button
     type="button"
@@ -128,6 +183,10 @@
   >
     {strings.settingsForm.saveButton}
   </button>
+
+  {#if successFeedback}
+    <p class="text-[14px] leading-[1.4] text-teal-600 dark:text-teal-400">{successFeedback}</p>
+  {/if}
 
   {#if errorFeedback}
     <p class="text-[14px] leading-[1.4] text-red-600 dark:text-red-400">{errorFeedback}</p>
