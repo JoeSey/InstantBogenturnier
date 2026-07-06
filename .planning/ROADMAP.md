@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** — Phases 1-4 (shipped 2026-07-06)
-- 🚧 **v1.1 PDF Export** — Phase 5 (in progress)
+- ✅ **v1.1 PDF Export** — Phase 5 (shipped 2026-07-06)
 
 ## Phases
 
@@ -27,6 +27,7 @@ Full phase details (goals, success criteria, requirements): `.planning/milestone
 | 2. Setup & Registration | v1.0 | 4/4 | Complete | 2026-07-04 |
 | 3. Score Entry | v1.0 | 3/3 | Complete | 2026-07-05 |
 | 4. Results | v1.0 | 3/3 | Complete | 2026-07-05 |
+| 5. PDF Export | v1.1 | 3/3 | Complete | 2026-07-06 |
 
 ### Phase 5: PDF Export
 
@@ -39,3 +40,4 @@ Full phase details (goals, success criteria, requirements): `.planning/milestone
 Plans:
 - [x] 05-01-PLAN.md — Settings data layer (Dexie v4 `settings` table, image downscaling) + SettingsForm UI wired into Setup view
 - [x] 05-02-PLAN.md — jsPDF/jspdf-autotable install, pure PDF generation function, Results view export button + checkbox
+- [x] 05-03-PLAN.md — Gap closure: normalize logo uploads to PNG (CR-01), fix aspect-ratio stretching (WR-02)
