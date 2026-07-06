@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/svelte';
+import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
 import SetupRounds from './SetupRounds.svelte';
 import { db } from '../db/schema';
 import { resetDb } from '../db/testHelpers';
@@ -10,7 +10,7 @@ describe('SetupRounds', () => {
     await resetDb();
   });
 
-  it('shows the WA 18m summary and persists the matching preset on save', async () => {
+  it('shows the WA 18m summary and persists the matching preset immediately on selection', async () => {
     render(SetupRounds);
 
     const wa18mRadio = screen.getByLabelText(strings.setup.wa18m);
@@ -18,17 +18,16 @@ describe('SetupRounds', () => {
 
     await screen.findByText('10 Passen, 3 Pfeile, 18m');
 
-    const saveButton = screen.getByRole('button', { name: strings.setup.saveButton });
-    await fireEvent.click(saveButton);
-
-    const config = await db.rounds.get(1);
-    expect(config).toEqual({
-      id: 1,
-      arrowsPerPasse: 3,
-      passesPerRound: 10,
-      numberOfRounds: 1,
-      distance: '18m',
-      presetId: 'wa-18m',
+    await waitFor(async () => {
+      const config = await db.rounds.get(1);
+      expect(config).toEqual({
+        id: 1,
+        arrowsPerPasse: 3,
+        passesPerRound: 10,
+        numberOfRounds: 1,
+        distance: '18m',
+        presetId: 'wa-18m',
+      });
     });
   });
 
@@ -50,17 +49,18 @@ describe('SetupRounds', () => {
 
     await screen.findByText('8 Passen, 5 Pfeile, 30m');
 
-    const saveButton = screen.getByRole('button', { name: strings.setup.saveButton });
-    await fireEvent.click(saveButton);
+    await fireEvent.change(distanceInput, { target: { value: '30m' } });
 
-    const config = await db.rounds.get(1);
-    expect(config).toEqual({
-      id: 1,
-      arrowsPerPasse: 5,
-      passesPerRound: 8,
-      numberOfRounds: 2,
-      distance: '30m',
-      presetId: undefined,
+    await waitFor(async () => {
+      const config = await db.rounds.get(1);
+      expect(config).toEqual({
+        id: 1,
+        arrowsPerPasse: 5,
+        passesPerRound: 8,
+        numberOfRounds: 2,
+        distance: '30m',
+        presetId: undefined,
+      });
     });
   });
 
@@ -85,17 +85,16 @@ describe('SetupRounds', () => {
       true
     );
 
-    const saveButton = screen.getByRole('button', { name: strings.setup.saveButton });
-    await fireEvent.click(saveButton);
-
-    const config = await db.rounds.get(1);
-    expect(config).toEqual({
-      id: 1,
-      arrowsPerPasse: 6,
-      passesPerRound: 4,
-      numberOfRounds: 3,
-      distance: '70m',
-      presetId: undefined,
+    await waitFor(async () => {
+      const config = await db.rounds.get(1);
+      expect(config).toEqual({
+        id: 1,
+        arrowsPerPasse: 6,
+        passesPerRound: 4,
+        numberOfRounds: 3,
+        distance: '70m',
+        presetId: undefined,
+      });
     });
   });
 
@@ -152,10 +151,6 @@ describe('SetupRounds', () => {
     ).toBe(true);
     expect(
       (screen.getByLabelText(strings.setup.customDistanceLabel) as HTMLInputElement).disabled
-    ).toBe(true);
-
-    expect(
-      (screen.getByRole('button', { name: strings.setup.saveButton }) as HTMLButtonElement).disabled
     ).toBe(true);
   });
 });
