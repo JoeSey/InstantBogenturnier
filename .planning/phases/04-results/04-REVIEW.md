@@ -27,11 +27,41 @@ files_reviewed_list:
   - src/lib/views/SetupRounds.test.ts
 findings:
   critical: 2
+  critical_fixed: 2
   warning: 4
+  warning_fixed: 1
   info: 2
   total: 8
-status: issues_found
+status: fixed
 ---
+
+## Post-Review Fix Summary
+
+Both CRITICAL findings and one WARNING (WR-02) were fixed and committed as `14b9de3`:
+
+- **CR-01** (`SetupRounds.svelte` never rehydrated from `db.rounds`): fixed — added a
+  `liveQuery(() => db.rounds.get(1))` + one-shot `$effect` hydration on mount, matching
+  the fix sketch in this report. Regression tests added: preset-record and
+  custom-record rehydration cases in `SetupRounds.test.ts`.
+- **CR-02** (`ShooterForm.svelte` edit path had no finalize guard): fixed — added an
+  `isFinalized` prop threaded from `Registration.svelte`, a `editLocked` guard that
+  blocks the edit-branch write in `handleSubmit`, disables the name/class/line inputs
+  and submit button, and surfaces `strings.results.guardMessage`. Adding a *new*
+  shooter remains unaffected. Regression tests added in `ShooterForm.test.ts`.
+- **WR-02** (orphaned `db.scores` rows on shooter delete): fixed — `deleteShooter` now
+  wraps the delete in `db.transaction('rw', db.shooters, db.scores, ...)` and also
+  clears `db.scores.where('shooterId').equals(id)`. Regression test added in
+  `Registration.test.ts`.
+
+**Deferred (not fixed in this pass):** WR-01 (ClassForm guard-message duplication in
+`{#each}` loop), WR-03 (guards rely on `disabled` attribute only, no in-function
+re-check), WR-04 (optimistic UI update not conditioned on autosave success), IN-01
+(duplicated `?? 2` default), IN-02 (duplicated error-message-formatting boilerplate).
+These are lower-severity robustness/DRY items, not correctness bugs affecting live
+tournament data — left for a future pass.
+
+Full test suite re-verified green after fixes: 127/127 unit tests, 21/21 e2e tests,
+`svelte-check` 0 errors.
 
 # Phase 4: Code Review Report
 
