@@ -2,7 +2,13 @@ import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
-import { appName, themeColor, backgroundColor, basePath } from './src/lib/config/app.config';
+import { appName, themeColor, backgroundColor } from './src/lib/config/app.config';
+
+// Deployment sub-path, e.g. VITE_BASE_PATH=/bogenturnier/ if hosted at
+// https://example.com/bogenturnier/. Must end with a trailing slash. Set as a build-time
+// env var (never commit a deployment-specific value here) -- see README.md "Deploying to
+// a sub-path". Defaults to '/' for root-hosted deployments.
+const basePath = process.env.VITE_BASE_PATH ?? '/';
 
 // https://vite.dev/config/
 export default defineConfig({

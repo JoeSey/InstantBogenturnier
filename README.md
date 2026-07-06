@@ -73,12 +73,24 @@ the repo root.
 ### Deploying to a sub-path
 
 If the app won't be served from your domain's root (e.g.
-`https://example.com/bogenturnier/` instead of `https://example.com/`), set `basePath`
-in `src/lib/config/app.config.ts` to that sub-path (with leading **and** trailing
-slash, e.g. `'/bogenturnier/'`) before running `npm run build`. This value drives both
-Vite's asset base path and the PWA manifest's `scope`/`start_url` — both must match the
-actual hosting path or the installed PWA's service-worker scope will be wrong and
-offline routing will silently break.
+`https://example.com/bogenturnier/` instead of `https://example.com/`), set
+`VITE_BASE_PATH` to that path when building — with leading **and** trailing slash:
+
+```bash
+VITE_BASE_PATH=/bogenturnier/ npm run build
+```
+
+This must match the exact URL path the browser will load the app from — not where you
+happened to clone/build the repo on disk. E.g. if you cloned the repo into a `bt/`
+folder on the server and your web server serves that folder's `dist/` subdirectory
+directly at `https://example.com/bt/dist/`, then `VITE_BASE_PATH=/bt/dist/` is correct.
+If instead you configure the server to serve `dist/`'s *contents* at
+`https://example.com/bt/`, use `VITE_BASE_PATH=/bt/` and rebuild.
+
+This value drives both Vite's asset base path and the PWA manifest's
+`scope`/`start_url` — both must match the actual hosting path or the installed PWA's
+service-worker scope will be wrong and offline routing will silently break. Never
+commit a deployment-specific value — set it as a build-time env var each time.
 
 ## Project Status
 
