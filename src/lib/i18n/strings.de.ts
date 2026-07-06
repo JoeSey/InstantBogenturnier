@@ -182,6 +182,14 @@ export const strings = {
     resetError: 'Zurücksetzen fehlgeschlagen: {error}',
     guardMessage: 'Turnier abgeschlossen — Zurücksetzen, um zu ändern.',
   },
+  // Phase 5 Plan 02 section — PDF export controls appended to the Results view
+  // (05-UI-SPEC.md's Copywriting Contract, verbatim).
+  resultsPdf: {
+    exportButton: 'PDF exportieren',
+    includeIncompleteLabel: 'Unvollständige Ergebnisse einbeziehen',
+    includeIncompleteHelper: 'Schützen mit unvollständigen Ergebnissen in den PDF aufnehmen',
+    exportError: 'Speichern fehlgeschlagen',
+  },
   // Phase 5 Plan 01 section — Settings form (tournament title + header logos) feeding
   // Plan 02's PDF export. Added verbatim per 05-01-PLAN.md Task 2 action text /
   // 05-UI-SPEC.md's Copywriting Contract.
