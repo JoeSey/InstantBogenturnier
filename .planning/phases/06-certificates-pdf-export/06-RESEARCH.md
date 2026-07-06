@@ -641,7 +641,7 @@ Mirror these patterns for new Phase 6 functions:
 | A6 | The `RankedRow` data structure from `ranking.ts` will have all fields needed for certificate generation (name, classId, rank, sum, isComplete). | Don't Hand-Roll, Code Examples | If false: certificate rendering will miss data (class name, rank) or fail. Impact: high (core feature broken). Mitigation: inspect Phase 4/5 output for `RankedRow` shape before starting implementation. |
 | A7 | Trainer's intent for D-09 (include/exclude incomplete shooters) is the same for certificates as for the results PDF. | Pitfalls, Discretion | If false: bulk certificates export incomplete shooters against trainer's expectation, creating confusion. Impact: medium (scope clarification needed). Mitigation: confirm with trainer during planning; add toggle explicitly to bulk-export dialog if ambiguous. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Certificate Layout Typography**  
    - What we know: D-05/D-06 specify header (logos + title) and shooter data (name, class, rank, sum); Claude's Discretion allows custom font sizes/spacing.
