@@ -39,13 +39,13 @@ describe('zipFilename', () => {
 describe('buildCertPdf', () => {
   it('produces a single-page A4 portrait document', async () => {
     const row = makeRow({ name: 'Anna', rank: 1, sum: 280 });
-    const doc = await buildCertPdf(row, 'RCV-U14', { id: 1 });
+    const doc = await buildCertPdf(row, 'RCV-U14', {});
     expect(doc.getNumberOfPages()).toBe(1);
   });
 
   it('renders the configured certificateHeading text', async () => {
     const row = makeRow({ name: 'Anna', rank: 1, sum: 280 });
-    const doc = await buildCertPdf(row, 'RCV-U14', { id: 1, certificateHeading: 'Ehrenurkunde' });
+    const doc = await buildCertPdf(row, 'RCV-U14', { certificateHeading: 'Ehrenurkunde' });
     const text = (doc as unknown as { getTextContent?: unknown }).getTextContent;
     // jsPDF doesn't expose rendered text directly in jsdom/node; assert via internal
     // output containing the string instead (jsPDF encodes text streams, but the plain
@@ -58,7 +58,7 @@ describe('buildCertPdf', () => {
 
   it('falls back to "Urkunde" when certificateHeading is undefined', async () => {
     const row = makeRow({ name: 'Anna', rank: 1, sum: 280 });
-    const doc = await buildCertPdf(row, 'RCV-U14', { id: 1 });
+    const doc = await buildCertPdf(row, 'RCV-U14', {});
     const output = doc.output();
     expect(output).toContain('Urkunde');
   });
@@ -67,7 +67,7 @@ describe('buildCertPdf', () => {
 describe('generateSingleCertPdf', () => {
   it('returns a Blob with type starting with application/pdf', async () => {
     const row = makeRow({ name: 'Anna', rank: 1, sum: 280 });
-    const blob = await generateSingleCertPdf(row, 'RCV-U14', { id: 1 });
+    const blob = await generateSingleCertPdf(row, 'RCV-U14', {});
     expect(blob).toBeInstanceOf(Blob);
     expect(blob.type.startsWith('application/pdf')).toBe(true);
   });
@@ -91,10 +91,16 @@ describe('generateBulkCerts', () => {
       [2, [makeRow({ shooterId: 3, name: 'Clara', sum: 270, rank: 1 })]],
     ]);
 
-    const blob = await generateBulkCerts(classifications, classes, { id: 1 });
+    const blob = await generateBulkCerts(classifications, classes, {});
     expect(blob).toBeInstanceOf(Blob);
 
-    const zip = await JSZip.loadAsync(blob);
+    // Read via Uint8Array rather than passing the Blob directly to JSZip.loadAsync:
+    // in a Vitest+jsdom test environment, jsdom's Blob/ArrayBuffer live in a separate
+    // realm from Node's, so JSZip's `instanceof Blob`/`instanceof ArrayBuffer` checks
+    // (and jsdom's FileReader Blob-brand check) can fail even though the bytes are
+    // identical. Wrapping in a Uint8Array constructed via this file's own realm avoids
+    // the mismatch; real browsers have only one realm, so this doesn't affect prod code.
+    const zip = await JSZip.loadAsync(new Uint8Array(await blob.arrayBuffer()));
     const filenames = Object.keys(zip.files);
     expect(filenames).toHaveLength(3);
     for (const filename of filenames) {
@@ -108,8 +114,8 @@ describe('generateBulkCerts', () => {
     );
     const classifications = new Map<number, RankedRow[]>([[1, rows]]);
 
-    const blob = await generateBulkCerts(classifications, [classes[0]], { id: 1 });
-    const zip = await JSZip.loadAsync(blob);
+    const blob = await generateBulkCerts(classifications, [classes[0]], {});
+    const zip = await JSZip.loadAsync(new Uint8Array(await blob.arrayBuffer()));
     expect(Object.keys(zip.files)).toHaveLength(5);
   });
 });
