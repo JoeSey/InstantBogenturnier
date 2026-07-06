@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: PDF Export
-status: Awaiting next milestone
+status: executing
 stopped_at: Phase 6 context gathered
-last_updated: "2026-07-06T20:23:15.314Z"
-last_activity: 2026-07-06 — Milestone v1.1 completed and archived
+last_updated: "2026-07-06T20:48:46.927Z"
+last_activity: 2026-07-06 -- Phase 06 execution started
 progress:
   total_phases: 6
   completed_phases: 5
-  total_plans: 15
+  total_plans: 20
   completed_plans: 15
-  percent: 83
+  percent: 75
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-06)
 
 **Core value:** Score entry and results ranking must work correctly and offline, on one device, during a live tournament at the range — everything else is secondary.
-**Current focus:** Milestone complete
+**Current focus:** Phase 06 — certificates-pdf-export
 
 ## Current Position
 
-Phase: Milestone v1.1 complete
-Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-07-06 — Milestone v1.1 completed and archived
+Phase: 06 (certificates-pdf-export) — EXECUTING
+Plan: 1 of 5
+Status: Executing Phase 06
+Last activity: 2026-07-06 -- Phase 06 execution started
 
 ## Performance Metrics
 

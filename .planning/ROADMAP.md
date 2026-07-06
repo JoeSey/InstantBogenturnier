@@ -43,10 +43,10 @@ Full phase details (goals, success criteria, requirements): `.planning/milestone
 **Goal:** Generate downloadable PDF certificates (Urkunden) for shooters — a tournament-wide bulk export producing a ZIP of one PDF per shooter, and a per-row single-certificate export from the results table.
 **Requirements**: D-01, D-02, D-03, D-04, D-05, D-06, D-07, D-08
 **Depends on:** Phase 5
-**Plans:** 5 plans
+**Plans:** 1/5 plans executed
 
 Plans:
-- [ ] 06-01-PLAN.md — Install JSZip, add certificateHeading Dexie v5 migration, add Phase 6 UI strings
+- [x] 06-01-PLAN.md — Install JSZip, add certificateHeading Dexie v5 migration, add Phase 6 UI strings
 - [ ] 06-02-PLAN.md — certificateExport.ts: buildCertPdf/generateSingleCertPdf/generateBulkCerts (TDD)
 - [ ] 06-03-PLAN.md — SettingsForm.svelte: certificate heading field
 - [ ] 06-04-PLAN.md — Results.svelte + ResultsTable.svelte: bulk + per-row certificate export UI
