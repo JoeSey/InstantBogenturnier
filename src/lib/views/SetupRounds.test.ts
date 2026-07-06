@@ -10,13 +10,16 @@ describe('SetupRounds', () => {
     await resetDb();
   });
 
-  it('shows the WA 18m summary and persists the matching preset immediately on selection', async () => {
+  it('shows the WA 25m summary and persists the matching preset immediately on selection', async () => {
     render(SetupRounds);
 
-    const wa18mRadio = screen.getByLabelText(strings.setup.wa18m);
-    await fireEvent.click(wa18mRadio);
+    // WA 18m is the default-selected preset on mount, so selecting it again would not
+    // fire a native radio "change" event (checked state wouldn't actually change).
+    // Select WA 25m instead to exercise a genuine onchange-driven auto-save.
+    const wa25mRadio = screen.getByLabelText(strings.setup.wa25m);
+    await fireEvent.click(wa25mRadio);
 
-    await screen.findByText('10 Passen, 3 Pfeile, 18m');
+    await screen.findByText('10 Passen, 3 Pfeile, 25m');
 
     await waitFor(async () => {
       const config = await db.rounds.get(1);
@@ -25,8 +28,8 @@ describe('SetupRounds', () => {
         arrowsPerPasse: 3,
         passesPerRound: 10,
         numberOfRounds: 1,
-        distance: '18m',
-        presetId: 'wa-18m',
+        distance: '25m',
+        presetId: 'wa-25m',
       });
     });
   });
