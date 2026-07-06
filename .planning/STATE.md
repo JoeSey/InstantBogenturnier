@@ -1,11 +1,11 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: MVP
-status: milestone_complete
-stopped_at: Milestone complete (Phase 05 was final phase)
-last_updated: 2026-07-06T14:42:24.577Z
-last_activity: 2026-07-06 -- Phase 05 execution started
+milestone: v1.1
+milestone_name: PDF Export
+status: Awaiting next milestone
+stopped_at: Milestone v1.1 completed and archived
+last_updated: "2026-07-06T14:47:54.470Z"
+last_activity: 2026-07-06 — Milestone v1.1 completed and archived
 progress:
   total_phases: 5
   completed_phases: 5
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-07-06)
 
 ## Current Position
 
-Phase: 05
-Plan: Not started
-Status: Milestone complete
-Last activity: 2026-07-06
+Phase: Milestone v1.1 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-07-06 — Milestone v1.1 completed and archived
 
 ## Performance Metrics
 
@@ -97,7 +97,7 @@ None yet.
 
 ## Deferred Items
 
-Items acknowledged and deferred at milestone close on 2026-07-06:
+Items acknowledged and deferred at milestone close on 2026-07-06 (v1.0). Re-acknowledged unchanged at v1.1 milestone close, same date — the pre-close audit re-scans the whole project rather than scoping to the current milestone, so these v1.0-era false positives resurface at every subsequent milestone close:
 
 | Category | Item | Status |
 |----------|------|--------|
