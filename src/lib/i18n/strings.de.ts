@@ -182,4 +182,19 @@ export const strings = {
     resetError: 'Zurücksetzen fehlgeschlagen: {error}',
     guardMessage: 'Turnier abgeschlossen — Zurücksetzen, um zu ändern.',
   },
+  // Phase 5 Plan 01 section — Settings form (tournament title + header logos) feeding
+  // Plan 02's PDF export. Added verbatim per 05-01-PLAN.md Task 2 action text /
+  // 05-UI-SPEC.md's Copywriting Contract.
+  settingsForm: {
+    heading: 'Einstellungen (PDF-Export)',
+    titleLabel: 'Turnier-Titel (für PDF)',
+    titlePlaceholder: "z.B. 'Trainingsturnier SV Musterbach 6.7.2026'",
+    logoLeftLabel: 'Logo links (PNG/JPEG, max 200KB)',
+    logoRightLabel: 'Logo rechts (PNG/JPEG, max 200KB)',
+    saveButton: 'Speichern',
+    errorTooLarge: 'Bild ist zu groß (max. 200KB).',
+    errorUploadFailed: 'Upload fehlgeschlagen',
+    errorSaveFailed: 'Speichern fehlgeschlagen',
+    errorQuotaExceeded: 'Speicher voll — versuchen Sie kleinere Bilder.',
+  },
 } as const;

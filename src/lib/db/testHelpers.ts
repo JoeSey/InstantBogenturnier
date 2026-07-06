@@ -10,5 +10,6 @@ export async function resetDb(): Promise<void> {
     db.shooters.clear(),
     db.presets.clear(),
     db.scores.clear(),
+    db.settings.clear(),
   ]);
 }

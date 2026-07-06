@@ -5,6 +5,7 @@
   import SetupRounds from './SetupRounds.svelte';
   import PresetSave from '../components/PresetSave.svelte';
   import PresetList from './PresetList.svelte';
+  import SettingsForm from '../components/SettingsForm.svelte';
   import { db } from '../db/schema';
   import { strings } from '../i18n/strings.de';
   import { computeIsFinalized } from '../utils/scoreCompletion';
@@ -92,6 +93,12 @@
           </h3>
           <PresetSave />
           <PresetList />
+        </GlassCard>
+      </section>
+
+      <section>
+        <GlassCard class="p-4 md:p-6">
+          <SettingsForm />
         </GlassCard>
       </section>
     </div>
