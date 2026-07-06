@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { buildClassTableRows, buildResultsPdfDoc, generateResultsPdf, resultsPdfFilename } from './pdfExport';
+import {
+  buildClassTableRows,
+  buildResultsPdfDoc,
+  containFit,
+  generateResultsPdf,
+  resultsPdfFilename,
+} from './pdfExport';
 import type { RankedRow } from './ranking';
 import type { ClassRecord } from '../db/schema';
 
@@ -118,5 +124,26 @@ describe('generateResultsPdf', () => {
     const blob = await generateResultsPdf(makeRankings(), classes, undefined, false);
     expect(blob.type).toBe('application/pdf');
     expect(blob.size).toBeGreaterThan(0);
+  });
+});
+
+describe('containFit', () => {
+  it('scales a wider-than-tall image down to fit the max box without distortion', () => {
+    // 100x50 (2:1) fit into a 25x20 (1.25:1) box: width-constrained, ratio = 25/100 = 0.25
+    expect(containFit(100, 50, 25, 20)).toEqual({ width: 25, height: 12.5 });
+  });
+
+  it('scales a taller-than-wide image down to fit the max box without distortion', () => {
+    // 50x100 (0.5:1) fit into a 25x20 box: height-constrained, ratio = 20/100 = 0.2
+    expect(containFit(50, 100, 25, 20)).toEqual({ width: 10, height: 20 });
+  });
+
+  it('scales a square image down preserving 1:1 aspect ratio', () => {
+    // 200x200 fit into 25x20: height-constrained, ratio = 20/200 = 0.1
+    expect(containFit(200, 200, 25, 20)).toEqual({ width: 20, height: 20 });
+  });
+
+  it('falls back to the max box when natural dimensions are zero/invalid', () => {
+    expect(containFit(0, 0, 25, 20)).toEqual({ width: 25, height: 20 });
   });
 });
