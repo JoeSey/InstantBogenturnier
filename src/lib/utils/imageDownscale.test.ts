@@ -97,6 +97,18 @@ describe('downscaleImageBlob', () => {
     createSpy.mockRestore();
   });
 
+  it('normalizes JPEG input to a PNG data URI (05-03 gap closure, CR-01)', async () => {
+    fakeImageDims = { width: 400, height: 300 };
+    fakeBlobSize = 80 * 1024;
+    const file = new File(['fake-jpeg-bytes'], 'logo.jpg', { type: 'image/jpeg' });
+
+    const result = await downscaleImageBlob(file, 500, 500, 0.85);
+
+    expect(result.dataUri.startsWith('data:image/png')).toBe(true);
+    expect(result.dataUri.startsWith('data:image/jpeg')).toBe(false);
+    expect(result.blob.type).toBe('image/png');
+  });
+
   it('rejects when passed a non-image file', async () => {
     const file = new File(['plain text'], 'notes.txt', { type: 'text/plain' });
 
