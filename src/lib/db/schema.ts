@@ -79,6 +79,7 @@ export interface SettingsRecord {
   title?: string;
   logoLeftBlob?: Blob;
   logoRightBlob?: Blob;
+  certificateHeading?: string;
 }
 
 class InstantBogenturnierDB extends Dexie {
@@ -124,6 +125,29 @@ class InstantBogenturnierDB extends Dexie {
       scores: '[shooterId+roundIndex+passeIndex+arrowIndex], shooterId, roundIndex',
       settings: 'id',
     });
+    // v5 (Phase 6 Plan 01): adds `certificateHeading` to the settings singleton (used by
+    // the per-shooter certificate PDF export). Every prior version's stores must be
+    // restated unchanged per Dexie's versioning requirement; only `.upgrade()` is new.
+    this.version(5)
+      .stores({
+        classes: '++id, name',
+        shootingLines: 'id',
+        rounds: 'id',
+        shooters: '++id, classId, lineAssignment',
+        presets: '++id, name',
+        scores: '[shooterId+roundIndex+passeIndex+arrowIndex], shooterId, roundIndex',
+        settings: 'id',
+      })
+      .upgrade((tx) =>
+        tx
+          .table('settings')
+          .toCollection()
+          .modify((record) => {
+            if (!record.certificateHeading) {
+              record.certificateHeading = 'Urkunde';
+            }
+          })
+      );
   }
 }
 
