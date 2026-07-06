@@ -3,6 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** — Phases 1-4 (shipped 2026-07-06)
+- 🚧 **v1.1 PDF Export** — Phase 5 (in progress)
 
 ## Phases
 
@@ -26,3 +27,15 @@ Full phase details (goals, success criteria, requirements): `.planning/milestone
 | 2. Setup & Registration | v1.0 | 4/4 | Complete | 2026-07-04 |
 | 3. Score Entry | v1.0 | 3/3 | Complete | 2026-07-05 |
 | 4. Results | v1.0 | 3/3 | Complete | 2026-07-05 |
+
+### Phase 5: PDF Export
+
+**Goal:** As a Trainer/Kampfrichter, I want to export the tournament results as a PDF, so that I can archive, print, or manually share them after a tournament.
+**Mode:** mvp
+**Requirements**: PDF-01, PDF-02, PDF-03, PDF-04, PDF-05, PDF-06, PDF-07
+**Depends on:** Phase 4
+**Plans:** 2 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Settings data layer (Dexie v4 `settings` table, image downscaling) + SettingsForm UI wired into Setup view
+- [ ] 05-02-PLAN.md — jsPDF/jspdf-autotable install, pure PDF generation function, Results view export button + checkbox
