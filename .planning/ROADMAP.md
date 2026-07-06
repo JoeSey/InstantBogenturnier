@@ -34,7 +34,7 @@ Full phase details (goals, success criteria, requirements): `.planning/milestone
 **Mode:** mvp
 **Requirements**: PDF-01, PDF-02, PDF-03, PDF-04, PDF-05, PDF-06, PDF-07
 **Depends on:** Phase 4
-**Plans:** 2/2 plans complete
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 05-01-PLAN.md — Settings data layer (Dexie v4 `settings` table, image downscaling) + SettingsForm UI wired into Setup view
