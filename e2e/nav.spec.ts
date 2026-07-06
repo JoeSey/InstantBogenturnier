@@ -58,6 +58,15 @@ test.describe('nav sections', () => {
   });
 });
 
+test.describe('desktop nav width (xl breakpoint, >=1280px)', () => {
+  test('sidebar nav is 120px wide at 1440px viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    const box = await page.getByTestId('sidebar-nav').boundingBox();
+    expect(box?.width).toBe(120);
+  });
+});
+
 test.describe('update banner', () => {
   test('is not shown on normal load', async ({ page }) => {
     await page.goto('/');
