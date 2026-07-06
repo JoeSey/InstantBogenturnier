@@ -12,6 +12,7 @@
   let settings = $derived($settingsQuery);
 
   let title = $state('');
+  let certificateHeading = $state('');
   let logoLeftBlob = $state<Blob | undefined>(undefined);
   let logoRightBlob = $state<Blob | undefined>(undefined);
   let logoLeftPreview = $state<string | undefined>(undefined);
@@ -29,6 +30,7 @@
   $effect(() => {
     if (!initialized && settings !== undefined) {
       title = settings?.title ?? '';
+      certificateHeading = settings?.certificateHeading ?? '';
       logoLeftBlob = settings?.logoLeftBlob;
       logoRightBlob = settings?.logoRightBlob;
       logoLeftPreview = logoLeftBlob ? URL.createObjectURL(logoLeftBlob) : undefined;
@@ -114,6 +116,7 @@
       await db.settings.put({
         id: 1,
         title,
+        certificateHeading,
         logoLeftBlob,
         logoRightBlob,
       });
@@ -138,6 +141,16 @@
       type="text"
       bind:value={title}
       placeholder={strings.settingsForm.titlePlaceholder}
+      class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+    />
+  </label>
+
+  <label class="block text-[14px] leading-[1.4] text-slate-700 dark:text-slate-200">
+    {strings.settingsForm.certificateHeadingLabel}
+    <input
+      type="text"
+      bind:value={certificateHeading}
+      placeholder={strings.settingsForm.certificateHeadingPlaceholder}
       class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
     />
   </label>
