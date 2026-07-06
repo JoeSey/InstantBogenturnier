@@ -34,8 +34,8 @@ Full phase details (goals, success criteria, requirements): `.planning/milestone
 **Mode:** mvp
 **Requirements**: PDF-01, PDF-02, PDF-03, PDF-04, PDF-05, PDF-06, PDF-07
 **Depends on:** Phase 4
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
-- [ ] 05-01-PLAN.md — Settings data layer (Dexie v4 `settings` table, image downscaling) + SettingsForm UI wired into Setup view
+- [x] 05-01-PLAN.md — Settings data layer (Dexie v4 `settings` table, image downscaling) + SettingsForm UI wired into Setup view
 - [ ] 05-02-PLAN.md — jsPDF/jspdf-autotable install, pure PDF generation function, Results view export button + checkbox

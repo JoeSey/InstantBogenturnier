@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: MVP
-status: Awaiting next milestone
+status: executing
 stopped_at: Phase 5 UI-SPEC approved
-last_updated: "2026-07-06T13:20:24.358Z"
-last_activity: 2026-07-06 — Milestone v1.0 completed and archived
+last_updated: "2026-07-06T13:32:24.922Z"
+last_activity: 2026-07-06 -- Phase 05 execution started
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 12
+  total_plans: 14
   completed_plans: 12
   percent: 80
 ---
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-06)
 
 **Core value:** Score entry and results ranking must work correctly and offline, on one device, during a live tournament at the range — everything else is secondary.
-**Current focus:** Milestone complete
+**Current focus:** Phase 05 — pdf-export
 
 ## Current Position
 
-Phase: Milestone v1.0 complete
-Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-07-06 — Milestone v1.0 completed and archived
+Phase: 05 (pdf-export) — EXECUTING
+Plan: 1 of 2
+Status: Executing Phase 05
+Last activity: 2026-07-06 -- Phase 05 execution started
 
 ## Performance Metrics
 
