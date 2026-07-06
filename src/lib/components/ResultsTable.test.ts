@@ -19,7 +19,7 @@ function row(overrides: Partial<RankedRow> = {}): RankedRow {
 // Behavior per 04-01-PLAN.md Task 2 <acceptance_criteria> block.
 describe('ResultsTable', () => {
   it('renders all 4 column headers with the exact German copy', () => {
-    render(ResultsTable, { props: { rows: [] } });
+    render(ResultsTable, { props: { rows: [], oncertexport: () => {} } });
 
     expect(screen.getByText(strings.results.columnRank)).not.toBeNull();
     expect(screen.getByText(strings.results.columnName)).not.toBeNull();
@@ -35,7 +35,7 @@ describe('ResultsTable', () => {
       row({ shooterId: 4, name: 'Dirk', rank: 4, sum: 70 }),
     ];
 
-    const { container } = render(ResultsTable, { props: { rows } });
+    const { container } = render(ResultsTable, { props: { rows, oncertexport: () => {} } });
 
     const rank1Badge = screen.getByLabelText('Rang 1');
     expect(rank1Badge.className).toContain('bg-amber-100');
@@ -59,7 +59,7 @@ describe('ResultsTable', () => {
   it('renders the in-progress marker and sr-only aria text for an incomplete row', () => {
     const rows: RankedRow[] = [row({ isComplete: false, sum: 42 })];
 
-    render(ResultsTable, { props: { rows } });
+    render(ResultsTable, { props: { rows, oncertexport: () => {} } });
 
     const gesamtCell = screen.getByText('42').closest('td') as HTMLElement;
     expect(gesamtCell.textContent).toContain('*');
@@ -68,7 +68,7 @@ describe('ResultsTable', () => {
 
   it('only shows the legend line when at least one row is incomplete', () => {
     const { rerender } = render(ResultsTable, {
-      props: { rows: [row({ isComplete: true })] },
+      props: { rows: [row({ isComplete: true })], oncertexport: () => {} },
     });
     expect(screen.queryByText(strings.results.inProgressLegend)).toBeNull();
 
@@ -77,7 +77,7 @@ describe('ResultsTable', () => {
   });
 
   it('has no onclick sort handlers in the header row', () => {
-    const { container } = render(ResultsTable, { props: { rows: [row()] } });
+    const { container } = render(ResultsTable, { props: { rows: [row()], oncertexport: () => {} } });
     const headerButtons = container.querySelectorAll('thead button');
     expect(headerButtons.length).toBe(0);
   });

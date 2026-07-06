@@ -167,6 +167,7 @@ export const strings = {
     columnName: 'Name',
     columnLine: 'Schießplatz',
     columnTotal: 'Gesamt',
+    columnCertificate: 'Urkunde',
     classDropdownLabel: 'Klasse',
     inProgressLegend: '* Ergebnis noch nicht vollständig — Erfassung läuft.',
     inProgressAria: 'Ergebnis noch nicht vollständig',
