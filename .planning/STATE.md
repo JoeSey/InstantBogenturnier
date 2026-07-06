@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-07-03)
 Phase: 04
 Plan: Not started
 Status: Milestone complete
-Last activity: 2026-07-06
+Last activity: 2026-07-06 - Completed quick task 260706-9iv: v1.0 final polish (nav width, setup layout, auto-save, zero-shooter finalize guard)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -93,6 +93,7 @@ None yet.
 | 260705-lpv | Score entry dialog UX: archer name in picker title, auto-advance through arrows, backdrop-click cancel | 2026-07-05 | e4975be | [260705-lpv-score-entry-dialog-ux-improvements-1-sho](./quick/260705-lpv-score-entry-dialog-ux-improvements-1-sho/) |
 | 260705-ok7 | Score-picker auto-advance refinements: close on edit-existing, same-row-only advance, live title preview | 2026-07-05 | 9a00506 | [260705-ok7-score-picker-auto-advance-refinements-fo](./quick/260705-ok7-score-picker-auto-advance-refinements-fo/) |
 | 260705-p25 | Score table phone-view compaction: hide Klasse column, tighter padding below md breakpoint | 2026-07-05 | f3cf656 | [260705-p25-score-table-phone-view-compaction-on-pho](./quick/260705-p25-score-table-phone-view-compaction-on-pho/) |
+| 260706-9iv | v1.0 final polish: sidebar nav 240px→120px, Setup two-column layout, auto-save Runden und Passen (remove Speichern button), disable Abschließen with message when zero shooters registered | 2026-07-06 | 74578fa | [260706-9iv-v1-0-final-polish-nav-width-setup-respon](./quick/260706-9iv-v1-0-final-polish-nav-width-setup-respon/) |
 
 ## Deferred Items
 
