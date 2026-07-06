@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import Dexie from 'dexie';
 import { db } from './schema';
 import { resetDb } from './testHelpers';
 
@@ -115,5 +116,52 @@ describe('Dexie v4 schema', () => {
     await db.settings.put({ id: 1, title: 'With Logo', logoLeftBlob: blob });
     const record = await db.settings.get(1);
     expect(record?.logoLeftBlob).toBeInstanceOf(Blob);
+  });
+});
+
+// Dexie v5 schema (Phase 6 Plan 01): adds `certificateHeading` to the settings singleton
+// on top of Phase 5's 7 tables. Per 06-01-PLAN.md Task 1.
+describe('Dexie v5 schema', () => {
+  beforeEach(async () => {
+    await resetDb();
+  });
+
+  it('defines all 7 tables including settings', () => {
+    expect(db.tables.map((t) => t.name).sort()).toEqual(
+      ['classes', 'presets', 'rounds', 'scores', 'settings', 'shooters', 'shootingLines'].sort()
+    );
+  });
+
+  it('defaults certificateHeading to "Urkunde" for a pre-v5 settings row after the upgrade runs', async () => {
+    // Simulate an existing installation on v4: close the shared v5 `db`, delete the
+    // underlying database, recreate it at v4 only, write a settings row without
+    // certificateHeading, then reopen the real v5 `db` so its `.upgrade()` runs against
+    // that pre-existing v4 data.
+    db.close();
+    await Dexie.delete('InstantBogenturnierDB');
+
+    const v4Db = new Dexie('InstantBogenturnierDB');
+    v4Db.version(4).stores({
+      classes: '++id, name',
+      shootingLines: 'id',
+      rounds: 'id',
+      shooters: '++id, classId, lineAssignment',
+      presets: '++id, name',
+      scores: '[shooterId+roundIndex+passeIndex+arrowIndex], shooterId, roundIndex',
+      settings: 'id',
+    });
+    await v4Db.open();
+    await v4Db.table('settings').put({ id: 1, title: 'Test' });
+    v4Db.close();
+
+    await db.open();
+    const record = await db.settings.get(1);
+    expect(record?.certificateHeading).toBe('Urkunde');
+  });
+
+  it('round-trips an explicit certificateHeading value unchanged', async () => {
+    await db.settings.put({ id: 1, title: 'Test', certificateHeading: 'Teilnahmeurkunde' });
+    const record = await db.settings.get(1);
+    expect(record?.certificateHeading).toBe('Teilnahmeurkunde');
   });
 });
