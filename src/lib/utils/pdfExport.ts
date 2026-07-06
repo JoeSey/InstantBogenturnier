@@ -29,6 +29,25 @@ function blobToDataUri(blob: Blob): Promise<string> {
   });
 }
 
+// 05-03 gap closure (WR-02): downscaleImageBlob() preserves the source logo's aspect
+// ratio, but the PDF previously drew every logo into a hard-coded 25x20mm (1.25:1)
+// box, stretching/squashing any logo whose aspect ratio differs. containFit() scales
+// the natural width/height down to fit within the box without distortion — mirroring
+// CSS `object-fit: contain` — so non-1.25:1 logos (square crests, wide banners) render
+// at the correct proportions instead of being stretched.
+export function containFit(
+  naturalWidth: number,
+  naturalHeight: number,
+  maxWidth: number,
+  maxHeight: number
+): { width: number; height: number } {
+  if (!naturalWidth || !naturalHeight) {
+    return { width: maxWidth, height: maxHeight };
+  }
+  const ratio = Math.min(maxWidth / naturalWidth, maxHeight / naturalHeight);
+  return { width: naturalWidth * ratio, height: naturalHeight * ratio };
+}
+
 // Exported separately from generateResultsPdf so tests can assert on
 // doc.getNumberOfPages() directly, without round-tripping through a Blob.
 export async function buildResultsPdfDoc(
@@ -69,15 +88,33 @@ export async function buildResultsPdfDoc(
     doc.setFont('helvetica', 'bold');
     doc.text(cls.name, 20, cursorY);
 
+    const LOGO_MAX_WIDTH = 25;
+    const LOGO_MAX_HEIGHT = 20;
+
     let imageY = cursorY + 5;
+    let tallestLogoHeight = 0;
+
     if (logoLeftData) {
-      doc.addImage(logoLeftData, 'PNG', 20, imageY, 25, 20);
+      const { width: natWidth, height: natHeight } = doc.getImageProperties(logoLeftData);
+      const { width, height } = containFit(natWidth, natHeight, LOGO_MAX_WIDTH, LOGO_MAX_HEIGHT);
+      doc.addImage(logoLeftData, 'PNG', 20, imageY, width, height);
+      tallestLogoHeight = Math.max(tallestLogoHeight, height);
     }
     if (logoRightData) {
-      doc.addImage(logoRightData, 'PNG', doc.internal.pageSize.getWidth() - 50, imageY, 25, 20);
+      const { width: natWidth, height: natHeight } = doc.getImageProperties(logoRightData);
+      const { width, height } = containFit(natWidth, natHeight, LOGO_MAX_WIDTH, LOGO_MAX_HEIGHT);
+      doc.addImage(
+        logoRightData,
+        'PNG',
+        doc.internal.pageSize.getWidth() - 20 - width,
+        imageY,
+        width,
+        height
+      );
+      tallestLogoHeight = Math.max(tallestLogoHeight, height);
     }
     if (logoLeftData || logoRightData) {
-      imageY += 20;
+      imageY += tallestLogoHeight;
     } else {
       imageY = cursorY + 5;
     }

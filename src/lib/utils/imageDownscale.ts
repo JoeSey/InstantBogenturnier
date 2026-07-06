@@ -6,6 +6,12 @@
 // before any Canvas processing — malformed/non-image files reject before reaching
 // `Image.onload`, so the caller can surface `errorUploadFailed` without ever handing
 // arbitrary bytes to the Canvas/Image pipeline.
+//
+// 05-03 gap closure (CR-01): the re-encoded output is always normalized to PNG,
+// regardless of the source file's MIME type. Previously JPEG uploads were re-encoded
+// as JPEG, but pdfExport.ts's buildResultsPdfDoc() hard-codes `doc.addImage(..., 'PNG', ...)`
+// — a JPEG-encoded data URI passed there throws/corrupts jsPDF's output. Normalizing
+// every downscaled logo to PNG here removes the format mismatch at its source.
 
 export interface DownscaledImage {
   blob: Blob;
@@ -48,7 +54,8 @@ export function downscaleImageBlob(
         }
         ctx.drawImage(img, 0, 0, width, height);
 
-        const mimeType = file.type === 'image/jpeg' ? 'image/jpeg' : 'image/png';
+        // Always normalize to PNG output — see 05-03 gap-closure note above.
+        const mimeType = 'image/png';
         const dataUri = canvas.toDataURL(mimeType, quality);
 
         canvas.toBlob(
