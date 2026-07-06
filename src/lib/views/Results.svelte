@@ -1,9 +1,10 @@
 <script lang="ts">
   import { liveQuery } from 'dexie';
-  import { RotateCcw } from '@lucide/svelte';
+  import { RotateCcw, FileDown } from '@lucide/svelte';
   import { db } from '../db/schema';
   import { strings } from '../i18n/strings.de';
   import { computeClassRankings } from '../utils/ranking';
+  import { generateResultsPdf, resultsPdfFilename } from '../utils/pdfExport';
   import GlassCard from '../components/GlassCard.svelte';
   import ClassSelector from '../components/ClassSelector.svelte';
   import ResultsTable from '../components/ResultsTable.svelte';
@@ -46,6 +47,29 @@
   // Declared now (unused by this plan) since Plan 02 (reset) extends this same file
   // and needs the same error-row shape as ScoreEntry.svelte.
   let errorFeedback = $state('');
+
+  // Phase 5 Plan 02 — PDF export controls (PDF-01/04/05/06/07). Reads the Plan 01
+  // settings singleton (title/logos) at export time via the same liveQuery + $derived
+  // pattern already used above for shooters/classes/rounds/scores.
+  const settingsQuery = liveQuery(() => db.settings.get(1));
+  let settings = $derived($settingsQuery ?? { id: 1 as const });
+
+  let includeIncomplete = $state(false); // D-09: default unchecked
+
+  async function handleExport() {
+    errorFeedback = '';
+    try {
+      const blob = await generateResultsPdf(rankings, classesWithResults, settings, includeIncomplete);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = resultsPdfFilename();
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      errorFeedback = strings.resultsPdf.exportError;
+    }
+  }
 
   // RES-05/D-08/D-09/D-10: "Neues Turnier starten" reset flow. Reuses ConfirmDialog's
   // non-dismissible confirm pattern (T-4-01) and wraps both clears in a single Dexie
@@ -123,6 +147,34 @@
       {/each}
     </div>
   {/if}
+
+  <GlassCard class="flex flex-col gap-4 p-4 md:p-6">
+    <label class="flex min-h-[44px] cursor-pointer items-start gap-2">
+      <input
+        type="checkbox"
+        bind:checked={includeIncomplete}
+        class="mt-1 h-4 w-4 rounded border-slate-300 dark:border-slate-600"
+      />
+      <span class="flex flex-col">
+        <span class="text-[16px] leading-[1.5] text-slate-900 dark:text-slate-100">
+          {strings.resultsPdf.includeIncompleteLabel}
+        </span>
+        <span class="text-[14px] leading-[1.4] text-slate-600 dark:text-slate-300">
+          {strings.resultsPdf.includeIncompleteHelper}
+        </span>
+      </span>
+    </label>
+
+    <button
+      type="button"
+      onclick={handleExport}
+      disabled={classesWithResults.length === 0}
+      class="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-teal-500 px-4 py-2 text-[16px] font-semibold leading-[1.5] text-white hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300"
+    >
+      <FileDown size={20} />
+      {strings.resultsPdf.exportButton}
+    </button>
+  </GlassCard>
 
   {#if resetSuccessMessage}
     <p class="text-[14px] leading-[1.4] text-teal-600 dark:text-teal-400">{resetSuccessMessage}</p>
