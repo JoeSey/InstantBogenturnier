@@ -1,5 +1,26 @@
 # Milestones
 
+## v1.1 PDF Export (Shipped: 2026-07-06)
+
+**Delivered:** PDF export of tournament results, with a configurable header title and two logo images stored via a new Settings section.
+
+**Phases completed:** 1 phase (Phase 5), 3 plans, 4 tasks (2 build + 2 gap-closure)
+**Timeline:** 2026-07-06 (same day as v1.0's ship date)
+**Git range:** 7b87a76 (phase plan) → 98144d6 (roadmap archive) — 27 files changed, +2513/-23 LOC
+**Known deferred items at close:** 10 (see STATE.md Deferred Items — carried over unchanged from v1.0's close; all verified false positives, no real open work)
+
+**Key accomplishments:**
+
+- Trainer can configure a PDF header title and two logo images in a new Settings section, backed by a Dexie v4 `settings` table with Canvas-based image downscaling (`downscaleImageBlob()`).
+- Trainer can export ranked tournament results as a single, paginated PDF (one section per class, Rank/Name/Gesamt columns) directly from the Results view via `generateResultsPdf()` — verified end-to-end including fully offline.
+- Trainer can include or exclude incomplete-score shooters from the export via a checkbox, default excluded.
+- Post-verification gap closure (plan 05-03): header logos of any format (PNG or JPEG) and any aspect ratio now render correctly in the PDF — fixed by normalizing uploads to PNG at the downscale step and adding an aspect-ratio-preserving `containFit()` placement helper.
+- Existing `dexie-export-import` preset backup mechanism reused unmodified to also cover the new settings/logo data.
+
+**Follow-up:** Per-shooter PDF certificates were split off from Phase 5 via SPIDR (Interfaces axis) into a future phase — not yet scheduled.
+
+---
+
 ## v1.0 MVP (Shipped: 2026-07-06)
 
 **Delivered:** Full setup → registration → live score entry → ranked results flow for running an informal archery training tournament, installable as an offline-capable PWA on a single device.
