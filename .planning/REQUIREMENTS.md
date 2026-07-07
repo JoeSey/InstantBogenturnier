@@ -1,0 +1,59 @@
+# Requirements: Bogen-Trainingsturnier Verwaltung
+
+**Defined:** 2026-07-07
+**Core Value:** Score entry and results ranking must work correctly and offline, on one device, during a live tournament at the range — everything else is secondary.
+
+## v1 Requirements
+
+Requirements for the v1.2 Scoresheets milestone. Each maps to roadmap phases.
+
+### Scoresheets
+
+- [ ] **SHEET-01**: Trainer can generate and download a blank scoresheet PDF from the Einrichtung (Setup) view.
+- [ ] **SHEET-02**: The scoresheet's grid (rounds × passes × arrows-per-passe) matches the currently configured rounds/passes/arrows config (`db.rounds`).
+- [ ] **SHEET-03**: The scoresheet has blank handwriting fields at the top for shooter name, class, shooting line, and Schreiber (scorekeeper).
+- [ ] **SHEET-04**: The scoresheet reuses the Settings title + left/right logo header treatment (same as the results-list and certificate PDFs).
+- [ ] **SHEET-05**: Page format is A5 portrait, one page per PDF export — the trainer prints multiple physical copies via their own printer's copy count.
+- [ ] **SHEET-06**: The scoresheet has blank signature lines at the bottom for "Unterschrift Schütze" and "Unterschrift Schreiber" (official tournament style).
+- [ ] **SHEET-07**: Works fully offline, consistent with the rest of the app.
+
+## v2 Requirements
+
+Deferred to future releases. Tracked but not in current roadmap.
+
+### Scoresheets
+
+- Pre-filled per-shooter scoresheets (name/class/line already populated from the roster) — deferred; v1.2 ships a blank generic template only.
+- Configurable in-app copy count (generate N repeated pages in one PDF) — deferred; trainer uses their printer's copy count for now.
+
+## Out of Scope
+
+Explicitly excluded. Documented to prevent scope creep.
+
+| Feature | Reason |
+|---------|--------|
+| Bulk per-shooter roster-filled scoresheets | Not requested — this milestone is a single reusable blank template, not a per-shooter export like the certificates feature |
+| Custom scoresheet layout/branding beyond existing Settings title+logos | No new settings infrastructure needed — reuses what Phase 5/6 already built |
+
+## Traceability
+
+Which phases cover which requirements. Updated during roadmap creation.
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| SHEET-01 | TBD | Pending |
+| SHEET-02 | TBD | Pending |
+| SHEET-03 | TBD | Pending |
+| SHEET-04 | TBD | Pending |
+| SHEET-05 | TBD | Pending |
+| SHEET-06 | TBD | Pending |
+| SHEET-07 | TBD | Pending |
+
+**Coverage:**
+- v1 requirements: 7 total
+- Mapped to phases: 0
+- Unmapped: 7 ⚠️ (roadmap not yet created)
+
+---
+*Requirements defined: 2026-07-07*
+*Last updated: 2026-07-07 after milestone v1.2 requirements definition*
