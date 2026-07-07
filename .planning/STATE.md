@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Scoresheets
-status: milestone_complete
-stopped_at: Milestone complete (Phase 07 was final phase)
-last_updated: 2026-07-07T07:52:15.032Z
-last_activity: 2026-07-07 -- Phase 07 execution started
+status: milestone_archived
+stopped_at: v1.2 milestone archived (Phase 7 shipped)
+last_updated: 2026-07-07T09:00:00.000Z
+last_activity: 2026-07-07 -- v1.2 milestone archived
 progress:
-  total_phases: 1
-  completed_phases: 0
-  total_plans: 2
+  total_phases: 7
+  completed_phases: 7
+  total_plans: 22
   completed_plans: 22
-  percent: 0
+  percent: 100
 ---
 
 # Project State
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** Score entry and results ranking must work correctly and offline, on one device, during a live tournament at the range — everything else is secondary.
-**Current focus:** Milestone complete
+**Current focus:** Awaiting next milestone
 
 ## Current Position
 
-Phase: 07
+Phase: —
 Plan: Not started
-Status: Milestone complete
+Status: Milestone archived, awaiting next milestone
 Last activity: 2026-07-07
 
 ## Performance Metrics
@@ -120,10 +120,10 @@ Items acknowledged and deferred at milestone close on 2026-07-06 (v1.0). Re-ackn
 
 ## Session Continuity
 
-Last session: 2026-07-07T07:15:00.000Z
-Stopped at: v1.2 roadmap created, awaiting approval/planning
-Resume file: .planning/ROADMAP.md
+Last session: 2026-07-07T09:00:00.000Z
+Stopped at: v1.2 milestone archived
+Resume file: .planning/milestones/v1.2-ROADMAP.md
 
 ## Operator Next Steps
 
-- Review roadmap, then run `/gsd:plan-phase 7` to plan Phase 7: Blank Scoresheet PDF
+- Start the next milestone with /gsd:new-milestone

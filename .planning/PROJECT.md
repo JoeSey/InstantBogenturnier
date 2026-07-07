@@ -10,7 +10,11 @@ A client-side web app (installable PWA) that lets an archery club trainer run in
 
 ## Current State
 
-v1.2 (Scoresheets, Phase 7) shipped 2026-07-07, not yet archived via `/gsd:complete-milestone`. All 7 phases across v1.0+v1.1+v1.2 complete.
+v1.2 (Scoresheets, Phase 7) shipped and archived 2026-07-07. All 7 phases across v1.0+v1.1+v1.2 complete: offline PWA setup/registration/scoring/results, results-list PDF export, per-shooter certificate PDFs, and blank scoresheet PDFs. See `.planning/milestones/v1.2-ROADMAP.md` for full phase detail and post-ship UAT fixes (scoresheet redesign, keyboard score entry, iOS double-tap-zoom fix).
+
+## Next Milestone Goals
+
+Not yet defined — run `/gsd:new-milestone` to scope what's next.
 
 ## Core Value
 
@@ -40,7 +44,7 @@ Score entry and results ranking must work correctly and offline, on one device, 
 
 ### Active
 
-(None yet — v1.2 milestone shipped, not yet archived. Next milestone requirements to be defined via `/gsd:new-milestone`.)
+(None yet — next milestone requirements to be defined via `/gsd:new-milestone`.)
 
 ### Out of Scope
 
@@ -145,4 +149,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-07 — v1.2 milestone shipped with post-ship UAT fixes (not yet archived)*
+*Last updated: 2026-07-07 — v1.2 milestone archived*

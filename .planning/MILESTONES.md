@@ -1,5 +1,23 @@
 # Milestones
 
+## v1.2 Scoresheets (Shipped: 2026-07-07)
+
+**Delivered:** Downloadable blank A5 scoresheet PDF, grid sized to the current rounds/passes/arrows config, as a paper fallback at the range.
+
+**Phases completed:** 1 phase (Phase 7), 2 plans, 3 tasks
+**Timeline:** 2026-07-07 (single-day milestone, including several UAT polish rounds)
+**Git range:** f293553 (roadmap) → fc64536 (post-ship UAT fixes) — 14 files changed
+**Known deferred items at close:** 10 (see STATE.md Deferred Items — carried over unchanged from prior milestone closes; all verified false positives, no real open work)
+
+**Key accomplishments:**
+
+- Trainer can download a blank A5 scoresheet PDF from the Einrichtung (Setup) view, next to the rounds/passes config — pure `scoresheetExport.ts` module built TDD-style, reusing `containFit()`/`blobToDataUri()` and the Settings title+logo header treatment from Phase 5/6.
+- Verified fully offline via e2e test (`context.setOffline(true)`), matching the app's core value.
+- Post-ship UAT redesign: real tournament scoresheets are per-round, not one sheet for the whole tournament — replaced the multi-round packed grid with a single-round `Passe | Ringe Pfeil Nr. (per-arrow sub-columns) | Summe Zeile | Summe gesamt` table, pre-filled pass numbers, a struck-through redundant first-row cell, and a blank "Runde:" field (auto-omitted for single-round tournaments).
+- Bonus UAT fixes bundled into the same milestone: keyboard shortcuts for score entry (digits 1-9, "0"→10, "x"/"X", "m"/"M") in `ScorePicker.svelte`, and a global `touch-action: manipulation` fix for iOS/iPadOS's double-tap-to-zoom interfering with fast repeated score taps.
+
+---
+
 ## v1.1 PDF Export (Shipped: 2026-07-07)
 
 **Delivered:** PDF export of tournament results (configurable header title + two logo images), plus per-shooter PDF certificates (bulk ZIP export and per-row single export).
