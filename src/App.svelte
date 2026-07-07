@@ -2,6 +2,7 @@
   import type { Component } from 'svelte';
   import { Settings2, Users, Target, Trophy } from '@lucide/svelte';
   import TopAppBar from './lib/components/TopAppBar.svelte';
+  import AboutDialog from './lib/components/AboutDialog.svelte';
   import UpdateBanner from './lib/components/UpdateBanner.svelte';
   import BottomTabBar from './lib/components/BottomTabBar.svelte';
   import Sidebar from './lib/components/Sidebar.svelte';
@@ -35,6 +36,22 @@
     activeSection = id as SectionId;
   }
 
+  const ABOUT_SEEN_KEY = 'instantbogenturnier:about-seen';
+  let aboutOpen = $state(
+    typeof window !== 'undefined' && !localStorage.getItem(ABOUT_SEEN_KEY),
+  );
+
+  function openAbout() {
+    aboutOpen = true;
+  }
+
+  function closeAbout() {
+    aboutOpen = false;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(ABOUT_SEEN_KEY, '1');
+    }
+  }
+
   // Deterministic E2E test hook (nav.spec.ts contract): only active with `?e2e=1` in the
   // URL, so Playwright can flip `updateAvailable` without publishing two real builds
   // mid-test. T-01-06: gated behind an explicit opt-in query param — no runtime attack
@@ -47,7 +64,8 @@
 </script>
 
 <div class="min-h-screen bg-slate-50 dark:bg-slate-900">
-  <TopAppBar />
+  <TopAppBar onlogoclick={openAbout} />
+  <AboutDialog open={aboutOpen} onclose={closeAbout} />
   <UpdateBanner />
   <BottomTabBar {items} {activeSection} onselect={selectSection} class="flex md:hidden" />
   <Sidebar {items} {activeSection} onselect={selectSection} class="hidden md:flex" />

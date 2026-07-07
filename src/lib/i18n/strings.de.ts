@@ -17,6 +17,11 @@ export const strings = {
     ariaToDark: 'Zu Dunkelmodus wechseln',
     ariaToLight: 'Zu Hellmodus wechseln',
   },
+  about: {
+    version: 'Version',
+    body: 'Verwaltung von Bogen-Trainingsturnieren – direkt im Browser, offline nutzbar.',
+    close: 'Schließen',
+  },
   // WR-04: shared fallback error message surfaced whenever a Dexie write throws (e.g.
   // storage quota exceeded, blocked version upgrade) so a failed save is never silent.
   common: {
