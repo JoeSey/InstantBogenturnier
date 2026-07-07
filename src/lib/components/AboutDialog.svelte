@@ -28,6 +28,20 @@
             {strings.about.body}
           </p>
 
+          <p class="mb-1 text-[14px] leading-[1.5] text-slate-500 dark:text-slate-400">
+            <a
+              href={strings.about.homepage}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-teal-600 hover:underline dark:text-teal-400"
+            >
+              {strings.about.homepage}
+            </a>
+          </p>
+          <p class="mb-4 text-[14px] leading-[1.5] text-slate-500 dark:text-slate-400">
+            {strings.about.authors}
+          </p>
+
           <details class="mb-6 text-[14px] leading-[1.5] text-slate-700 dark:text-slate-200">
             <summary class="cursor-pointer font-medium text-teal-600 dark:text-teal-400">
               {strings.about.homescreenToggle}

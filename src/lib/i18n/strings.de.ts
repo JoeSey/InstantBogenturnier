@@ -20,6 +20,8 @@ export const strings = {
   about: {
     version: 'Version',
     body: 'Verwaltung von Bogen-Trainingsturnieren – direkt im Browser, keine Daten in der Cloud, nur auf dem Gerät, komplett offline nutzbar.',
+    homepage: 'https://github.com/JoeSey/InstantBogenturnier',
+    authors: 'J. Seyfried and Claude Sonnet 5',
     close: 'Schließen',
     homescreenToggle: 'Zum Startbildschirm hinzufügen!',
     homescreenIosTitle: 'iPhone / iPad (Safari)',
