@@ -198,7 +198,7 @@
 
     <div class="hidden gap-4 md:grid md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 xl:gap-6">
       {#each classesWithResults as cls (cls.id)}
-        <GlassCard class="p-4 md:p-6 xl:p-6">
+        <GlassCard class="min-w-0 p-4 md:p-6 xl:p-6">
           <h2 class="mb-4 text-[20px] font-semibold leading-[1.2] text-slate-900 dark:text-slate-100">
             {cls.name}
           </h2>
