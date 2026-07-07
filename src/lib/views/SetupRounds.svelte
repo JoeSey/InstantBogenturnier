@@ -46,6 +46,26 @@
     }
   });
 
+  // The WA-preset radio already looks selected by default (selectedMode's initial
+  // value), but nothing is actually persisted to db.rounds until an onchange fires --
+  // so a fresh install where the trainer navigates straight to Erfassung without
+  // touching a radio/input hits Erfassung's "not configured" placeholder with no clue
+  // why, even though Einrichtung visibly shows a selected preset. `existingConfig` from
+  // the liveQuery above can't distinguish "not loaded yet" from "confirmed absent"
+  // (Dexie resolves a missing key as `undefined`, same as liveQuery's pre-resolution
+  // state), so check directly via a one-shot read instead of relying on that value.
+  let checkedForMissingConfig = false;
+  $effect(() => {
+    if (checkedForMissingConfig) return;
+    checkedForMissingConfig = true;
+    (async () => {
+      const cfg = await db.rounds.get(1);
+      if (cfg === undefined && !isFinalized) {
+        await save();
+      }
+    })();
+  });
+
   // SETUP-04: resolve either the selected WA preset or the custom fields into a single
   // shape ready to persist to db.rounds (and drive the live summary line below).
   let resolvedConfig = $derived.by(() => {
