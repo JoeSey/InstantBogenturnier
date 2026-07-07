@@ -19,9 +19,9 @@ export const strings = {
   },
   about: {
     version: 'Version',
-    body: 'Verwaltung von Bogen-Trainingsturnieren – direkt im Browser, offline nutzbar.',
+    body: 'Verwaltung von Bogen-Trainingsturnieren – direkt im Browser, keine Daten in der Cloud, nur auf dem Gerät, komplett offline nutzbar.',
     close: 'Schließen',
-    homescreenToggle: 'Zum Startbildschirm hinzufügen',
+    homescreenToggle: 'Zum Startbildschirm hinzufügen!',
     homescreenIosTitle: 'iPhone / iPad (Safari)',
     homescreenIosSteps: [
       'Teilen-Symbol antippen (Quadrat mit Pfeil nach oben)',
