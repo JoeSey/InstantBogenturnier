@@ -91,6 +91,12 @@ Score entry and results ranking must work correctly and offline, on one device, 
 
 **Post-Phase-6 cosmetic fixes (2026-07-07, fast-tracked outside the GSD phase workflow, directly on user request):** results grid auto-fit (cards no longer squeezed into a fixed 3-column track), always-visible thin scrollbar on ResultsTable's scroll wrapper, certificate layout redesigned to mirror a real printed club certificate (centered top logo block, spread-out connector/value line flow), and a fix for a fresh-install edge case where `db.rounds` never got persisted until an explicit `onchange` fired. Full detail in `.planning/milestones/v1.1-ROADMAP.md`.
 
+**Post-Phase-7 UAT fixes (2026-07-07, fast-tracked outside the GSD phase workflow, directly on user request):**
+- **Scoresheet redesigned as one-round-per-sheet:** real tournament scoresheets are printed per round, not one sheet spanning the whole tournament — replaced the per-arrow-cell grid packed across all rounds with a single-round table (Passe pre-filled 1..passesPerRound, Ringe/Summe Zeile/Summe gesamt columns), plus a blank "Runde:" handwriting field (auto-omitted when `numberOfRounds === 1`, since there's nothing to disambiguate) so the trainer can mark which physical copy is for which round.
+- **Ringe column split per-arrow:** further UAT feedback — the single wide "Ringe" cell was ambiguous about how many arrow values go in it. Split into one numbered sub-column per arrow under a merged "Ringe Pfeil Nr." group header (two-row header table), with Passe/Summe Zeile/Summe gesamt spanning both header rows as single merged cells.
+- **Keyboard score entry:** `ScorePicker.svelte` now listens for physical `keydown` events while open — digits 1-9 direct, "0" → 10, "x"/"X" → X-ring, "m"/"M" → miss (case-insensitive, ignored with a modifier held). Never triggers the on-screen keyboard; touch/tablet input is unaffected.
+- **iOS/iPadOS double-tap zoom:** fast repeated score taps were triggering double-tap-to-zoom instead of registering as separate taps. Fixed globally via `touch-action: manipulation` (pinch-zoom/panning unaffected).
+
 </details>
 
 ## Constraints
@@ -139,4 +145,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-07 — Phase 7: Blank Scoresheet PDF complete (v1.2 milestone shipped, not yet archived)*
+*Last updated: 2026-07-07 — v1.2 milestone shipped with post-ship UAT fixes (not yet archived)*
