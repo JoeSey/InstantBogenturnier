@@ -57,4 +57,25 @@ describe('buildScoresheetPdfDoc', () => {
     );
     expect(doc.getNumberOfPages()).toBe(1);
   });
+
+  it('renders the Passe/Ringe/Summe Zeile/Summe gesamt column headers', async () => {
+    const doc = await buildScoresheetPdfDoc(makeConfig(), undefined);
+    const output = doc.output();
+    expect(output).toContain('Passe');
+    expect(output).toContain('Ringe');
+    expect(output).toContain('Summe Zeile');
+    expect(output).toContain('Summe gesamt');
+  });
+
+  it('omits the Runde field when there is only one round', async () => {
+    const doc = await buildScoresheetPdfDoc(makeConfig({ numberOfRounds: 1 }), undefined);
+    const output = doc.output();
+    expect(output).not.toContain('Runde:');
+  });
+
+  it('includes the Runde field when there is more than one round', async () => {
+    const doc = await buildScoresheetPdfDoc(makeConfig({ numberOfRounds: 2 }), undefined);
+    const output = doc.output();
+    expect(output).toContain('Runde:');
+  });
 });

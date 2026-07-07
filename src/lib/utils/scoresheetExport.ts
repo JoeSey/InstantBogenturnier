@@ -73,10 +73,18 @@ export async function buildScoresheetPdfDoc(
   }
 
   // Handwriting header fields (SHEET-03) — single column layout to avoid overflow on
-  // A5's narrow 148mm width with the margins above.
+  // A5's narrow 148mm width with the margins above. One sheet per round is the real
+  // tournament convention (the trainer prints this same A5 template once per round,
+  // not once for the whole tournament), so a blank "Runde:" field lets the
+  // scorekeeper mark which round this physical copy is for. Omitted when there's
+  // only one round — nothing to disambiguate, and the field would just be an
+  // extra unnecessary write-in step every time.
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  const fieldLabels = ['Name:', 'Klasse:', 'Schießplatz:', 'Schreiber:'];
+  const fieldLabels =
+    roundsConfig.numberOfRounds === 1
+      ? ['Name:', 'Klasse:', 'Schießplatz:', 'Schreiber:']
+      : ['Name:', 'Klasse:', 'Schießplatz:', 'Schreiber:', 'Runde:'];
   const fieldLabelWidth = 24;
   for (const label of fieldLabels) {
     doc.text(label, MARGIN, cursorY);
@@ -93,54 +101,67 @@ export async function buildScoresheetPdfDoc(
   const gridTop = cursorY;
   const availableHeight = gridBottom - gridTop;
 
-  // Grid (SHEET-02) — numberOfRounds rounds, each with passesPerRound passes, each with
-  // arrowsPerPasse arrow cells. Rows are round/pass labels down the left; when there are
-  // many passes, lay multiple passes out per row (side-by-side) so the whole grid keeps
-  // within the vertical budget computed above rather than overflowing to page 2.
-  const { numberOfRounds, passesPerRound, arrowsPerPasse } = roundsConfig;
-  const totalPasses = numberOfRounds * passesPerRound;
+  // Grid (SHEET-02) — one row per passe/end for a SINGLE round (real tournament
+  // scoresheets are per-round, per-archer; the trainer prints this same sheet once
+  // per round, distinguished by the handwritten "Runde:" field above). Four columns:
+  // Passe (pre-filled 1..passesPerRound so the archer doesn't have to number rows
+  // themselves), Ringe (blank — archer writes each arrow's ring count by hand),
+  // Summe Zeile (blank — end total), Summe gesamt (blank running total). The first
+  // row's Summe-gesamt cell is struck through: the running total after end 1 is
+  // identical to that end's own total, so a separate write-in there is redundant.
+  const { passesPerRound } = roundsConfig;
 
-  const labelColWidth = 18;
-  const availableWidth = pageWidth - 2 * MARGIN - labelColWidth;
-  const minCellWidth = 6;
-  const maxPassesPerRow = Math.max(1, Math.floor(availableWidth / (arrowsPerPasse * minCellWidth)));
-
-  // Choose the number of passes-per-row (grouping) so total rows fit within the
-  // available height, without exceeding what fits horizontally.
-  let passesPerRow = Math.min(maxPassesPerRow, totalPasses);
-  let totalGridRows = Math.ceil(totalPasses / passesPerRow);
-  const minRowHeight = 5;
-  while (passesPerRow < totalPasses && totalGridRows * minRowHeight > availableHeight) {
-    passesPerRow += 1;
-    totalGridRows = Math.ceil(totalPasses / passesPerRow);
+  const columns = [
+    { label: 'Passe', width: 0.16 },
+    { label: 'Ringe', width: 0.4 },
+    { label: 'Summe Zeile', width: 0.22 },
+    { label: 'Summe gesamt', width: 0.22 },
+  ];
+  const availableWidth = pageWidth - 2 * MARGIN;
+  const colWidths = columns.map((c) => c.width * availableWidth);
+  const colX: number[] = [];
+  {
+    let x = MARGIN;
+    for (const w of colWidths) {
+      colX.push(x);
+      x += w;
+    }
   }
 
-  const cellWidth = availableWidth / (passesPerRow * arrowsPerPasse);
-  const rowHeight = Math.min(availableHeight / totalGridRows, 10);
+  const headerRowHeight = 6;
+  const rowHeight = Math.min((availableHeight - headerRowHeight) / passesPerRound, 10);
 
-  doc.setFontSize(7);
   let gridY = gridTop;
-  let passIndexGlobal = 0;
 
-  for (let round = 0; round < numberOfRounds; round++) {
-    for (let pass = 0; pass < passesPerRound; pass++) {
-      const rowInGroup = passIndexGlobal % passesPerRow;
-      if (rowInGroup === 0) {
-        gridY += round === 0 && pass === 0 ? 0 : rowHeight;
-      }
+  // Header row.
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  columns.forEach((col, i) => {
+    doc.rect(colX[i], gridY, colWidths[i], headerRowHeight);
+    doc.text(col.label, colX[i] + colWidths[i] / 2, gridY + headerRowHeight / 2 + 1.5, {
+      align: 'center',
+    });
+  });
+  gridY += headerRowHeight;
 
-      const rowX = MARGIN + labelColWidth + rowInGroup * arrowsPerPasse * cellWidth;
+  // Data rows.
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  for (let pass = 0; pass < passesPerRound; pass++) {
+    columns.forEach((_, i) => doc.rect(colX[i], gridY, colWidths[i], rowHeight));
 
-      if (rowInGroup === 0) {
-        doc.text(`R${round + 1} P${pass + 1}`, MARGIN, gridY + rowHeight / 2 + 1);
-      }
+    doc.text(String(pass + 1), colX[0] + colWidths[0] / 2, gridY + rowHeight / 2 + 1.5, {
+      align: 'center',
+    });
 
-      for (let arrow = 0; arrow < arrowsPerPasse; arrow++) {
-        doc.rect(rowX + arrow * cellWidth, gridY, cellWidth, rowHeight);
-      }
-
-      passIndexGlobal += 1;
+    if (pass === 0) {
+      const cellX = colX[3];
+      const cellW = colWidths[3];
+      doc.line(cellX, gridY, cellX + cellW, gridY + rowHeight);
+      doc.line(cellX, gridY + rowHeight, cellX + cellW, gridY);
     }
+
+    gridY += rowHeight;
   }
 
   // Footer signature lines (SHEET-06).
