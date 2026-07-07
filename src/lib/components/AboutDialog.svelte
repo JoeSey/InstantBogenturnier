@@ -24,9 +24,37 @@
           <p class="mb-4 text-[14px] leading-[1.5] text-slate-500 dark:text-slate-400">
             {strings.about.version} {appVersion}
           </p>
-          <p class="mb-6 text-[16px] leading-[1.5] text-slate-700 dark:text-slate-200">
+          <p class="mb-4 text-[16px] leading-[1.5] text-slate-700 dark:text-slate-200">
             {strings.about.body}
           </p>
+
+          <details class="mb-6 text-[14px] leading-[1.5] text-slate-700 dark:text-slate-200">
+            <summary class="cursor-pointer font-medium text-teal-600 dark:text-teal-400">
+              {strings.about.homescreenToggle}
+            </summary>
+            <div class="mt-3 space-y-3">
+              <div>
+                <p class="mb-1 font-medium text-slate-900 dark:text-slate-100">
+                  {strings.about.homescreenIosTitle}
+                </p>
+                <ol class="list-decimal space-y-0.5 pl-5">
+                  {#each strings.about.homescreenIosSteps as step (step)}
+                    <li>{step}</li>
+                  {/each}
+                </ol>
+              </div>
+              <div>
+                <p class="mb-1 font-medium text-slate-900 dark:text-slate-100">
+                  {strings.about.homescreenAndroidTitle}
+                </p>
+                <ol class="list-decimal space-y-0.5 pl-5">
+                  {#each strings.about.homescreenAndroidSteps as step (step)}
+                    <li>{step}</li>
+                  {/each}
+                </ol>
+              </div>
+            </div>
+          </details>
 
           <div class="flex justify-end">
             <button

@@ -21,6 +21,19 @@ export const strings = {
     version: 'Version',
     body: 'Verwaltung von Bogen-Trainingsturnieren – direkt im Browser, offline nutzbar.',
     close: 'Schließen',
+    homescreenToggle: 'Zum Startbildschirm hinzufügen',
+    homescreenIosTitle: 'iPhone / iPad (Safari)',
+    homescreenIosSteps: [
+      'Teilen-Symbol antippen (Quadrat mit Pfeil nach oben)',
+      '"Zum Home-Bildschirm" auswählen',
+      'Mit "Hinzufügen" bestätigen',
+    ],
+    homescreenAndroidTitle: 'Android (Chrome)',
+    homescreenAndroidSteps: [
+      'Menü (drei Punkte oben rechts) antippen',
+      '"App installieren" oder "Zum Startbildschirm hinzufügen" auswählen',
+      'Mit "Installieren" bzw. "Hinzufügen" bestätigen',
+    ],
   },
   // WR-04: shared fallback error message surfaced whenever a Dexie write throws (e.g.
   // storage quota exceeded, blocked version upgrade) so a failed save is never silent.
