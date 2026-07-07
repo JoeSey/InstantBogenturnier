@@ -1,12 +1,12 @@
 # Milestones
 
-## v1.1 PDF Export (Shipped: 2026-07-06)
+## v1.1 PDF Export (Shipped: 2026-07-07)
 
-**Delivered:** PDF export of tournament results, with a configurable header title and two logo images stored via a new Settings section.
+**Delivered:** PDF export of tournament results (configurable header title + two logo images), plus per-shooter PDF certificates (bulk ZIP export and per-row single export).
 
-**Phases completed:** 1 phase (Phase 5), 3 plans, 4 tasks (2 build + 2 gap-closure)
-**Timeline:** 2026-07-06 (same day as v1.0's ship date)
-**Git range:** 7b87a76 (phase plan) → 98144d6 (roadmap archive) — 27 files changed, +2513/-23 LOC
+**Phases completed:** 2 phases (Phase 5, Phase 6), 8 plans, 20+ tasks
+**Timeline:** 2026-07-06 (Phase 5) → 2026-07-07 (Phase 6 + post-ship polish)
+**Git range:** 7b87a76 (phase 5 plan) → 79589c0 (v1.1 tag) — 42 files changed
 **Known deferred items at close:** 10 (see STATE.md Deferred Items — carried over unchanged from v1.0's close; all verified false positives, no real open work)
 
 **Key accomplishments:**
@@ -16,8 +16,8 @@
 - Trainer can include or exclude incomplete-score shooters from the export via a checkbox, default excluded.
 - Post-verification gap closure (plan 05-03): header logos of any format (PNG or JPEG) and any aspect ratio now render correctly in the PDF — fixed by normalizing uploads to PNG at the downscale step and adding an aspect-ratio-preserving `containFit()` placement helper.
 - Existing `dexie-export-import` preset backup mechanism reused unmodified to also cover the new settings/logo data.
-
-**Follow-up:** Per-shooter PDF certificates were split off from Phase 5 via SPIDR (Interfaces axis) into a future phase — not yet scheduled.
+- Phase 6: trainer can generate per-shooter PDF certificates (Urkunden) — a tournament-wide bulk action producing one ZIP of per-shooter PDFs (JSZip), and a per-row action producing a single standalone certificate PDF, both reusing Phase 5's header/logo infrastructure plus a new configurable static heading (Dexie v5 migration).
+- Post-ship polish (2026-07-07): results grid switched to an auto-fit layout (cards no longer squeezed into a fixed column count), always-visible scrollbar on horizontally-scrollable tables, certificate layout redesigned to mirror a real printed club certificate, and a fresh-install edge case fixed where the rounds/passes config never persisted until an explicit `onchange` fired.
 
 ---
 
