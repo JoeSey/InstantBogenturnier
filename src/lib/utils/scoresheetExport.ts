@@ -83,8 +83,8 @@ export async function buildScoresheetPdfDoc(
   doc.setFont('helvetica', 'normal');
   const fieldLabels =
     roundsConfig.numberOfRounds === 1
-      ? ['Name:', 'Klasse:', 'Schießplatz:', 'Schreiber:']
-      : ['Name:', 'Klasse:', 'Schießplatz:', 'Schreiber:', 'Runde:'];
+      ? ['Schütze:', 'Bogenklasse:', 'Scheibe Nr.:', 'Schreiber:']
+      : ['Schütze:', 'Bogenklasse:', 'Scheibe Nr.:', 'Schreiber:', 'Runde:'];
   const fieldLabelWidth = 24;
   for (const label of fieldLabels) {
     doc.text(label, MARGIN, cursorY);
