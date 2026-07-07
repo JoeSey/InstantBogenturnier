@@ -26,7 +26,7 @@
   };
 </script>
 
-<div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-600">
+<div class="scrollbar-thin overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-600">
   <table class="w-full bg-white text-[16px] leading-[1.5] text-slate-900 dark:bg-slate-800 dark:text-slate-100">
     <thead>
       <tr class="border-b border-slate-200 text-left dark:border-slate-600">

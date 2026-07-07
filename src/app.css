@@ -21,6 +21,31 @@
   background-color: #1e293b;
 }
 
+/* Always-visible thin scrollbar for horizontally-scrollable tables (Results view,
+   xl 3-column grid) — without this, OS-level overlay scrollbars (macOS trackpads)
+   stay invisible until actively scrolling/hovering, so overflowing table content
+   looks clipped with no visible way to reveal it. */
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(148 163 184 / 0.6) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  height: 8px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgb(148 163 184 / 0.6);
+  border-radius: 9999px;
+}
+.dark .scrollbar-thin {
+  scrollbar-color: rgb(100 116 139 / 0.6) transparent;
+}
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgb(100 116 139 / 0.6);
+}
+
 body {
   margin: 0;
 }
