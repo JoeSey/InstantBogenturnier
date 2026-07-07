@@ -14,6 +14,20 @@ A client-side web app (installable PWA) that lets an archery club trainer run in
 - **Offline-first PWA** — installable to your device's home screen, fully functional with zero network connectivity, automatic light/dark theme with manual override
 - **Data safety** — once a tournament is finalized, destructive edits (deleting shooters, changing rounds/passes) are blocked until you reset
 
+## Screenshots
+
+**Setup**
+![Setup screen](docs/setup.png)
+
+**Archers**
+![Archers screen](docs/archers.png)
+
+**Scores**
+![Scores screen](docs/scores.png)
+
+**Results**
+![Results/download screen](docs/results.png)
+
 ## Tech Stack
 
 - [Svelte 5](https://svelte.dev/) (runes) + [Vite 8](https://vite.dev/) + [TypeScript](https://www.typescriptlang.org/)
