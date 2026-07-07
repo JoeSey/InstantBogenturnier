@@ -41,18 +41,18 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SHEET-01 | TBD | Pending |
-| SHEET-02 | TBD | Pending |
-| SHEET-03 | TBD | Pending |
-| SHEET-04 | TBD | Pending |
-| SHEET-05 | TBD | Pending |
-| SHEET-06 | TBD | Pending |
-| SHEET-07 | TBD | Pending |
+| SHEET-01 | Phase 7 | Pending |
+| SHEET-02 | Phase 7 | Pending |
+| SHEET-03 | Phase 7 | Pending |
+| SHEET-04 | Phase 7 | Pending |
+| SHEET-05 | Phase 7 | Pending |
+| SHEET-06 | Phase 7 | Pending |
+| SHEET-07 | Phase 7 | Pending |
 
 **Coverage:**
 - v1 requirements: 7 total
-- Mapped to phases: 0
-- Unmapped: 7 ⚠️ (roadmap not yet created)
+- Mapped to phases: 7
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-07-07*

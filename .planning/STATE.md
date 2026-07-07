@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Scoresheets
-status: planning
-last_updated: "2026-07-07T07:02:26.563Z"
+status: roadmapped
+last_updated: "2026-07-07T07:15:00.000Z"
 last_activity: 2026-07-07
 progress:
-  total_phases: 0
+  total_phases: 1
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** Score entry and results ranking must work correctly and offline, on one device, during a live tournament at the range — everything else is secondary.
-**Current focus:** v1.2 Scoresheets — defining requirements
+**Current focus:** v1.2 Scoresheets — Phase 7: Blank Scoresheet PDF (roadmapped, awaiting planning)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 7 - Blank Scoresheet PDF
 Plan: —
-Status: Defining requirements
-Last activity: 2026-07-07 — Milestone v1.2 started
+Status: Roadmap approved, not yet planned
+Last activity: 2026-07-07 — Milestone v1.2 roadmap created
 
 ## Performance Metrics
 
@@ -61,6 +61,7 @@ Last activity: 2026-07-07 — Milestone v1.2 started
 - Phase 5 added: PDF Export — result-list PDF export, per-shooter certificates, configurable header images
 - Phase 6 added: Certificates PDF Export — per-shooter PDF certificates, split off from Phase 5 (v1.1) via SPIDR Interfaces axis
 - Phase 4 edited: added RES-05/RES-06 (tournament reset + destructive-edit guard) requested by user
+- Phase 7 added: Blank Scoresheet PDF — v1.2 milestone, single-phase since scope is one blank A5 scoresheet PDF reusing all Phase 5/6 jsPDF + Settings header infrastructure with no new dependencies
 
 ### Decisions
 
@@ -70,6 +71,7 @@ Recent decisions affecting current work:
 - Roadmap: 4-phase structure (Foundation → Setup & Registration → Score Entry → Results) follows the app's own tournament flow and research-identified dependency/pitfall ordering; matches coarse granularity setting.
 - Roadmap: PLAT-01/02/03 (offline PWA, glassmorphism design, light/dark mode) placed in Phase 1 as foundational shell work all later phases build on, rather than spread across phases.
 - Roadmap: Config presets (SETUP-05/06) kept inside Phase 2 alongside class/line/round setup rather than a separate phase — they enhance, not gate, the setup cluster and reuse the same data model.
+- Roadmap: v1.2's 7 SHEET-* requirements collapsed into a single Phase 7 rather than split further — tight single-feature scope (one blank PDF template), coarse granularity, and full reuse of Phase 5/6 infrastructure means no natural sub-boundary exists.
 
 ### Pending Todos
 
@@ -116,10 +118,10 @@ Items acknowledged and deferred at milestone close on 2026-07-06 (v1.0). Re-ackn
 
 ## Session Continuity
 
-Last session: 2026-07-07T06:40:00.000Z
-Stopped at: v1.1 milestone archived
-Resume file: .planning/milestones/v1.1-ROADMAP.md
+Last session: 2026-07-07T07:15:00.000Z
+Stopped at: v1.2 roadmap created, awaiting approval/planning
+Resume file: .planning/ROADMAP.md
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd:new-milestone (candidate: downloadable blank scoresheets PDF)
+- Review roadmap, then run `/gsd:plan-phase 7` to plan Phase 7: Blank Scoresheet PDF
