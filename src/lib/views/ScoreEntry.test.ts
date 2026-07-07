@@ -269,6 +269,126 @@ describe('ScoreEntry', () => {
     });
   });
 
+  // Post-ship UAT feedback: desktop trainers want to type scores instead of clicking.
+  // Physical keydown only — never triggers the on-screen keyboard on touch devices.
+  describe('keyboard shortcuts in the picker (post-ship UAT)', () => {
+    it('digit keys 1-9 write the matching score', async () => {
+      const classId = await db.classes.add({ name: 'RCV-U14' });
+      await db.rounds.put({
+        id: 1,
+        arrowsPerPasse: 1,
+        passesPerRound: 1,
+        numberOfRounds: 1,
+        distance: '18m',
+      });
+      const shooterId = await db.shooters.add({ name: 'Anna', classId, lineAssignment: 1 });
+
+      const { container } = render(ScoreEntry);
+      await screen.findByText('Anna');
+
+      const arrowButtons = container.querySelectorAll('tbody button');
+      await fireEvent.click(arrowButtons[0]);
+      await screen.findByRole('dialog');
+
+      await fireEvent.keyDown(window, { key: '7' });
+
+      expect(screen.queryByRole('dialog')).toBeNull();
+      await waitFor(async () => {
+        const record = (await db.scores.toArray()).find(
+          (s) => s.shooterId === shooterId && s.arrowIndex === 0
+        );
+        expect(record?.value).toBe('7');
+      });
+    });
+
+    it('the "0" key writes a 10', async () => {
+      const classId = await db.classes.add({ name: 'RCV-U14' });
+      await db.rounds.put({
+        id: 1,
+        arrowsPerPasse: 1,
+        passesPerRound: 1,
+        numberOfRounds: 1,
+        distance: '18m',
+      });
+      const shooterId = await db.shooters.add({ name: 'Anna', classId, lineAssignment: 1 });
+
+      const { container } = render(ScoreEntry);
+      await screen.findByText('Anna');
+
+      const arrowButtons = container.querySelectorAll('tbody button');
+      await fireEvent.click(arrowButtons[0]);
+      await screen.findByRole('dialog');
+
+      await fireEvent.keyDown(window, { key: '0' });
+
+      await waitFor(async () => {
+        const record = (await db.scores.toArray()).find(
+          (s) => s.shooterId === shooterId && s.arrowIndex === 0
+        );
+        expect(record?.value).toBe('10');
+      });
+    });
+
+    it('the "x"/"X" key writes X and the "m"/"M" key writes M, case-insensitively', async () => {
+      const classId = await db.classes.add({ name: 'RCV-U14' });
+      await db.rounds.put({
+        id: 1,
+        arrowsPerPasse: 2,
+        passesPerRound: 1,
+        numberOfRounds: 1,
+        distance: '18m',
+      });
+      const shooterId = await db.shooters.add({ name: 'Anna', classId, lineAssignment: 1 });
+
+      const { container } = render(ScoreEntry);
+      await screen.findByText('Anna');
+
+      const arrowButtons = container.querySelectorAll('tbody button');
+      await fireEvent.click(arrowButtons[0]);
+      await screen.findByRole('dialog');
+      await fireEvent.keyDown(window, { key: 'X' });
+
+      await screen.findByRole('dialog');
+      await fireEvent.keyDown(window, { key: 'm' });
+
+      expect(screen.queryByRole('dialog')).toBeNull();
+      await waitFor(async () => {
+        const records = await db.scores.toArray();
+        expect(records).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ shooterId, arrowIndex: 0, value: 'X' }),
+            expect.objectContaining({ shooterId, arrowIndex: 1, value: 'M' }),
+          ])
+        );
+      });
+    });
+
+    it('ignores keystrokes with a modifier held (e.g. Ctrl+1) so browser shortcuts still work', async () => {
+      const classId = await db.classes.add({ name: 'RCV-U14' });
+      await db.rounds.put({
+        id: 1,
+        arrowsPerPasse: 1,
+        passesPerRound: 1,
+        numberOfRounds: 1,
+        distance: '18m',
+      });
+      await db.shooters.add({ name: 'Anna', classId, lineAssignment: 1 });
+
+      const { container } = render(ScoreEntry);
+      await screen.findByText('Anna');
+
+      const arrowButtons = container.querySelectorAll('tbody button');
+      await fireEvent.click(arrowButtons[0]);
+      await screen.findByRole('dialog');
+
+      await fireEvent.keyDown(window, { key: '1', ctrlKey: true });
+
+      // Dialog stays open, no score written — the modifier-held keystroke was ignored.
+      await screen.findByRole('dialog');
+      expect(await db.scores.count()).toBe(0);
+    });
+  });
+
   it('shows sumIncomplete until every arrow is filled, then sums with M=0/X=10 treatment', async () => {
     const classId = await db.classes.add({ name: 'RCV-U14' });
     await db.rounds.put({

@@ -70,9 +70,38 @@
     return `${base} border border-slate-300 bg-white text-slate-900 hover:bg-slate-100 dark:border-slate-400/40 dark:bg-slate-100 dark:text-slate-900`;
   }
 
+  // Keyboard shortcuts for desktop score entry (post-ship UAT feedback): trainers on a
+  // desktop/laptop want to type scores rather than click, while tablet users still tap
+  // — this only listens for physical keydown events, it never opens/relies on the
+  // on-screen keyboard. Digits 1-9 map directly; "0" maps to '10' (no ScoreValue '0'
+  // exists); "x"/"X" and "m"/"M" map to the X-ring and miss values. Ignore keystrokes
+  // with a modifier held (Ctrl/Meta/Alt) so this doesn't fight browser shortcuts.
+  const KEY_TO_SCORE: Record<string, ScoreValue> = {
+    '1': '1',
+    '2': '2',
+    '3': '3',
+    '4': '4',
+    '5': '5',
+    '6': '6',
+    '7': '7',
+    '8': '8',
+    '9': '9',
+    '0': '10',
+    x: 'X',
+    m: 'M',
+  };
+
   function handleKeydown(event: KeyboardEvent) {
-    if (open && event.key === 'Escape') {
+    if (!open) return;
+    if (event.key === 'Escape') {
       oncancel();
+      return;
+    }
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    const value = KEY_TO_SCORE[event.key.toLowerCase()];
+    if (value) {
+      event.preventDefault();
+      onselect(value);
     }
   }
 </script>

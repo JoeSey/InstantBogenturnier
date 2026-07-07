@@ -48,4 +48,9 @@
 
 body {
   margin: 0;
+  /* Disables iOS/iPadOS's double-tap-to-zoom gesture (fast repeated taps during rapid
+     score entry were triggering it instead of registering as two separate button
+     taps). `manipulation` still allows pinch-zoom and panning — only the double-tap
+     zoom gesture is suppressed, so this doesn't remove pinch-to-zoom accessibility. */
+  touch-action: manipulation;
 }
