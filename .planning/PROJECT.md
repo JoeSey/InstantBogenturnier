@@ -11,9 +11,15 @@ A client-side web app (installable PWA) that lets an archery club trainer run in
 
 v1.1 (PDF Export, Phases 5-6) shipped and archived 2026-07-07. All 6 phases across v1.0+v1.1 complete: offline PWA setup/registration/scoring/results, results-list PDF export, and per-shooter certificate PDFs (bulk ZIP + per-row). See `.planning/milestones/v1.1-ROADMAP.md` for full phase detail and post-ship fixes.
 
-## Next Milestone Goals
+## Current Milestone: v1.2 Scoresheets
 
-Candidate for v1.2: **downloadable blank scoresheets PDF** for the trainer to print and use at the range (was tracked as "Blank pre-printed scoresheets (DIN A5), deferred to v1.5" — bringing it forward). Not yet scoped via `/gsd:new-milestone`.
+**Goal:** Let the trainer print a blank pre-tournament scoresheet, sized to the current rounds/passes/arrows configuration, so shooters/scorekeepers have a paper fallback at the range.
+
+**Target features:**
+- Single-page A5 blank scoresheet PDF (grid only — no shooter/score data), grid dimensions derived from the current `db.rounds` config (rounds × passes × arrows)
+- Reuses Settings' header title + logo infrastructure (same as results-list/certificate PDFs)
+- One page per export; trainer prints multiple physical copies via their own printer's copy count
+- Download entry point lives in Einrichtung (Setup), next to the rounds/passes config it's derived from
 
 ## Core Value
 
@@ -42,7 +48,7 @@ Score entry and results ranking must work correctly and offline, on one device, 
 
 ### Active
 
-- Downloadable blank scoresheets PDF (DIN A5) for the trainer to print pre-tournament — candidate for v1.2, not yet scoped via `/gsd:new-milestone`.
+- Downloadable blank scoresheets PDF (DIN A5), grid sized to current rounds/passes/arrows config, header/logos reused from Settings — in progress, v1.2 milestone (SHEET-* requirements, see REQUIREMENTS.md).
 
 ### Out of Scope
 
@@ -139,4 +145,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-07 — v1.1 milestone archived*
+*Last updated: 2026-07-07 — v1.2 Scoresheets milestone started*

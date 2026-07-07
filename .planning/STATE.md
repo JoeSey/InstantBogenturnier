@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: PDF Export
-status: milestone_archived
-stopped_at: v1.1 milestone archived (Phases 5-6 shipped)
-last_updated: 2026-07-07T06:40:00.000Z
-last_activity: 2026-07-07 -- v1.1 milestone archived
+milestone: v1.2
+milestone_name: Scoresheets
+status: planning
+last_updated: "2026-07-07T07:02:26.563Z"
+last_activity: 2026-07-07
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 20
-  completed_plans: 20
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** Score entry and results ranking must work correctly and offline, on one device, during a live tournament at the range — everything else is secondary.
-**Current focus:** Awaiting next milestone (candidate: downloadable blank scoresheets PDF)
+**Current focus:** v1.2 Scoresheets — defining requirements
 
 ## Current Position
 
-Phase: —
-Plan: Not started
-Status: Milestone archived, awaiting next milestone
-Last activity: 2026-07-07
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-07-07 — Milestone v1.2 started
 
 ## Performance Metrics
 

@@ -17,6 +17,7 @@ test-results
 playwright-report
 blob-report
 coverage
+tmp
 
 # Editor directories and files
 .vscode/*
