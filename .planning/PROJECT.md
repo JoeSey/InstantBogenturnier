@@ -6,20 +6,11 @@ A client-side web app (installable PWA) that lets an archery club trainer run in
 
 **Shipped as v1.0** (2026-07-06): the full setup → registration → live score entry → ranked results flow, installable and offline-capable.
 **Shipped as v1.1** (2026-07-07): PDF export of ranked results, with configurable header images/title in a new Settings section, plus per-shooter PDF certificates (bulk ZIP export and per-row single export).
+**Shipped as v1.2** (2026-07-07): downloadable blank A5 scoresheet PDF, grid sized to the current rounds/passes/arrows config, as a paper fallback at the range.
 
 ## Current State
 
-v1.1 (PDF Export, Phases 5-6) shipped and archived 2026-07-07. All 6 phases across v1.0+v1.1 complete: offline PWA setup/registration/scoring/results, results-list PDF export, and per-shooter certificate PDFs (bulk ZIP + per-row). See `.planning/milestones/v1.1-ROADMAP.md` for full phase detail and post-ship fixes.
-
-## Current Milestone: v1.2 Scoresheets
-
-**Goal:** Let the trainer print a blank pre-tournament scoresheet, sized to the current rounds/passes/arrows configuration, so shooters/scorekeepers have a paper fallback at the range.
-
-**Target features:**
-- Single-page A5 blank scoresheet PDF (grid only — no shooter/score data), grid dimensions derived from the current `db.rounds` config (rounds × passes × arrows)
-- Reuses Settings' header title + logo infrastructure (same as results-list/certificate PDFs)
-- One page per export; trainer prints multiple physical copies via their own printer's copy count
-- Download entry point lives in Einrichtung (Setup), next to the rounds/passes config it's derived from
+v1.2 (Scoresheets, Phase 7) shipped 2026-07-07, not yet archived via `/gsd:complete-milestone`. All 7 phases across v1.0+v1.1+v1.2 complete.
 
 ## Core Value
 
@@ -45,10 +36,11 @@ Score entry and results ranking must work correctly and offline, on one device, 
 - [x] App blocks destructive edits (deleting shooters, changing rounds/passes configuration) while finalized tournament data exists, directing the trainer to reset first instead of silently cascading — Validated in Phase 4: Results
 - [x] Trainer can export the tournament's ranked results as a single downloadable PDF (one section per class, page break between classes, Rank/Name/Sum columns, optional include-incomplete-shooters toggle) with optional configurable header images and a free-text title, fully offline — Validated in Phase 5: PDF Export
 - [x] Trainer can generate per-shooter PDF certificates (Urkunden): a tournament-wide bulk action producing one ZIP of per-shooter PDFs (all shooters, no top-N cutoff), and a per-row action producing a single standalone certificate PDF, both reusing Phase 5's header/logo infrastructure plus a new configurable static certificate heading, fully offline — Validated in Phase 6: Certificates PDF Export
+- [x] Trainer can download a blank A5 scoresheet PDF from the Einrichtung view — grid (rounds × passes × arrows) sized to the current rounds/passes config, handwriting fields for name/class/line/Schreiber, signature lines for Schütze/Schreiber, reuses the Settings title+logo header, fully offline — Validated in Phase 7: Blank Scoresheet PDF
 
 ### Active
 
-- Downloadable blank scoresheets PDF (DIN A5), grid sized to current rounds/passes/arrows config, header/logos reused from Settings — in progress, v1.2 milestone (SHEET-* requirements, see REQUIREMENTS.md).
+(None yet — v1.2 milestone shipped, not yet archived. Next milestone requirements to be defined via `/gsd:new-milestone`.)
 
 ### Out of Scope
 
@@ -126,6 +118,8 @@ Score entry and results ranking must work correctly and offline, on one device, 
 | Normalize all uploaded logo images to PNG at downscale time (not format-sniffing at PDF-generation time, not restricting uploads to PNG-only) | Fixes the format mismatch at its source (`imageDownscale.ts`) rather than patching symptoms at both `doc.addImage()` call sites in `pdfExport.ts`; keeps JPEG upload support for trainers | ✓ Good — resolved Phase 5's gap-closure finding (CR-01), zero format-detection code needed downstream |
 | Certificates: single ZIP bundle for bulk export (not separate simultaneous downloads) | Browsers throttle/block 8-14 simultaneous file downloads; JSZip bundling avoids this entirely | ✓ Good — implemented in Phase 6, verified via e2e (online + offline) |
 | Certificates: static heading text field (no per-shooter templating/placeholders) | User explicitly chose simplicity over a templating mini-language for v1.1 | ✓ Good — implemented in Phase 6 as a single Settings text field |
+| Scoresheets: blank generic template only, no per-shooter roster prefill, no in-app copy-count config | Simplicity over configurability — trainer prints N copies via their own printer; roster-prefilled sheets would need a per-shooter loop like certificates but weren't requested | ✓ Good — implemented in Phase 7 as a single-page, single-template export |
+| Scoresheets: A5 portrait (not A4 like the other two PDF exports) | Deliberate format difference — matches the original "Blank pre-printed scoresheets (DIN A5)" deferred note; a compact grid-only sheet doesn't need A4's extra space | ✓ Good — implemented in Phase 7, verified single-page via test assertion |
 
 ## Evolution
 
@@ -145,4 +139,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-07 — v1.2 Scoresheets milestone started*
+*Last updated: 2026-07-07 — Phase 7: Blank Scoresheet PDF complete (v1.2 milestone shipped, not yet archived)*
