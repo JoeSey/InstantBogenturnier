@@ -2,33 +2,33 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: PDF Export
-status: milestone_complete
-stopped_at: Milestone complete (Phase 06 was final phase)
-last_updated: 2026-07-06T21:40:02.593Z
-last_activity: 2026-07-06 -- Phase 06 execution started
+status: milestone_archived
+stopped_at: v1.1 milestone archived (Phases 5-6 shipped)
+last_updated: 2026-07-07T06:40:00.000Z
+last_activity: 2026-07-07 -- v1.1 milestone archived
 progress:
   total_phases: 6
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 20
   completed_plans: 20
-  percent: 83
+  percent: 100
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-07-06)
+See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** Score entry and results ranking must work correctly and offline, on one device, during a live tournament at the range — everything else is secondary.
-**Current focus:** Milestone complete
+**Current focus:** Awaiting next milestone (candidate: downloadable blank scoresheets PDF)
 
 ## Current Position
 
-Phase: 06
+Phase: —
 Plan: Not started
-Status: Milestone complete
-Last activity: 2026-07-06
+Status: Milestone archived, awaiting next milestone
+Last activity: 2026-07-07
 
 ## Performance Metrics
 
@@ -117,10 +117,10 @@ Items acknowledged and deferred at milestone close on 2026-07-06 (v1.0). Re-ackn
 
 ## Session Continuity
 
-Last session: 2026-07-06T20:23:15.267Z
-Stopped at: Phase 6 context gathered
-Resume file: .planning/phases/06-certificates-pdf-export/06-CONTEXT.md
+Last session: 2026-07-07T06:40:00.000Z
+Stopped at: v1.1 milestone archived
+Resume file: .planning/milestones/v1.1-ROADMAP.md
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Start the next milestone with /gsd:new-milestone (candidate: downloadable blank scoresheets PDF)

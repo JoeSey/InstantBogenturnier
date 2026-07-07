@@ -5,7 +5,15 @@
 A client-side web app (installable PWA) that lets an archery club trainer run informal training tournaments as judge (Kampfrichter) — from pre-tournament setup, through shooter registration and live score entry, to ranked results — fully usable offline on a single device at the shooting range.
 
 **Shipped as v1.0** (2026-07-06): the full setup → registration → live score entry → ranked results flow, installable and offline-capable.
-**Shipped as v1.1** (2026-07-06): PDF export of ranked results, with configurable header images/title in a new Settings section, plus per-shooter PDF certificates (bulk ZIP export and per-row single export) in Phase 6.
+**Shipped as v1.1** (2026-07-07): PDF export of ranked results, with configurable header images/title in a new Settings section, plus per-shooter PDF certificates (bulk ZIP export and per-row single export).
+
+## Current State
+
+v1.1 (PDF Export, Phases 5-6) shipped and archived 2026-07-07. All 6 phases across v1.0+v1.1 complete: offline PWA setup/registration/scoring/results, results-list PDF export, and per-shooter certificate PDFs (bulk ZIP + per-row). See `.planning/milestones/v1.1-ROADMAP.md` for full phase detail and post-ship fixes.
+
+## Next Milestone Goals
+
+Candidate for v1.2: **downloadable blank scoresheets PDF** for the trainer to print and use at the range (was tracked as "Blank pre-printed scoresheets (DIN A5), deferred to v1.5" — bringing it forward). Not yet scoped via `/gsd:new-milestone`.
 
 ## Core Value
 
@@ -34,12 +42,11 @@ Score entry and results ranking must work correctly and offline, on one device, 
 
 ### Active
 
-(None yet — v1.1 milestone complete. Next milestone requirements to be defined.)
+- Downloadable blank scoresheets PDF (DIN A5) for the trainer to print pre-tournament — candidate for v1.2, not yet scoped via `/gsd:new-milestone`.
 
 ### Out of Scope
 
 - WhatsApp delivery of certificates — deferred to v2
-- Blank pre-printed scoresheets (DIN A5) — deferred to v1.5
 - Concurrent multi-device score entry — explicitly ruled out; single device/single judge operation confirmed as the usage pattern
 - Long-term persistence of tournament results after a tournament closes — only the 4-8 saved configuration presets persist, not results themselves
 - Open-source packaging / multi-club distribution work (README, licensing, per-club onboarding) — deferred to v2.5, but architecture should avoid hardcoding club identity so this isn't a rewrite later
@@ -50,6 +57,9 @@ Score entry and results ranking must work correctly and offline, on one device, 
 - Typical scale: 8-14 shooters across 2-5 classes per training tournament. Small enough that a fully client-side app has no realistic performance concerns.
 - The trainer (judge) operates from a single device throughout the tournament, including at the range where connectivity may be unavailable or unreliable.
 - Longer-term ambition (not in scope now): open-sourcing this for other archery clubs, tentatively v2.5.
+
+<details>
+<summary>Archived: v1.0 + v1.1 shipped-state narrative (phase-by-phase detail, post-ship fixes)</summary>
 
 **v1.0 shipped state (2026-07-06):**
 - ~6,100 LOC across Svelte/TypeScript (`src/`), 208 commits, built 2026-07-03 → 2026-07-06.
@@ -80,6 +90,10 @@ Score entry and results ranking must work correctly and offline, on one device, 
 - `scoring.spec.ts` / `results.spec.ts` still clicked a "Runden und Passen" save button that quick task 260706-9iv removed in favor of auto-save — pre-existing regression, unrelated to today's work. Fixed by blurring the last field instead, plus waiting for the score table to render the correct cell count before proceeding (a genuine timing dependency: the config write is fire-and-forget, so navigating to Erfassung too fast could still see the stale default 3-arrows-per-passe config).
 - `setupLayout.spec.ts` asserted an `h1` heading of "Klassen", which no longer exists (renamed to "Einrichtung" at some point, uncommitted until this batch) — fixed the assertion.
 - The full e2e suite shows one or two different, unrelated tests flaking on any given run in this sandboxed single-core environment; direct IndexedDB inspection confirmed the underlying app state is correct when this happens, so it's environmental contention, not a logic bug. Gave the one legitimately timing-sensitive assertion (`finalizeButton.toBeEnabled()`) a longer explicit timeout to absorb it.
+
+**Post-Phase-6 cosmetic fixes (2026-07-07, fast-tracked outside the GSD phase workflow, directly on user request):** results grid auto-fit (cards no longer squeezed into a fixed 3-column track), always-visible thin scrollbar on ResultsTable's scroll wrapper, certificate layout redesigned to mirror a real printed club certificate (centered top logo block, spread-out connector/value line flow), and a fix for a fresh-install edge case where `db.rounds` never got persisted until an explicit `onchange` fired. Full detail in `.planning/milestones/v1.1-ROADMAP.md`.
+
+</details>
 
 ## Constraints
 
@@ -125,4 +139,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-06 — after Phase 6: Certificates PDF Export (v1.1 milestone complete)*
+*Last updated: 2026-07-07 — v1.1 milestone archived*
