@@ -1,8 +1,10 @@
 <script lang="ts">
   import { liveQuery } from 'dexie';
+  import { FileDown } from '@lucide/svelte';
   import { db } from '../db/schema';
   import { WA_PRESETS } from '../fixtures/waPresets';
   import { strings } from '../i18n/strings.de';
+  import { generateScoresheetPdf, scoresheetPdfFilename } from '../utils/scoresheetExport';
 
   // RES-06/D-11/D-12 (04-03-PLAN.md Task 3): once finalized, the entire rounds/passes
   // config form is disabled — the parent Setup.svelte derives and passes this down via
@@ -109,6 +111,32 @@
   async function save() {
     if (!isValidResolvedConfig(resolvedConfig)) return;
     await db.rounds.put({ id: 1, ...resolvedConfig });
+  }
+
+  // SHEET-01/T-07-04: blank scoresheet PDF download, mirrors Results.svelte's
+  // handleExport settings-fetch + WR-04 append-before-click download pattern exactly.
+  let errorFeedback = $state('');
+
+  async function handleScoresheetExport() {
+    errorFeedback = '';
+    if (!existingConfig) {
+      errorFeedback = strings.scoresheetExport.exportError;
+      return;
+    }
+    try {
+      const settings = (await db.settings.get(1)) ?? { id: 1 as const };
+      const blob = await generateScoresheetPdf(existingConfig, settings);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = scoresheetPdfFilename();
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      errorFeedback = strings.scoresheetExport.exportError;
+    }
   }
 </script>
 
@@ -225,4 +253,18 @@
   <p class="text-[16px] leading-[1.5] text-slate-600 dark:text-slate-300">
     {resolvedConfig.passesPerRound} Passen, {resolvedConfig.arrowsPerPasse} Pfeile, {resolvedConfig.distance}
   </p>
+
+  <button
+    type="button"
+    onclick={handleScoresheetExport}
+    disabled={!existingConfig}
+    class="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-teal-500 px-4 py-2 text-[16px] font-semibold leading-[1.5] text-white hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300"
+  >
+    <FileDown size={20} />
+    {strings.scoresheetExport.downloadButton}
+  </button>
+
+  {#if errorFeedback}
+    <p class="text-[14px] leading-[1.4] text-red-600 dark:text-red-400">{errorFeedback}</p>
+  {/if}
 </div>
