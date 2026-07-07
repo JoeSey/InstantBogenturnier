@@ -220,4 +220,9 @@ export const strings = {
     singleExportError: 'Urkunden-Export fehlgeschlagen',
     zipCreationError: 'Zip-Datei konnte nicht erstellt werden',
   },
+  // Phase 7 Plan 02 section — blank scoresheet PDF download button in Einrichtung/Setup.
+  scoresheetExport: {
+    downloadButton: 'Schießformular (PDF) drucken',
+    exportError: 'Schießformular konnte nicht generiert werden',
+  },
 } as const;
