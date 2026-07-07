@@ -32,7 +32,7 @@ Full phase details (goals, success criteria, requirements): `.planning/milestone
 
 ### v1.2 Scoresheets (Phase 7) — IN PROGRESS
 
-- [ ] **Phase 7: Blank Scoresheet PDF** - Trainer can download a blank A5 scoresheet PDF, grid-sized to the current rounds/passes/arrows config, from Einrichtung
+- [x] **Phase 7: Blank Scoresheet PDF** - Trainer can download a blank A5 scoresheet PDF, grid-sized to the current rounds/passes/arrows config, from Einrichtung (completed 2026-07-07)
 
 ## Phase Details
 
@@ -49,7 +49,7 @@ Full phase details (goals, success criteria, requirements): `.planning/milestone
 **Plans**: 2 plans
 Plans:
 - [x] 07-01-PLAN.md — Blank scoresheet PDF builder/generator (scoresheetExport.ts) with A5 grid, header fields, signature lines
-- [ ] 07-02-PLAN.md — Wire download button into SetupRounds.svelte, i18n strings, e2e coverage incl. offline
+- [x] 07-02-PLAN.md — Wire download button into SetupRounds.svelte, i18n strings, e2e coverage incl. offline
 
 ## Progress
 
@@ -61,4 +61,4 @@ Plans:
 | 4. Results | v1.0 | 3/3 | Complete | 2026-07-05 |
 | 5. PDF Export | v1.1 | 3/3 | Complete | 2026-07-06 |
 | 6. Certificates PDF Export | v1.1 | 5/5 | Complete | 2026-07-07 |
-| 7. Blank Scoresheet PDF | v1.2 | 1/2 | In Progress|  |
+| 7. Blank Scoresheet PDF | v1.2 | 2/2 | Complete   | 2026-07-07 |
