@@ -58,13 +58,21 @@ describe('buildScoresheetPdfDoc', () => {
     expect(doc.getNumberOfPages()).toBe(1);
   });
 
-  it('renders the Passe/Ringe/Summe Zeile/Summe gesamt column headers', async () => {
+  it('renders the Passe/Ringe Pfeil Nr./Summe Zeile/Summe gesamt column headers', async () => {
     const doc = await buildScoresheetPdfDoc(makeConfig(), undefined);
     const output = doc.output();
     expect(output).toContain('Passe');
-    expect(output).toContain('Ringe');
+    expect(output).toContain('Ringe Pfeil Nr.');
     expect(output).toContain('Summe Zeile');
     expect(output).toContain('Summe gesamt');
+  });
+
+  it('numbers each arrow sub-column 1..arrowsPerPasse under Ringe Pfeil Nr.', async () => {
+    const doc = await buildScoresheetPdfDoc(makeConfig({ arrowsPerPasse: 5 }), undefined);
+    const output = doc.output();
+    for (let arrow = 1; arrow <= 5; arrow++) {
+      expect(output).toContain(`(${arrow})`);
+    }
   });
 
   it('omits the Runde field when there is only one round', async () => {

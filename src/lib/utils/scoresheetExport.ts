@@ -103,62 +103,96 @@ export async function buildScoresheetPdfDoc(
 
   // Grid (SHEET-02) — one row per passe/end for a SINGLE round (real tournament
   // scoresheets are per-round, per-archer; the trainer prints this same sheet once
-  // per round, distinguished by the handwritten "Runde:" field above). Four columns:
-  // Passe (pre-filled 1..passesPerRound so the archer doesn't have to number rows
-  // themselves), Ringe (blank — archer writes each arrow's ring count by hand),
-  // Summe Zeile (blank — end total), Summe gesamt (blank running total). The first
-  // row's Summe-gesamt cell is struck through: the running total after end 1 is
-  // identical to that end's own total, so a separate write-in there is redundant.
-  const { passesPerRound } = roundsConfig;
+  // per round, distinguished by the handwritten "Runde:" field above). Four column
+  // groups: Passe (pre-filled 1..passesPerRound so the archer doesn't have to number
+  // rows themselves), "Ringe Pfeil Nr." (split into one sub-column per arrow, numbered
+  // 1..arrowsPerPasse, so each arrow's ring count gets its own blank cell instead of
+  // one ambiguous wide cell), Summe Zeile (blank — end total), Summe gesamt (blank
+  // running total). The first row's Summe-gesamt cell is struck through: the running
+  // total after end 1 is identical to that end's own total, so a separate write-in
+  // there is redundant.
+  const { passesPerRound, arrowsPerPasse } = roundsConfig;
 
-  const columns = [
-    { label: 'Passe', width: 0.16 },
-    { label: 'Ringe', width: 0.4 },
-    { label: 'Summe Zeile', width: 0.22 },
-    { label: 'Summe gesamt', width: 0.22 },
-  ];
+  const passeColWidth = 0.16;
+  const ringeGroupWidth = 0.4;
+  const summeZeileWidth = 0.22;
+  const summeGesamtWidth = 0.22;
   const availableWidth = pageWidth - 2 * MARGIN;
-  const colWidths = columns.map((c) => c.width * availableWidth);
-  const colX: number[] = [];
-  {
-    let x = MARGIN;
-    for (const w of colWidths) {
-      colX.push(x);
-      x += w;
-    }
-  }
 
-  const headerRowHeight = 6;
-  const rowHeight = Math.min((availableHeight - headerRowHeight) / passesPerRound, 10);
+  const passeX = MARGIN;
+  const passeW = passeColWidth * availableWidth;
+  const ringeX = passeX + passeW;
+  const ringeW = ringeGroupWidth * availableWidth;
+  const summeZeileX = ringeX + ringeW;
+  const summeZeileW = summeZeileWidth * availableWidth;
+  const summeGesamtX = summeZeileX + summeZeileW;
+  const summeGesamtW = summeGesamtWidth * availableWidth;
+
+  const arrowColWidth = ringeW / arrowsPerPasse;
+
+  // Two-row header: an outer group label ("Ringe Pfeil Nr.") spanning the full Ringe
+  // width, with a sub-header row underneath numbering each arrow column. The other
+  // three column headers (Passe/Summe Zeile/Summe gesamt) span both header rows as a
+  // single merged cell so they read as one column, not two stacked ones.
+  const groupHeaderHeight = 6;
+  const subHeaderHeight = 5;
+  const totalHeaderHeight = groupHeaderHeight + subHeaderHeight;
+  const rowHeight = Math.min((availableHeight - totalHeaderHeight) / passesPerRound, 10);
 
   let gridY = gridTop;
 
-  // Header row.
   doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
-  columns.forEach((col, i) => {
-    doc.rect(colX[i], gridY, colWidths[i], headerRowHeight);
-    doc.text(col.label, colX[i] + colWidths[i] / 2, gridY + headerRowHeight / 2 + 1.5, {
+
+  // Passe / Summe Zeile / Summe gesamt — merged cells spanning both header rows.
+  doc.rect(passeX, gridY, passeW, totalHeaderHeight);
+  doc.text('Passe', passeX + passeW / 2, gridY + totalHeaderHeight / 2 + 1.5, { align: 'center' });
+
+  doc.rect(summeZeileX, gridY, summeZeileW, totalHeaderHeight);
+  doc.text('Summe Zeile', summeZeileX + summeZeileW / 2, gridY + totalHeaderHeight / 2 + 1.5, {
+    align: 'center',
+  });
+
+  doc.rect(summeGesamtX, gridY, summeGesamtW, totalHeaderHeight);
+  doc.text('Summe gesamt', summeGesamtX + summeGesamtW / 2, gridY + totalHeaderHeight / 2 + 1.5, {
+    align: 'center',
+  });
+
+  // Ringe group header row.
+  doc.rect(ringeX, gridY, ringeW, groupHeaderHeight);
+  doc.text('Ringe Pfeil Nr.', ringeX + ringeW / 2, gridY + groupHeaderHeight / 2 + 1.5, {
+    align: 'center',
+  });
+
+  // Ringe arrow-number sub-header row.
+  const subHeaderY = gridY + groupHeaderHeight;
+  for (let arrow = 0; arrow < arrowsPerPasse; arrow++) {
+    const x = ringeX + arrow * arrowColWidth;
+    doc.rect(x, subHeaderY, arrowColWidth, subHeaderHeight);
+    doc.text(String(arrow + 1), x + arrowColWidth / 2, subHeaderY + subHeaderHeight / 2 + 1.5, {
       align: 'center',
     });
-  });
-  gridY += headerRowHeight;
+  }
+
+  gridY += totalHeaderHeight;
 
   // Data rows.
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   for (let pass = 0; pass < passesPerRound; pass++) {
-    columns.forEach((_, i) => doc.rect(colX[i], gridY, colWidths[i], rowHeight));
+    doc.rect(passeX, gridY, passeW, rowHeight);
+    doc.text(String(pass + 1), passeX + passeW / 2, gridY + rowHeight / 2 + 1.5, { align: 'center' });
 
-    doc.text(String(pass + 1), colX[0] + colWidths[0] / 2, gridY + rowHeight / 2 + 1.5, {
-      align: 'center',
-    });
+    for (let arrow = 0; arrow < arrowsPerPasse; arrow++) {
+      doc.rect(ringeX + arrow * arrowColWidth, gridY, arrowColWidth, rowHeight);
+    }
+
+    doc.rect(summeZeileX, gridY, summeZeileW, rowHeight);
+    doc.rect(summeGesamtX, gridY, summeGesamtW, rowHeight);
 
     if (pass === 0) {
-      const cellX = colX[3];
-      const cellW = colWidths[3];
-      doc.line(cellX, gridY, cellX + cellW, gridY + rowHeight);
-      doc.line(cellX, gridY + rowHeight, cellX + cellW, gridY);
+      doc.line(summeGesamtX, gridY, summeGesamtX + summeGesamtW, gridY + rowHeight);
+      doc.line(summeGesamtX, gridY + rowHeight, summeGesamtX + summeGesamtW, gridY);
     }
 
     gridY += rowHeight;
