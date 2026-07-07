@@ -180,8 +180,8 @@
           </div>
         </div>
       {:else}
-        <div class="flex w-full flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div class="flex flex-col">
+        <div class="flex w-full items-center justify-between gap-2">
+          <div class="flex min-w-0 flex-col">
             <span>{cls.name}</span>
             {#if deleteBlocked && deleteBlocked.id === cls.id}
               <span class="text-[14px] leading-[1.4] text-red-600 dark:text-red-400">
