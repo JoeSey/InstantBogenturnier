@@ -48,7 +48,7 @@ Full phase details (goals, success criteria, requirements): `.planning/milestone
   5. The export works with the device offline (airplane mode / no network).
 **Plans**: 2 plans
 Plans:
-- [ ] 07-01-PLAN.md — Blank scoresheet PDF builder/generator (scoresheetExport.ts) with A5 grid, header fields, signature lines
+- [x] 07-01-PLAN.md — Blank scoresheet PDF builder/generator (scoresheetExport.ts) with A5 grid, header fields, signature lines
 - [ ] 07-02-PLAN.md — Wire download button into SetupRounds.svelte, i18n strings, e2e coverage incl. offline
 
 ## Progress
@@ -61,4 +61,4 @@ Plans:
 | 4. Results | v1.0 | 3/3 | Complete | 2026-07-05 |
 | 5. PDF Export | v1.1 | 3/3 | Complete | 2026-07-06 |
 | 6. Certificates PDF Export | v1.1 | 5/5 | Complete | 2026-07-07 |
-| 7. Blank Scoresheet PDF | v1.2 | 0/2 | Not started | - |
+| 7. Blank Scoresheet PDF | v1.2 | 1/2 | In Progress|  |

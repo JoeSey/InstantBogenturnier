@@ -2,13 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Scoresheets
-status: roadmapped
-last_updated: "2026-07-07T07:15:00.000Z"
-last_activity: 2026-07-07
+status: executing
+stopped_at: v1.2 roadmap created, awaiting approval/planning
+last_updated: "2026-07-07T07:33:01.016Z"
+last_activity: 2026-07-07 -- Phase 07 execution started
 progress:
   total_phases: 1
   completed_phases: 0
-  total_plans: 0
+  total_plans: 2
   completed_plans: 0
   percent: 0
 ---
@@ -20,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** Score entry and results ranking must work correctly and offline, on one device, during a live tournament at the range — everything else is secondary.
-**Current focus:** v1.2 Scoresheets — Phase 7: Blank Scoresheet PDF (roadmapped, awaiting planning)
+**Current focus:** Phase 07 — blank-scoresheet-pdf
 
 ## Current Position
 
-Phase: 7 - Blank Scoresheet PDF
-Plan: —
-Status: Roadmap approved, not yet planned
-Last activity: 2026-07-07 — Milestone v1.2 roadmap created
+Phase: 07 (blank-scoresheet-pdf) — EXECUTING
+Plan: 1 of 2
+Status: Executing Phase 07
+Last activity: 2026-07-07 -- Phase 07 execution started
 
 ## Performance Metrics
 
