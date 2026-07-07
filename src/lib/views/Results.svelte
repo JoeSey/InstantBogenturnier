@@ -196,7 +196,15 @@
       </div>
     </div>
 
-    <div class="hidden gap-4 md:grid md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 xl:gap-6">
+    <!-- auto-fit (not a fixed grid-cols-N) so cards grow to use freed-up width when
+    there are fewer classes than columns, instead of being squeezed into equal tracks
+    with a wasted empty track — that squeeze was forcing ResultsTable's horizontal
+    scrollbar even when the row would otherwise fit. minmax(480px, 1fr) is wide enough
+    for the Rang/Name/Schießplatz/Gesamt/Urkunde columns in the common case. -->
+    <div
+      class="hidden gap-4 md:grid xl:gap-6"
+      style="grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));"
+    >
       {#each classesWithResults as cls (cls.id)}
         <GlassCard class="min-w-0 p-4 md:p-6 xl:p-6">
           <h2 class="mb-4 text-[20px] font-semibold leading-[1.2] text-slate-900 dark:text-slate-100">
