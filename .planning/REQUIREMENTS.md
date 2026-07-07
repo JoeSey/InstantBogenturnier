@@ -9,13 +9,13 @@ Requirements for the v1.2 Scoresheets milestone. Each maps to roadmap phases.
 
 ### Scoresheets
 
-- [ ] **SHEET-01**: Trainer can generate and download a blank scoresheet PDF from the Einrichtung (Setup) view.
-- [ ] **SHEET-02**: The scoresheet's grid (rounds × passes × arrows-per-passe) matches the currently configured rounds/passes/arrows config (`db.rounds`).
-- [ ] **SHEET-03**: The scoresheet has blank handwriting fields at the top for shooter name, class, shooting line, and Schreiber (scorekeeper).
-- [ ] **SHEET-04**: The scoresheet reuses the Settings title + left/right logo header treatment (same as the results-list and certificate PDFs).
-- [ ] **SHEET-05**: Page format is A5 portrait, one page per PDF export — the trainer prints multiple physical copies via their own printer's copy count.
-- [ ] **SHEET-06**: The scoresheet has blank signature lines at the bottom for "Unterschrift Schütze" and "Unterschrift Schreiber" (official tournament style).
-- [ ] **SHEET-07**: Works fully offline, consistent with the rest of the app.
+- [x] **SHEET-01**: Trainer can generate and download a blank scoresheet PDF from the Einrichtung (Setup) view.
+- [x] **SHEET-02**: The scoresheet's grid (rounds × passes × arrows-per-passe) matches the currently configured rounds/passes/arrows config (`db.rounds`).
+- [x] **SHEET-03**: The scoresheet has blank handwriting fields at the top for shooter name, class, shooting line, and Schreiber (scorekeeper).
+- [x] **SHEET-04**: The scoresheet reuses the Settings title + left/right logo header treatment (same as the results-list and certificate PDFs).
+- [x] **SHEET-05**: Page format is A5 portrait, one page per PDF export — the trainer prints multiple physical copies via their own printer's copy count.
+- [x] **SHEET-06**: The scoresheet has blank signature lines at the bottom for "Unterschrift Schütze" and "Unterschrift Schreiber" (official tournament style).
+- [x] **SHEET-07**: Works fully offline, consistent with the rest of the app.
 
 ## v2 Requirements
 
@@ -41,13 +41,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SHEET-01 | Phase 7 | Pending |
-| SHEET-02 | Phase 7 | Pending |
-| SHEET-03 | Phase 7 | Pending |
-| SHEET-04 | Phase 7 | Pending |
-| SHEET-05 | Phase 7 | Pending |
-| SHEET-06 | Phase 7 | Pending |
-| SHEET-07 | Phase 7 | Pending |
+| SHEET-01 | Phase 7 | Complete |
+| SHEET-02 | Phase 7 | Complete |
+| SHEET-03 | Phase 7 | Complete |
+| SHEET-04 | Phase 7 | Complete |
+| SHEET-05 | Phase 7 | Complete |
+| SHEET-06 | Phase 7 | Complete |
+| SHEET-07 | Phase 7 | Complete |
 
 **Coverage:**
 - v1 requirements: 7 total
