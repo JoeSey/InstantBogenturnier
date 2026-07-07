@@ -26,60 +26,91 @@ function blobToDataUri(blob: Blob): Promise<string> {
   });
 }
 
-const LOGO_MAX_WIDTH = 25;
-const LOGO_MAX_HEIGHT = 20;
+const LOGO_MAX_WIDTH = 40;
+const LOGO_MAX_HEIGHT = 35;
+const LOGO_GAP = 10;
+
+interface CertLine {
+  text: string;
+  size: number;
+  bold: boolean;
+}
 
 export async function buildCertPdf(
   rankedRow: RankedRow,
   className: string,
   settings:
     | Pick<SettingsRecord, 'title' | 'logoLeftBlob' | 'logoRightBlob' | 'certificateHeading'>
-    | undefined
+    | undefined,
+  now: Date = new Date()
 ): Promise<jsPDF> {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const pageCenterX = doc.internal.pageSize.getWidth() / 2;
 
   const logoLeftData = settings?.logoLeftBlob ? await blobToDataUri(settings.logoLeftBlob) : undefined;
   const logoRightData = settings?.logoRightBlob ? await blobToDataUri(settings.logoRightBlob) : undefined;
 
-  const cursorY = 20;
-
-  // Header section — reuse Phase 5's header rendering (title top-left, logos left/right,
-  // same containFit() aspect-ratio handling), per 06-UI-SPEC.md's Certificate Content
-  // Structure section 1.
-  if (settings?.title) {
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(settings.title, 20, cursorY);
+  // Header — both logos centered together at the top (not left/right corners), and
+  // bigger than the original results-list header treatment. Revised post-ship per
+  // user feedback: a real club certificate places one centered emblem block, not
+  // side-mounted decoration, so we group left+right logos side by side and center
+  // the pair rather than pinning them to the page margins (06-CONTEXT.md D-05
+  // originally called for margin placement; superseded by this cosmetic pass).
+  const logos: { data: string; width: number; height: number }[] = [];
+  for (const logoData of [logoLeftData, logoRightData]) {
+    if (!logoData) continue;
+    const { width: natWidth, height: natHeight } = doc.getImageProperties(logoData);
+    logos.push({ data: logoData, ...containFit(natWidth, natHeight, LOGO_MAX_WIDTH, LOGO_MAX_HEIGHT) });
   }
-
-  if (logoLeftData) {
-    const { width: natWidth, height: natHeight } = doc.getImageProperties(logoLeftData);
-    const { width, height } = containFit(natWidth, natHeight, LOGO_MAX_WIDTH, LOGO_MAX_HEIGHT);
-    doc.addImage(logoLeftData, 'PNG', 20, cursorY, width, height);
+  if (logos.length > 0) {
+    const totalWidth = logos.reduce((sum, l) => sum + l.width, 0) + (logos.length - 1) * LOGO_GAP;
+    let x = pageCenterX - totalWidth / 2;
+    const logoTop = 15;
+    for (const logo of logos) {
+      doc.addImage(logo.data, 'PNG', x, logoTop, logo.width, logo.height);
+      x += logo.width + LOGO_GAP;
+    }
   }
-  if (logoRightData) {
-    const { width: natWidth, height: natHeight } = doc.getImageProperties(logoRightData);
-    const { width, height } = containFit(natWidth, natHeight, LOGO_MAX_WIDTH, LOGO_MAX_HEIGHT);
-    doc.addImage(logoRightData, 'PNG', doc.internal.pageSize.getWidth() - 20 - width, cursorY, width, height);
-  }
-
-  const pageCenterX = doc.internal.pageSize.getWidth() / 2;
 
   // Certificate heading — 06-UI-SPEC.md section 2.
-  doc.setFontSize(28);
+  doc.setFontSize(32);
   doc.setFont('helvetica', 'bold');
-  doc.text(settings?.certificateHeading ?? 'Urkunde', pageCenterX, 60, { align: 'center' });
+  doc.text(settings?.certificateHeading ?? 'Urkunde', pageCenterX, 70, { align: 'center' });
 
-  // Shooter details — 06-UI-SPEC.md section 3.
-  doc.setFontSize(16);
-  doc.setFont('helvetica', 'bold');
-  doc.text(rankedRow.name, pageCenterX, 85, { align: 'center' });
+  // Body — alternating small connector lines and bold value lines, spread down the
+  // page for an "authentic" printed-certificate look (user feedback), mirroring the
+  // connector/value rhythm of a real club certificate rather than a dense stat block.
+  const lines: CertLine[] = [{ text: rankedRow.name, size: 22, bold: true }];
+  if (settings?.title) {
+    lines.push(
+      { text: 'belegte beim', size: 12, bold: false },
+      { text: settings.title, size: 18, bold: true }
+    );
+  } else {
+    lines.push({ text: 'belegte', size: 12, bold: false });
+  }
+  lines.push(
+    { text: 'am', size: 12, bold: false },
+    {
+      text: now.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+      size: 14,
+      bold: true,
+    },
+    { text: 'in der Klasse', size: 12, bold: false },
+    { text: className, size: 18, bold: true },
+    { text: 'mit', size: 12, bold: false },
+    { text: `${rankedRow.sum} Punkten`, size: 16, bold: true },
+    { text: 'den', size: 12, bold: false },
+    { text: `${rankedRow.rank}. Platz`, size: 24, bold: true }
+  );
 
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Klasse: ${className}`, pageCenterX, 93, { align: 'center' });
-  doc.text(`Platzierung: ${rankedRow.rank}`, pageCenterX, 101, { align: 'center' });
-  doc.text(`Punkte: ${rankedRow.sum}`, pageCenterX, 109, { align: 'center' });
+  let cursorY = 100;
+  for (const line of lines) {
+    doc.setFontSize(line.size);
+    doc.setFont('helvetica', line.bold ? 'bold' : 'normal');
+    doc.text(line.text, pageCenterX, cursorY, { align: 'center' });
+    cursorY += line.bold ? 14 : 10;
+  }
 
   return doc;
 }
@@ -89,9 +120,10 @@ export async function generateSingleCertPdf(
   className: string,
   settings:
     | Pick<SettingsRecord, 'title' | 'logoLeftBlob' | 'logoRightBlob' | 'certificateHeading'>
-    | undefined
+    | undefined,
+  now: Date = new Date()
 ): Promise<Blob> {
-  const doc = await buildCertPdf(rankedRow, className, settings);
+  const doc = await buildCertPdf(rankedRow, className, settings, now);
   return doc.output('blob');
 }
 
@@ -100,7 +132,8 @@ export async function generateBulkCerts(
   classes: ClassRecord[],
   settings:
     | Pick<SettingsRecord, 'title' | 'logoLeftBlob' | 'logoRightBlob' | 'certificateHeading'>
-    | undefined
+    | undefined,
+  now: Date = new Date()
 ): Promise<Blob> {
   const zip = new JSZip();
 
@@ -113,7 +146,7 @@ export async function generateBulkCerts(
     const rows = classifications.get(cls.id!) ?? [];
     // No top-N cutoff (D-01) — every shooter in the class gets a certificate.
     for (const row of rows) {
-      const doc = await buildCertPdf(row, cls.name, settings);
+      const doc = await buildCertPdf(row, cls.name, settings, now);
       // Use 'arraybuffer' rather than a Blob here — JSZip's internal FileReader-based
       // Blob handling in a jsdom/vitest test environment cannot reliably read Blobs
       // originating from a different Blob global than jsdom's own, since jsPDF/Node
