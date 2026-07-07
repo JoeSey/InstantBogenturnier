@@ -47,7 +47,7 @@ export const strings = {
   // that edits this file; Plans 02/03/04 only ever import from it.
   setup: {
     heading: 'Einrichtung',
-    addClassHeading: 'Klasse hinzufügen',
+    addClassHeading: 'Bogen-/Altersklassen',
     ageLabel: 'Alter',
     ageOptions: ['U12', 'U14', 'U16', 'U18', 'Erwachsene'],
     ageCustom: 'Andere',
@@ -60,8 +60,8 @@ export const strings = {
     classNameLabel: 'Klassenname',
     classNameCollisionSuffix: '(Entfernung unterscheidet)',
     addClassButton: 'Klasse hinzufügen',
-    linesLabel: 'Schießplätze',
-    linesHelper: 'Anzahl der Schießplätze für das Turnier',
+    linesLabel: 'Scheiben',
+    linesHelper: 'Anzahl der Scheiben für das Turnier',
     roundsLabel: 'Runden und Passen',
     waPresetsLabel: 'WA-Vorlagen',
     customLabel: 'Benutzerdefiniert',
