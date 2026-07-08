@@ -219,7 +219,7 @@
     disabled={editLocked}
     class="min-h-[44px] rounded-lg bg-teal-500 px-4 py-2 text-[16px] font-semibold leading-[1.5] text-white hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300"
   >
-    {strings.registration.addShooterButton}
+    {editingId !== undefined ? strings.registration.editShooterButton : strings.registration.addShooterButton}
   </button>
 
   {#if editLocked}
