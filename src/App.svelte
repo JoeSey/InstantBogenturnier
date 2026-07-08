@@ -29,11 +29,24 @@
     results: Results,
   };
 
-  let activeSection = $state<SectionId>('setup');
+  // Restored across the reload theme.svelte.ts's toggleTheme() triggers (needed to make
+  // iOS pick up the new status-bar color — see that file's comment) so flipping the
+  // theme mid-Registration/mid-scoring doesn't kick the trainer back to Setup.
+  const SECTION_KEY = 'instantbogenturnier:active-section';
+  const validSectionIds = items.map((item) => item.id);
+
+  function restoreSection(): SectionId {
+    if (typeof window === 'undefined') return 'setup';
+    const stored = sessionStorage.getItem(SECTION_KEY);
+    return validSectionIds.includes(stored as SectionId) ? (stored as SectionId) : 'setup';
+  }
+
+  let activeSection = $state<SectionId>(restoreSection());
   let ActiveView = $derived(views[activeSection]);
 
   function selectSection(id: string) {
     activeSection = id as SectionId;
+    sessionStorage.setItem(SECTION_KEY, activeSection);
   }
 
   const ABOUT_SEEN_KEY = 'instantbogenturnier:about-seen';

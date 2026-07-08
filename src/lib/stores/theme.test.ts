@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { toggleTheme, currentIsDark } from './theme.svelte';
 
 // Note: theme.svelte.ts's `isDark` is module-level $state, initialized once from
@@ -9,6 +9,15 @@ import { toggleTheme, currentIsDark } from './theme.svelte';
 describe('theme store', () => {
   beforeEach(() => {
     localStorage.clear();
+    // toggleTheme() calls location.reload() (iOS status-bar workaround — see that
+    // file's comment); jsdom doesn't implement real navigation and logs a noisy
+    // "Not implemented" warning for it, so stub it out for these DOM-state assertions.
+    // jsdom's location.reload isn't configurable via spyOn — replace the whole
+    // property instead.
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, reload: vi.fn() },
+      writable: true,
+    });
   });
 
   it('toggleTheme flips currentIsDark()', () => {
