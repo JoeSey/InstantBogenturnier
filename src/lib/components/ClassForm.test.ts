@@ -100,4 +100,41 @@ describe('ClassForm', () => {
     expect(updated).toHaveLength(1);
     expect(updated[0].distance).toBe('25m');
   });
+
+  it('leaves the name input empty on edit when the stored name is still the auto-generated one', async () => {
+    await db.classes.add({ name: 'RCV-U14', ageGroup: 'U14', bowType: 'RCV' });
+
+    render(ClassForm);
+
+    await screen.findByText('RCV-U14');
+    await fireEvent.click(screen.getByLabelText(strings.setup.classEditAction));
+
+    const nameInput = screen.getByLabelText(strings.setup.classNameLabel) as HTMLInputElement;
+    expect(nameInput.value).toBe('');
+    expect(nameInput.placeholder).toBe('RCV-U14');
+  });
+
+  it('re-saves a hand-entered name unchanged on edit without appending a collision suffix', async () => {
+    await db.classes.add({
+      name: 'Meine Klasse',
+      ageGroup: 'U14',
+      bowType: 'RCV',
+      distance: '18m',
+    });
+
+    render(ClassForm);
+
+    await screen.findByText('Meine Klasse');
+    await fireEvent.click(screen.getByLabelText(strings.setup.classEditAction));
+
+    const nameInput = screen.getByLabelText(strings.setup.classNameLabel) as HTMLInputElement;
+    expect(nameInput.value).toBe('Meine Klasse');
+
+    const submitButton = screen.getByRole('button', { name: 'Klasse ändern' });
+    await fireEvent.click(submitButton);
+
+    const updated = await db.classes.toArray();
+    expect(updated).toHaveLength(1);
+    expect(updated[0].name).toBe('Meine Klasse');
+  });
 });

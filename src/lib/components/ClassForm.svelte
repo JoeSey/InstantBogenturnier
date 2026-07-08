@@ -19,6 +19,7 @@
   let deleteBlocked = $state<{ id: number; count: number } | null>(null);
   let errorFeedback = $state('');
   let editingId = $state<number | undefined>(undefined);
+  let formSection: HTMLElement | undefined;
 
   const existingClassesQuery = liveQuery(() => db.classes.toArray());
   let existingClasses = $derived($existingClassesQuery ?? []);
@@ -31,8 +32,11 @@
   let isFinalized = $derived(computeIsFinalized(allScores));
 
   let tupleName = $derived(generateClassName(ageGroup, bowType, distance));
+  let collisionCandidates = $derived(
+    editingId !== undefined ? existingClasses.filter((c) => c.id !== editingId) : existingClasses
+  );
   let finalSuggestedName = $derived(
-    autoSuffixOnCollision(tupleName, { ageGroup, bowType, distance }, existingClasses)
+    autoSuffixOnCollision(tupleName, { ageGroup, bowType, distance }, collisionCandidates)
   );
 
   function resetForm() {
@@ -47,8 +51,16 @@
     ageGroup = cls.ageGroup ?? '';
     bowType = cls.bowType ?? '';
     distance = cls.distance ?? '';
-    classNameOverride = cls.name;
+    // Only carry over a hand-picked name — if it still matches what the tuple would
+    // auto-generate, leave the override empty so the placeholder keeps tracking live
+    // edits to the age/bow/distance fields, same as when adding a new class.
+    const auto = generateClassName(cls.ageGroup ?? '', cls.bowType ?? '', cls.distance ?? '');
+    classNameOverride = cls.name === auto ? '' : cls.name;
     editingId = cls.id;
+    // Long class lists can scroll the form out of view — pull it back into sight so
+    // clicking the pencil icon always has visible feedback. (jsdom in tests has no
+    // scrollIntoView implementation, hence the feature check.)
+    formSection?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
   }
 
   async function handleSubmit() {
@@ -59,7 +71,7 @@
     const nameToSave = autoSuffixOnCollision(
       classNameOverride.trim() || finalSuggestedName,
       { ageGroup, bowType, distance },
-      existingClasses
+      collisionCandidates
     );
 
     if (editingId !== undefined) {
@@ -143,7 +155,7 @@
   }
 </script>
 
-<h3 class="mb-4 text-[20px] font-semibold leading-[1.2] text-slate-900 dark:text-slate-100">
+<h3 bind:this={formSection} class="mb-4 text-[20px] font-semibold leading-[1.2] text-slate-900 dark:text-slate-100">
   {strings.setup.addClassHeading}
 </h3>
 

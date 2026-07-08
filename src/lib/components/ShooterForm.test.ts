@@ -87,7 +87,7 @@ describe('ShooterForm', () => {
     expect(classSelect.disabled).toBe(true);
 
     await fireEvent.change(classSelect, { target: { value: String(classB) } });
-    const submitButton = screen.getByRole('button', { name: 'Schütze hinzufügen' });
+    const submitButton = screen.getByRole('button', { name: 'Schütze ändern' });
     expect((submitButton as HTMLButtonElement).disabled).toBe(true);
     await fireEvent.click(submitButton);
 

@@ -31,9 +31,14 @@
 
   let editingShooter = $state<ShooterRecord | null>(null);
   let errorFeedback = $state('');
+  let formCard: HTMLElement | undefined;
 
   function startEdit(shooter: ShooterRecord) {
     editingShooter = { ...shooter };
+    // Long rosters can scroll the edit form out of view — pull it back into sight so
+    // clicking the pencil icon always has visible feedback. (jsdom in tests has no
+    // scrollIntoView implementation, hence the feature check.)
+    formCard?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
   }
 
   function clearEdit() {
@@ -97,9 +102,11 @@
     {/if}
   </GlassCard>
 
-  <GlassCard class="p-4 md:p-6">
-    <ShooterForm editingShooter={editingShooter} onEditComplete={clearEdit} isFinalized={isFinalized} />
-  </GlassCard>
+  <div bind:this={formCard}>
+    <GlassCard class="p-4 md:p-6">
+      <ShooterForm editingShooter={editingShooter} onEditComplete={clearEdit} isFinalized={isFinalized} />
+    </GlassCard>
+  </div>
 
   <section>
     {#if shooters.length === 0}
