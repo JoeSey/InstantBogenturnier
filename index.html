@@ -4,34 +4,35 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- iOS standalone (Home Screen) status bar. "black-translucent" would let content
-    draw under the status bar, but that requires viewport-fit=cover + safe-area padding
-    throughout the layout, which this app doesn't do — without it iOS just shows a plain
-    white reserved strip regardless of theme. Instead we pick a *non-translucent* style
-    per theme: "default" (white bar, dark icons) for light mode, "black" (solid black
-    bar, light icons) for dark mode. iOS only reads this meta tag at each cold launch of
-    the standalone app (not live), so it's set synchronously in the boot script below,
-    matching the same localStorage/prefers-color-scheme check used for the `dark` class,
-    and re-set on every explicit theme toggle so the *next* launch picks up the choice. -->
+    <!-- viewport-fit=cover: lets the page's own layout extend into the iOS safe area
+    (notch/status bar, home indicator) instead of iOS reserving a plain white/black
+    strip there. Required for apple-mobile-web-app-status-bar-style="black-translucent"
+    below to actually show *our* background instead of a fixed OS color — see
+    src/App.svelte / TopAppBar.svelte for the matching safe-area padding. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- iOS standalone (Home Screen) status bar. This meta tag is read once from the
+    static HTML response when the OS chrome launches the app — mutating it via JS at
+    runtime is silently ignored (confirmed: switching it per-theme in the boot script
+    never took effect). "black-translucent" is the only style that stays theme-correct
+    without that limitation: it makes the status bar transparent and lets our own page
+    background (which *is* live/reactive to the `dark` class) show through underneath. -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta id="apple-status-bar-meta" name="apple-mobile-web-app-status-bar-style" content="default" />
-    <!-- Tinted by the inline boot script below (and by theme.svelte.ts on toggle) to
-    match the light/dark app background — this is what iOS/Android use to color the
-    browser/PWA chrome (address bar, status bar) around the page content. -->
-    <meta id="theme-color-meta" name="theme-color" content="#f8fafc" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!-- Regular Safari tab chrome tint. iOS only reliably honors theme-color when given
+    as static media-queried pairs like this (a single tag mutated via JS was found to be
+    ignored) — so this tracks the OS-level light/dark setting, not this app's in-page
+    theme toggle. If a trainer manually overrides the in-app theme away from their OS
+    setting, the Safari chrome color may not match; there's no reliable way around that
+    given iOS's static-only reading of these tags. -->
+    <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
     <title>InstantBogenturnier</title>
     <script>
-      var isDark =
+      document.documentElement.classList.toggle(
+        'dark',
         localStorage.theme === 'dark' ||
-        (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
-      document.documentElement.classList.toggle('dark', isDark);
-      document
-        .getElementById('theme-color-meta')
-        .setAttribute('content', isDark ? '#0f172a' : '#f8fafc');
-      document
-        .getElementById('apple-status-bar-meta')
-        .setAttribute('content', isDark ? 'black' : 'default');
+          (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      );
     </script>
   </head>
   <body>

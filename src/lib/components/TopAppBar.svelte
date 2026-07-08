@@ -6,7 +6,7 @@
 </script>
 
 <header
-  class="glass-surface sticky top-0 z-10 flex h-16 w-full items-center justify-between px-4 md:pl-[88px] xl:pl-[136px]"
+  class="glass-surface sticky top-0 z-10 flex h-[calc(4rem+env(safe-area-inset-top))] w-full items-center justify-between px-4 pt-[env(safe-area-inset-top)] md:pl-[88px] xl:pl-[136px]"
 >
   <button
     type="button"

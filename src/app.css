@@ -52,6 +52,19 @@
   background-color: rgb(100 116 139 / 0.6);
 }
 
+/* With viewport-fit=cover + apple-mobile-web-app-status-bar-style="black-translucent"
+   (index.html), the iOS status bar/notch area is transparent and shows whatever is
+   painted at the very top of the document — which is <html>'s background, not any
+   inner app div. Without this, that area stays the browser's default white regardless
+   of the `dark` class further down the tree. Mirrors the slate-50/slate-900 pair used
+   for the app root in App.svelte. */
+html {
+  background-color: #f8fafc;
+}
+html.dark {
+  background-color: #0f172a;
+}
+
 body {
   margin: 0;
   /* Disables iOS/iPadOS's double-tap-to-zoom gesture (fast repeated taps during rapid

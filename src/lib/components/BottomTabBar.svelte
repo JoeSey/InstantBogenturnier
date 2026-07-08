@@ -20,7 +20,7 @@
 <nav
   data-testid="bottom-tab-bar"
   aria-label="Hauptnavigation"
-  class="glass-surface fixed inset-x-0 bottom-0 z-10 h-16 items-stretch justify-around px-2 {className}"
+  class="glass-surface fixed inset-x-0 bottom-0 z-10 h-[calc(4rem+env(safe-area-inset-bottom))] items-stretch justify-around px-2 pb-[env(safe-area-inset-bottom)] {className}"
 >
   {#each items as item (item.id)}
     <NavItem
