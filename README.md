@@ -36,6 +36,25 @@ A client-side web app (installable PWA) that lets an archery club trainer run in
 - [vite-plugin-pwa](https://vite-pwa-org.netlify.app/) for the installable, offline service worker
 - [Vitest](https://vitest.dev/) + [@testing-library/svelte](https://testing-library.com/docs/svelte-testing-library/intro/) for unit/component tests, [Playwright](https://playwright.dev/) for e2e tests
 
+## Branding / Club Color
+
+The app's highlight color (buttons, links, active states) is defined once, as a
+Tailwind `teal` palette override in `src/custom.css`. Every `teal-*` utility class used
+throughout the app resolves to those variables, so re-skinning the app for a different
+club is a single edit: generate a 300/400/500/600/700/900 shade scale for your club
+color (e.g. via [uicolors.app](https://uicolors.app/create)) and paste the six hex
+values into that file, keeping the variable names unchanged. Also update `themeColor`
+in `src/lib/config/app.config.ts` (usually the 500 shade) to match — it drives the
+separate PWA install icon/splash-screen tint, which isn't styled via Tailwind classes.
+
+`src/custom.css` is gitignored, not checked in — `npm install` creates it automatically
+from the `src/custom.css.example` template on first run (via a `postinstall` script) if
+it doesn't exist yet, and never overwrites an existing one. This means a club's color
+customization lives only on that club's machine/fork and never shows up as a diff
+against the upstream project, so pulling updates never conflicts with a rebrand. If you
+want to version your club's color choice, commit your edited `custom.css.example`
+instead (or fork).
+
 ## Installation
 
 **Requirements:** Node.js `^20.19.0` or `>=22.12.0`

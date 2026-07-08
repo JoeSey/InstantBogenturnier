@@ -1,6 +1,12 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Club highlight color override — gitignored (see .gitignore), bootstrapped from
+   custom.css.example by `npm install`'s postinstall script if missing. This keeps
+   local club-color edits out of `git status`/diffs entirely. See custom.css.example
+   for the full explanation and reskinning instructions. */
+@import "./custom.css";
+
 @utility glass-surface {
   background-color: rgb(255 255 255 / 0.70);
   border: 1px solid rgb(255 255 255 / 0.45);

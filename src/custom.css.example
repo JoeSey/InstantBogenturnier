@@ -1,0 +1,22 @@
+/* Club highlight color (buttons, links, active states) — every `teal-*` utility class
+   used throughout the app (bg-teal-500, hover:teal-600, dark:teal-400, etc.) resolves
+   to these variables, so re-skinning the app for a different club is a one-block edit
+   here rather than hunting through every component. Defaults are Tailwind's stock
+   `teal` scale (teal-500 = #14B8A6, matching src/lib/config/app.config.ts's
+   `themeColor`, which drives the PWA manifest/install icon color separately — keep
+   both in sync when rebranding). To reskin: generate a 300/400/500/600/700/900 scale
+   for your club color (e.g. via https://uicolors.app/create) and paste the six hex
+   values in below, keeping the variable names unchanged.
+
+   This file (custom.css.example) is the checked-in template. Your actual overrides go
+   in a sibling `custom.css`, which is gitignored — `npm install` copies this template
+   there automatically on first run if it doesn't exist yet, so local rebranding never
+   shows up as a git diff. */
+@theme {
+  --color-teal-300: #5eead4;
+  --color-teal-400: #2dd4bf;
+  --color-teal-500: #14b8a6;
+  --color-teal-600: #0d9488;
+  --color-teal-700: #0f766e;
+  --color-teal-900: #134e4a;
+}
