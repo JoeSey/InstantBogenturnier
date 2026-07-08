@@ -5,11 +5,17 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- iOS PWA status bar: "black-translucent" lets the app draw its own background
-    under the status bar instead of a fixed white/black bar, so it can match whichever
-    theme (light/dark) is active rather than always showing a white bar in dark mode. -->
+    <!-- iOS standalone (Home Screen) status bar. "black-translucent" would let content
+    draw under the status bar, but that requires viewport-fit=cover + safe-area padding
+    throughout the layout, which this app doesn't do — without it iOS just shows a plain
+    white reserved strip regardless of theme. Instead we pick a *non-translucent* style
+    per theme: "default" (white bar, dark icons) for light mode, "black" (solid black
+    bar, light icons) for dark mode. iOS only reads this meta tag at each cold launch of
+    the standalone app (not live), so it's set synchronously in the boot script below,
+    matching the same localStorage/prefers-color-scheme check used for the `dark` class,
+    and re-set on every explicit theme toggle so the *next* launch picks up the choice. -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta id="apple-status-bar-meta" name="apple-mobile-web-app-status-bar-style" content="default" />
     <!-- Tinted by the inline boot script below (and by theme.svelte.ts on toggle) to
     match the light/dark app background — this is what iOS/Android use to color the
     browser/PWA chrome (address bar, status bar) around the page content. -->
@@ -23,6 +29,9 @@
       document
         .getElementById('theme-color-meta')
         .setAttribute('content', isDark ? '#0f172a' : '#f8fafc');
+      document
+        .getElementById('apple-status-bar-meta')
+        .setAttribute('content', isDark ? 'black' : 'default');
     </script>
   </head>
   <body>
