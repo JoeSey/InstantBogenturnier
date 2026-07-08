@@ -60,6 +60,7 @@ export const strings = {
     classNameLabel: 'Klassenname',
     classNameCollisionSuffix: '(Entfernung unterscheidet)',
     addClassButton: 'Klasse hinzufügen',
+    editClassButton: 'Klasse ändern',
     linesLabel: 'Scheiben',
     linesHelper: 'Anzahl der Scheiben für das Turnier',
     roundsLabel: 'Runden und Passen',
@@ -76,6 +77,7 @@ export const strings = {
     // inline delete-confirmation row (plan Task 2 action text); not itself listed in
     // 02-UI-SPEC.md's Strings Module Extension code block.
     classDeleteAction: 'Löschen',
+    classEditAction: 'Bearbeiten',
     classDeleteConfirm: (name: string) => `Klasse '${name}' löschen?`,
     classDeleteConfirmYes: 'Ja, löschen',
     classDeleteCancel: 'Abbrechen',
@@ -97,6 +99,7 @@ export const strings = {
     modeABCD: 'Modus: AB/CD',
     modeABCDExplain: '4 Schützen pro Schießplatz, zwei Durchgänge (A/B, C/D)',
     addShooterButton: 'Schütze hinzufügen',
+    editShooterButton: 'Schütze ändern',
     tableNameColumn: 'Name',
     tableClassColumn: 'Klasse',
     tableLineColumn: 'Schießplatz',

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { liveQuery } from 'dexie';
-  import { Trash2 } from '@lucide/svelte';
-  import { db } from '../db/schema';
+  import { Trash2, Pencil } from '@lucide/svelte';
+  import { db, type ClassRecord } from '../db/schema';
   import { AGE_GROUP_OPTIONS, BOW_TYPE_OPTIONS, DISTANCE_OPTIONS } from '../fixtures/classOptions';
   import { generateClassName, autoSuffixOnCollision } from '../utils/classNameGenerator';
   import { computeIsFinalized } from '../utils/scoreCompletion';
@@ -18,6 +18,7 @@
   let confirmDeleteId = $state<number | null>(null);
   let deleteBlocked = $state<{ id: number; count: number } | null>(null);
   let errorFeedback = $state('');
+  let editingId = $state<number | undefined>(undefined);
 
   const existingClassesQuery = liveQuery(() => db.classes.toArray());
   let existingClasses = $derived($existingClassesQuery ?? []);
@@ -34,7 +35,23 @@
     autoSuffixOnCollision(tupleName, { ageGroup, bowType, distance }, existingClasses)
   );
 
-  async function addClass() {
+  function resetForm() {
+    ageGroup = '';
+    bowType = '';
+    distance = '';
+    classNameOverride = '';
+    editingId = undefined;
+  }
+
+  function startEdit(cls: ClassRecord) {
+    ageGroup = cls.ageGroup ?? '';
+    bowType = cls.bowType ?? '';
+    distance = cls.distance ?? '';
+    classNameOverride = cls.name;
+    editingId = cls.id;
+  }
+
+  async function handleSubmit() {
     // SETUP-01: at least one tuple field required — silently no-op otherwise.
     if (!ageGroup && !bowType && !distance) return;
 
@@ -44,6 +61,29 @@
       { ageGroup, bowType, distance },
       existingClasses
     );
+
+    if (editingId !== undefined) {
+      if (isFinalized) {
+        errorFeedback = strings.results.guardMessage;
+        return;
+      }
+      try {
+        await db.classes.update(editingId, {
+          name: nameToSave,
+          ageGroup: ageGroup || undefined,
+          bowType: bowType || undefined,
+          distance: distance || undefined,
+        });
+      } catch (err) {
+        errorFeedback = strings.common.saveError.replace(
+          '{error}',
+          err instanceof Error ? err.message : String(err)
+        );
+        return;
+      }
+      resetForm();
+      return;
+    }
 
     try {
       await db.classes.add({
@@ -62,10 +102,7 @@
       return;
     }
 
-    ageGroup = '';
-    bowType = '';
-    distance = '';
-    classNameOverride = '';
+    resetForm();
   }
 
   async function requestDelete(id: number | undefined) {
@@ -143,10 +180,10 @@
 
   <button
     type="button"
-    onclick={addClass}
+    onclick={handleSubmit}
     class="min-h-[44px] rounded-lg bg-teal-500 px-4 py-2 text-[16px] font-semibold leading-[1.5] text-white hover:bg-teal-600 dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300"
   >
-    {strings.setup.addClassButton}
+    {editingId !== undefined ? strings.setup.editClassButton : strings.setup.addClassButton}
   </button>
 
   {#if errorFeedback}
@@ -193,6 +230,14 @@
               </span>
             {/if}
           </div>
+          <button
+            type="button"
+            onclick={() => startEdit(cls)}
+            aria-label={strings.setup.classEditAction}
+            class="flex min-h-[44px] min-w-[44px] items-center justify-center"
+          >
+            <Pencil size={20} strokeWidth={1.75} class="text-slate-600 dark:text-slate-300" />
+          </button>
           {#if deleteBlocked?.id === cls.id}
             <button
               type="button"

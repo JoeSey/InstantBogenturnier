@@ -77,4 +77,27 @@ describe('ClassForm', () => {
     const deleteButton = screen.getByLabelText(strings.setup.classDeleteAction) as HTMLButtonElement;
     expect(deleteButton.disabled).toBe(true);
   });
+
+  it('edits an existing class in place instead of creating a duplicate', async () => {
+    await db.classes.add({ name: 'RCV-U14', ageGroup: 'U14', bowType: 'RCV', distance: '18m' });
+
+    render(ClassForm);
+
+    await screen.findByText('RCV-U14');
+
+    const editButton = screen.getByLabelText(strings.setup.classEditAction);
+    await fireEvent.click(editButton);
+
+    const submitButton = screen.getByRole('button', { name: 'Klasse ändern' });
+    expect(submitButton).toBeTruthy();
+
+    const distanceSelect = screen.getByLabelText('Entfernung') as HTMLSelectElement;
+    await fireEvent.change(distanceSelect, { target: { value: '25m' } });
+
+    await fireEvent.click(submitButton);
+
+    const updated = await db.classes.toArray();
+    expect(updated).toHaveLength(1);
+    expect(updated[0].distance).toBe('25m');
+  });
 });
