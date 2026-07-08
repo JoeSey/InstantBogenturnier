@@ -5,6 +5,7 @@
   import { strings } from '../i18n/strings.de';
   import { computeClassRankings } from '../utils/ranking';
   import { generateResultsPdf, resultsPdfFilename } from '../utils/pdfExport';
+  import { expandClassName } from '../utils/classNameGenerator';
   import {
     generateBulkCerts,
     generateSingleCertPdf,
@@ -67,7 +68,13 @@
       // Svelte 5 liveQuery caveat). A direct read is also simply more correct here:
       // export is a one-off action that should see the current persisted state.
       const settings = (await db.settings.get(1)) ?? { id: 1 as const };
-      const blob = await generateResultsPdf(rankings, classesWithResults, settings, includeIncomplete);
+      const blob = await generateResultsPdf(
+        rankings,
+        classesWithResults,
+        settings,
+        includeIncomplete,
+        roundsConfig
+      );
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -187,11 +194,10 @@
       <div class="mt-4">
         <ResultsTable
           rows={selectedClassId !== null ? (rankings.get(selectedClassId) ?? []) : []}
-          oncertexport={(row) =>
-            handleSingleCertExport(
-              row,
-              classesWithResults.find((c) => c.id === selectedClassId)?.name ?? ''
-            )}
+          oncertexport={(row) => {
+            const cls = classesWithResults.find((c) => c.id === selectedClassId);
+            handleSingleCertExport(row, cls ? expandClassName(cls) : '');
+          }}
         />
       </div>
     </div>
@@ -212,7 +218,7 @@
           </h2>
           <ResultsTable
             rows={rankings.get(cls.id!) ?? []}
-            oncertexport={(row) => handleSingleCertExport(row, cls.name)}
+            oncertexport={(row) => handleSingleCertExport(row, expandClassName(cls))}
           />
         </GlassCard>
       {/each}

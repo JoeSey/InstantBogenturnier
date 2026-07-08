@@ -32,6 +32,33 @@ export function generateClassName(ageGroup: string, bowType: string, distance: s
   return parts.length > 0 ? parts.join('-') : 'Neue Klasse';
 }
 
+// Resolve a bow-type value/abbreviation to its full display label, mirroring
+// getBowTypeAbbr's lookup but returning `label` instead of `value`.
+export function getBowTypeLabel(bowType: string): string {
+  if (!bowType) return bowType;
+  const match = BOW_TYPE_OPTIONS.find((opt) => opt.label === bowType || opt.value === bowType);
+  return match ? match.label : bowType;
+}
+
+// Re-expands an auto-generated short class name ("BB-U16-18m") back into a readable
+// long form ("Blankbogen U16 auf 18m") for PDF output (results table + certificates).
+// Only expands when `cls.name` still matches what generateClassName() would produce
+// from the current ageGroup/bowType/distance tuple — if the trainer has edited the name
+// by hand, there's no way to tell which parts are still "current", so the manual name is
+// printed as-is instead of guessing.
+export function expandClassName(cls: { name: string; ageGroup?: string; bowType?: string; distance?: string }): string {
+  const auto = generateClassName(cls.ageGroup ?? '', cls.bowType ?? '', cls.distance ?? '');
+  if (cls.name !== auto) return cls.name;
+
+  const parts: string[] = [];
+  if (cls.bowType) parts.push(getBowTypeLabel(cls.bowType));
+  if (cls.ageGroup) parts.push(cls.ageGroup);
+  const label = parts.join(' ');
+
+  if (!label) return cls.name;
+  return cls.distance ? `${label} auf ${cls.distance}` : label;
+}
+
 // Auto-suffix on collision (D-07): when `baseName` already exists, append the first
 // differing field's own value (priority: distance > bowType > ageGroup) — never a
 // random or bare numeric id when a semantic option exists. Only falls back to a

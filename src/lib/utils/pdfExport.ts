@@ -1,7 +1,8 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { RankedRow } from './ranking';
-import type { ClassRecord, SettingsRecord } from '../db/schema';
+import type { ClassRecord, RoundConfig, SettingsRecord } from '../db/schema';
+import { expandClassName } from './classNameGenerator';
 
 // Pure PDF generation (PDF-01/04/05/07, 05-RESEARCH.md Pattern 1): framework-free,
 // no side effects, no Svelte dependency — mirrors ranking.ts's pure-function style so
@@ -14,10 +15,20 @@ export function resultsPdfFilename(date: Date = new Date()): string {
 // Exported independently of generateResultsPdf so the include-incomplete filtering
 // (PDF-05, D-09) and the exact 3-column shape (PDF-04) are unit-testable without
 // invoking jsPDF/autoTable at all.
-export function buildClassTableRows(rows: RankedRow[], includeIncomplete: boolean): string[][] {
+export function buildClassTableRows(
+  rows: RankedRow[],
+  includeIncomplete: boolean,
+  numberOfRounds: number
+): string[][] {
   return rows
     .filter((row) => includeIncomplete || row.isComplete)
-    .map((row) => [row.rank.toString(), row.name, row.sum.toString()]);
+    .map((row) => [
+      row.rank.toString(),
+      row.name,
+      ...(numberOfRounds > 1 ? row.roundSums.map((s) => s.toString()) : []),
+      `${row.countX}/${row.count10}/${row.count9}`,
+      row.sum.toString(),
+    ]);
 }
 
 function blobToDataUri(blob: Blob): Promise<string> {
@@ -54,8 +65,10 @@ export async function buildResultsPdfDoc(
   classifications: Map<number, RankedRow[]>,
   classes: ClassRecord[],
   settings: Pick<SettingsRecord, 'title' | 'logoLeftBlob' | 'logoRightBlob'> | undefined,
-  includeIncomplete: boolean
+  includeIncomplete: boolean,
+  roundsConfig?: Pick<RoundConfig, 'numberOfRounds'>
 ): Promise<jsPDF> {
+  const numberOfRounds = roundsConfig?.numberOfRounds ?? 1;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
   // D-04 ordering — same alphabetical-by-name order as Results.svelte's
@@ -119,7 +132,7 @@ export async function buildResultsPdfDoc(
 
   for (const cls of classesWithResults) {
     const rows = classifications.get(cls.id!) ?? [];
-    const body = buildClassTableRows(rows, includeIncomplete);
+    const body = buildClassTableRows(rows, includeIncomplete, numberOfRounds);
 
     // No unconditional page break between classes — result blocks share a page when
     // they fit. Only force a break when the estimated block height (heading + table
@@ -142,16 +155,24 @@ export async function buildResultsPdfDoc(
 
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text(cls.name, 20, cursorY);
+    doc.text(expandClassName(cls), 20, cursorY);
+
+    const roundHeaders = numberOfRounds > 1
+      ? Array.from({ length: numberOfRounds }, (_, i) => `Runde ${i + 1}`)
+      : [];
+    const head = ['Rang', 'Name', ...roundHeaders, 'X/10/9', 'Gesamt'];
+    const gesamtColumnIndex = head.length - 1;
 
     autoTable(doc, {
-      head: [['Rang', 'Name', 'Gesamt']],
+      head: [head],
       body,
       startY: cursorY + 5,
       margin: { top: 20, right: 20, bottom: 20, left: 20 },
       theme: 'striped',
       styles: { fontSize: 10, halign: 'left' },
       headStyles: { fillColor: [100, 100, 100], textColor: 255, fontStyle: 'bold' },
+      // Gesamt is always printed bold, in both header and body, per user spec.
+      columnStyles: { [gesamtColumnIndex]: { fontStyle: 'bold' } },
     });
 
     // jspdf-autotable attaches this at runtime; not present in its type definitions.
@@ -165,8 +186,9 @@ export async function generateResultsPdf(
   classifications: Map<number, RankedRow[]>,
   classes: ClassRecord[],
   settings: Pick<SettingsRecord, 'title' | 'logoLeftBlob' | 'logoRightBlob'> | undefined,
-  includeIncomplete: boolean
+  includeIncomplete: boolean,
+  roundsConfig?: Pick<RoundConfig, 'numberOfRounds'>
 ): Promise<Blob> {
-  const doc = await buildResultsPdfDoc(classifications, classes, settings, includeIncomplete);
+  const doc = await buildResultsPdfDoc(classifications, classes, settings, includeIncomplete, roundsConfig);
   return doc.output('blob');
 }

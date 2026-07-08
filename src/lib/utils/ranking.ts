@@ -15,12 +15,49 @@ export interface RankedRow {
   sum: number;
   rank: number;
   isComplete: boolean;
+  // Per-round sums (index 0-based, matching ScoreRecord.roundIndex), for the PDF's
+  // "Runde 1 / Runde 2 / ..." columns when a tournament has more than one round.
+  roundSums: number[];
+  // Counts of X/10/9 arrows across all rounds — the PDF's "X/10/9" column.
+  countX: number;
+  count10: number;
+  count9: number;
 }
 
 export function computeShooterSum(shooterId: number, scores: ScoreRecord[]): number {
   return scores
     .filter((s) => s.shooterId === shooterId)
     .reduce((sum, s) => sum + arrowScoreValue(s.value), 0);
+}
+
+export function computeShooterRoundSums(
+  shooterId: number,
+  numberOfRounds: number,
+  scores: ScoreRecord[]
+): number[] {
+  const sums = new Array(numberOfRounds).fill(0) as number[];
+  for (const s of scores) {
+    if (s.shooterId === shooterId && s.roundIndex >= 0 && s.roundIndex < numberOfRounds) {
+      sums[s.roundIndex] += arrowScoreValue(s.value);
+    }
+  }
+  return sums;
+}
+
+export function computeShooterHitCounts(
+  shooterId: number,
+  scores: ScoreRecord[]
+): { countX: number; count10: number; count9: number } {
+  let countX = 0;
+  let count10 = 0;
+  let count9 = 0;
+  for (const s of scores) {
+    if (s.shooterId !== shooterId) continue;
+    if (s.value === 'X') countX += 1;
+    else if (s.value === '10') count10 += 1;
+    else if (s.value === '9') count9 += 1;
+  }
+  return { countX, count10, count9 };
 }
 
 export function isShooterComplete(
@@ -84,6 +121,8 @@ export function computeClassRankings(
         line: shooter.lineAssignment ?? null,
         sum: computeShooterSum(shooter.id as number, scores),
         isComplete: isShooterComplete(shooter.id as number, roundsConfig, scores),
+        roundSums: computeShooterRoundSums(shooter.id as number, roundsConfig.numberOfRounds, scores),
+        ...computeShooterHitCounts(shooter.id as number, scores),
       }))
       // Sort descending by sum; alphabetical-by-name as the row-order tiebreak (rank
       // number is identical either way, per the UI-SPEC's ranking computation section).

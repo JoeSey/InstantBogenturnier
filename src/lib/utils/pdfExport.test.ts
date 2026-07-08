@@ -17,6 +17,10 @@ function makeRow(overrides: Partial<RankedRow>): RankedRow {
     sum: 100,
     rank: 1,
     isComplete: true,
+    roundSums: [100],
+    countX: 0,
+    count10: 0,
+    count9: 0,
     ...overrides,
   };
 }
@@ -34,23 +38,31 @@ describe('buildClassTableRows', () => {
   ];
 
   it('excludes incomplete rows when includeIncomplete is false', () => {
-    const result = buildClassTableRows(rows, false);
-    expect(result).toEqual([['1', 'Anna', '280']]);
+    const result = buildClassTableRows(rows, false, 1);
+    expect(result).toEqual([['1', 'Anna', '0/0/0', '280']]);
   });
 
   it('includes all rows when includeIncomplete is true', () => {
-    const result = buildClassTableRows(rows, true);
+    const result = buildClassTableRows(rows, true, 1);
     expect(result).toEqual([
-      ['1', 'Anna', '280'],
-      ['2', 'Bert', '250'],
+      ['1', 'Anna', '0/0/0', '280'],
+      ['2', 'Bert', '0/0/0', '250'],
     ]);
   });
 
-  it('never emits more than 3 columns per row', () => {
-    const result = buildClassTableRows(rows, true);
+  it('never emits more than 4 columns per row when there is a single round', () => {
+    const result = buildClassTableRows(rows, true, 1);
     for (const row of result) {
-      expect(row.length).toBeLessThanOrEqual(3);
+      expect(row.length).toBeLessThanOrEqual(4);
     }
+  });
+
+  it('adds one column per round when there is more than one round', () => {
+    const multiRoundRows: RankedRow[] = [
+      makeRow({ shooterId: 1, name: 'Anna', sum: 280, rank: 1, isComplete: true, roundSums: [140, 140] }),
+    ];
+    const result = buildClassTableRows(multiRoundRows, true, 2);
+    expect(result).toEqual([['1', 'Anna', '140', '140', '0/0/0', '280']]);
   });
 });
 

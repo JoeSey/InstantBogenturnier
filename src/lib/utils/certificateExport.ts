@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 import JSZip from 'jszip';
 import { containFit } from './pdfExport';
+import { expandClassName } from './classNameGenerator';
 import type { RankedRow } from './ranking';
 import type { ClassRecord, SettingsRecord } from '../db/schema';
 
@@ -146,7 +147,7 @@ export async function generateBulkCerts(
     const rows = classifications.get(cls.id!) ?? [];
     // No top-N cutoff (D-01) — every shooter in the class gets a certificate.
     for (const row of rows) {
-      const doc = await buildCertPdf(row, cls.name, settings, now);
+      const doc = await buildCertPdf(row, expandClassName(cls), settings, now);
       // Use 'arraybuffer' rather than a Blob here — JSZip's internal FileReader-based
       // Blob handling in a jsdom/vitest test environment cannot reliably read Blobs
       // originating from a different Blob global than jsdom's own, since jsPDF/Node
