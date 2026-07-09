@@ -242,33 +242,35 @@
               </span>
             {/if}
           </div>
-          <button
-            type="button"
-            onclick={() => startEdit(cls)}
-            aria-label={strings.setup.classEditAction}
-            class="flex min-h-[44px] min-w-[44px] items-center justify-center"
-          >
-            <Pencil size={20} strokeWidth={1.75} class="text-slate-600 dark:text-slate-300" />
-          </button>
-          {#if deleteBlocked?.id === cls.id}
+          <div class="flex gap-2">
             <button
               type="button"
-              onclick={dismissDeleteBlocked}
-              class="min-h-[44px] rounded-lg px-3 py-2 text-[14px] leading-[1.4] text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100"
+              onclick={() => startEdit(cls)}
+              aria-label={strings.setup.classEditAction}
+              class="flex min-h-[44px] min-w-[44px] items-center justify-center"
             >
-              {strings.setup.classDeleteCancel}
+              <Pencil size={20} strokeWidth={1.75} class="text-slate-600 dark:text-slate-300" />
             </button>
-          {:else}
-            <button
-              type="button"
-              onclick={() => requestDelete(cls.id)}
-              aria-label={strings.setup.classDeleteAction}
-              disabled={isFinalized}
-              class="flex min-h-[44px] min-w-[44px] items-center justify-center disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <Trash2 size={20} strokeWidth={1.75} class="text-red-600 dark:text-red-400" />
-            </button>
-          {/if}
+            {#if deleteBlocked?.id === cls.id}
+              <button
+                type="button"
+                onclick={dismissDeleteBlocked}
+                class="min-h-[44px] rounded-lg px-3 py-2 text-[14px] leading-[1.4] text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100"
+              >
+                {strings.setup.classDeleteCancel}
+              </button>
+            {:else}
+              <button
+                type="button"
+                onclick={() => requestDelete(cls.id)}
+                aria-label={strings.setup.classDeleteAction}
+                disabled={isFinalized}
+                class="flex min-h-[44px] min-w-[44px] items-center justify-center disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Trash2 size={20} strokeWidth={1.75} class="text-red-600 dark:text-red-400" />
+              </button>
+            {/if}
+          </div>
         </div>
       {/if}
     </li>
