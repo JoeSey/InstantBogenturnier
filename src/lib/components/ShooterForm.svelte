@@ -59,10 +59,9 @@
   let editingId = $state<number | undefined>(undefined);
   let errorFeedback = $state('');
 
-  // CR-02: only the edit path is locked once finalized — adding a new shooter must
-  // remain fully functional (per 04-03-PLAN.md's must_haves), so this must NOT gate on
-  // isFinalized alone.
-  let editLocked = $derived(editingId !== undefined && isFinalized);
+  // Once a tournament is finalized, both editing and adding shooters are locked —
+  // adding an archer post-finalization would silently invalidate the locked rankings.
+  let editLocked = $derived(isFinalized);
 
   // Pre-fill the form whenever a new shooter is selected for editing.
   $effect(() => {
@@ -87,11 +86,12 @@
 
     errorFeedback = '';
 
+    if (isFinalized) {
+      errorFeedback = strings.results.guardMessage;
+      return;
+    }
+
     if (editingId !== undefined) {
-      if (isFinalized) {
-        errorFeedback = strings.results.guardMessage;
-        return;
-      }
       try {
         await db.shooters.update(editingId, {
           name: trimmedName,

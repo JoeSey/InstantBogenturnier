@@ -96,7 +96,7 @@ describe('ShooterForm', () => {
     await screen.findByText('Turnier abgeschlossen — Zurücksetzen, um zu ändern.');
   });
 
-  it('allows adding a new shooter even when isFinalized is true', async () => {
+  it('blocks adding a new shooter once isFinalized is true', async () => {
     const classId = await db.classes.add({ name: 'RCV-U14' });
     await db.shootingLines.put({ id: 1, count: 2 });
 
@@ -109,15 +109,9 @@ describe('ShooterForm', () => {
     await fireEvent.change(classSelect, { target: { value: String(classId) } });
 
     const submitButton = screen.getByRole('button', { name: 'Schütze hinzufügen' });
-    expect((submitButton as HTMLButtonElement).disabled).toBe(false);
-    await fireEvent.click(submitButton);
+    expect((submitButton as HTMLButtonElement).disabled).toBe(true);
 
-    const saveButton = await screen.findByRole('button', { name: 'Speichern' });
-    await fireEvent.click(saveButton);
-
-    await waitFor(async () => {
-      expect(await db.shooters.count()).toBe(1);
-    });
+    expect(await db.shooters.count()).toBe(0);
   });
 });
 

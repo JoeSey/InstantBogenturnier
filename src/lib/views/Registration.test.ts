@@ -71,7 +71,7 @@ describe('Registration', () => {
     for (const button of deleteButtons) {
       expect((button as HTMLButtonElement).disabled).toBe(true);
     }
-    await screen.findByText(strings.results.guardMessage);
+    expect((await screen.findAllByText(strings.results.guardMessage)).length).toBeGreaterThan(0);
   });
 
   it('leaves the edit-shooter button enabled even when the tournament is finalized (Pitfall 5 regression guard)', async () => {
