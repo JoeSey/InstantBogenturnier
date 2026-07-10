@@ -96,6 +96,143 @@ describe('ScoreEntry', () => {
     });
   });
 
+  // Behavior per 260710-erfassung-jump-to-blank-PLAN.md Task 2 <behavior> block:
+  // one-shot initial jump to the first incomplete round/passe on mount.
+  describe('initial jump to first incomplete passe (260710-erfassung-jump-to-blank)', () => {
+    it('opens on round 1/passe 1 for a fresh tournament with no scores yet', async () => {
+      const classId = await db.classes.add({ name: 'RCV-U14' });
+      await db.rounds.put({
+        id: 1,
+        arrowsPerPasse: 1,
+        passesPerRound: 2,
+        numberOfRounds: 2,
+        distance: '18m',
+      });
+      await db.shooters.add({ name: 'Anna', classId, lineAssignment: 1 });
+
+      render(ScoreEntry);
+      await screen.findByText('Anna');
+
+      expect((screen.getByLabelText(strings.scoring.roundLabel) as HTMLSelectElement).value).toBe(
+        '0'
+      );
+      expect((screen.getByLabelText(strings.scoring.passeLabel) as HTMLSelectElement).value).toBe(
+        '0'
+      );
+    });
+
+    it('jumps to the first round/passe with a blank arrow when earlier passes are already complete', async () => {
+      const classId = await db.classes.add({ name: 'RCV-U14' });
+      await db.rounds.put({
+        id: 1,
+        arrowsPerPasse: 1,
+        passesPerRound: 2,
+        numberOfRounds: 1,
+        distance: '18m',
+      });
+      const shooterId = await db.shooters.add({ name: 'Anna', classId, lineAssignment: 1 });
+      await db.scores.add({
+        shooterId,
+        roundIndex: 0,
+        passeIndex: 0,
+        arrowIndex: 0,
+        value: '8',
+        finalized: false,
+      });
+
+      render(ScoreEntry);
+      await screen.findByText('Anna');
+
+      await waitFor(() => {
+        expect(
+          (screen.getByLabelText(strings.scoring.passeLabel) as HTMLSelectElement).value
+        ).toBe('1');
+      });
+      expect((screen.getByLabelText(strings.scoring.roundLabel) as HTMLSelectElement).value).toBe(
+        '0'
+      );
+    });
+
+    it('opens on round 1/passe 1 when every score in the tournament is already entered', async () => {
+      const classId = await db.classes.add({ name: 'RCV-U14' });
+      await db.rounds.put({
+        id: 1,
+        arrowsPerPasse: 1,
+        passesPerRound: 1,
+        numberOfRounds: 1,
+        distance: '18m',
+      });
+      const shooterId = await db.shooters.add({ name: 'Anna', classId, lineAssignment: 1 });
+      await db.scores.add({
+        shooterId,
+        roundIndex: 0,
+        passeIndex: 0,
+        arrowIndex: 0,
+        value: '8',
+        finalized: false,
+      });
+
+      render(ScoreEntry);
+      await screen.findByText('Anna');
+
+      expect((screen.getByLabelText(strings.scoring.roundLabel) as HTMLSelectElement).value).toBe(
+        '0'
+      );
+      expect((screen.getByLabelText(strings.scoring.passeLabel) as HTMLSelectElement).value).toBe(
+        '0'
+      );
+    });
+
+    it('does not override manual navigation after the initial jump has been applied', async () => {
+      const classId = await db.classes.add({ name: 'RCV-U14' });
+      await db.rounds.put({
+        id: 1,
+        arrowsPerPasse: 1,
+        passesPerRound: 2,
+        numberOfRounds: 1,
+        distance: '18m',
+      });
+      const shooterId = await db.shooters.add({ name: 'Anna', classId, lineAssignment: 1 });
+      await db.scores.add({
+        shooterId,
+        roundIndex: 0,
+        passeIndex: 0,
+        arrowIndex: 0,
+        value: '8',
+        finalized: false,
+      });
+
+      render(ScoreEntry);
+      await screen.findByText('Anna');
+
+      const passeSelect = (await waitFor(() =>
+        screen.getByLabelText(strings.scoring.passeLabel)
+      )) as HTMLSelectElement;
+      await waitFor(() => expect(passeSelect.value).toBe('1'));
+
+      // Manually navigate back to passe 1.
+      await fireEvent.change(passeSelect, { target: { value: '0' } });
+      expect(passeSelect.value).toBe('0');
+
+      // Entering a new score (allScores updates via liveQuery) must not retrigger
+      // the initial jump and reset the trainer's manual selection.
+      await db.scores.add({
+        shooterId,
+        roundIndex: 0,
+        passeIndex: 1,
+        arrowIndex: 0,
+        value: '9',
+        finalized: false,
+      });
+
+      await waitFor(async () => {
+        expect(await db.scores.count()).toBe(2);
+      });
+
+      expect(passeSelect.value).toBe('0');
+    });
+  });
+
   // Behavior per 260705-ok7-PLAN.md Task 3 <behavior> block: same-row-only
   // auto-advance, wasFilled short-circuit for edits, and the live row preview.
   describe('picker title, backdrop dismiss, and auto-advance (260705-ok7)', () => {

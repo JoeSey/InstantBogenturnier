@@ -8,6 +8,7 @@
     calculatePasseSum,
     areAllScoresEntered,
     isPasseComplete,
+    findFirstIncompletePasse,
     computeIsFinalized,
   } from '../utils/scoreCompletion';
   import { findNextEmptyArrowInRow } from '../utils/scoreAdvance';
@@ -38,6 +39,11 @@
 
   let selectedRound = $state(0);
   let selectedPasse = $state(0);
+  // Quick task 260710-erfassung-jump-to-blank: tracks whether the one-shot initial
+  // jump to the first incomplete round/passe has already run, so it never fires
+  // again after mount (manual navigation and subsequent liveQuery updates to
+  // allScores must not retrigger it).
+  let hasAppliedInitialJump = $state(false);
   let pickerCell = $state<{ shooterId: number; arrowIndex: number; wasFilled: boolean } | null>(
     null
   );
@@ -153,6 +159,33 @@
     });
 
     return sortRows(built, sortBy, sortDir);
+  });
+
+  // Quick task 260710-erfassung-jump-to-blank: one-shot initial jump to the first
+  // round/passe that still has a blank arrow, so reopening Erfassung mid-tournament
+  // doesn't always land back on round 1/passe 1. Fires at most once per mount: the
+  // hasAppliedInitialJump guard flips to true on the very first run once data has
+  // loaded (roundsConfig + shooters present), regardless of whether a jump was
+  // actually applied — so it's a no-op on every subsequent run, including later
+  // liveQuery updates to allScores, and never overrides manual navigation.
+  $effect(() => {
+    if (hasAppliedInitialJump || !roundsConfig || shooters.length === 0) return;
+
+    if (allScores.length > 0) {
+      const target = findFirstIncompletePasse(
+        shooters.map((s) => s.id!),
+        roundsConfig.numberOfRounds,
+        roundsConfig.passesPerRound,
+        roundsConfig.arrowsPerPasse,
+        allScores
+      );
+      if (target) {
+        selectedRound = target.roundIndex;
+        selectedPasse = target.passeIndex;
+      }
+    }
+
+    hasAppliedInitialJump = true;
   });
 
   function handleSort(column: SortColumn) {
