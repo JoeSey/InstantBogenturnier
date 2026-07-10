@@ -100,6 +100,7 @@ None yet.
 | 260708-pov | Add class-edit function to ClassForm.svelte; swap add/edit submit button labels in ClassForm/ShooterForm; fix stale name/collision suffix on edit + scroll-into-view on pencil click | 2026-07-08 | d1dbb0f | [260708-pov-add-class-edit-function](./quick/260708-pov-add-class-edit-function/) |
 | 260705-p25 | Score table phone-view compaction: hide Klasse column, tighter padding below md breakpoint | 2026-07-05 | f3cf656 | [260705-p25-score-table-phone-view-compaction-on-pho](./quick/260705-p25-score-table-phone-view-compaction-on-pho/) |
 | 260706-9iv | v1.0 final polish: sidebar nav 240px→120px, Setup two-column layout, auto-save Runden und Passen (remove Speichern button), disable Abschließen with message when zero shooters registered | 2026-07-06 | 74578fa | [260706-9iv-v1-0-final-polish-nav-width-setup-respon](./quick/260706-9iv-v1-0-final-polish-nav-width-setup-respon/) |
+| 260710-erfassung-jump-to-blank | Erfassung tab opens at first incomplete round/passe instead of round 1/passe 1 when a tournament already has partial scores (one-shot jump, no override once user navigates manually) | 2026-07-10 | a586d1a | [260710-erfassung-jump-to-blank](./quick/260710-erfassung-jump-to-blank/) |
 
 ## Deferred Items
 
