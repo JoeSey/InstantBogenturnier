@@ -85,6 +85,10 @@ export const strings = {
     // reference this class, so the trainer isn't left with a silently broken roster.
     classDeleteBlocked: (count: number) =>
       `Löschen nicht möglich: ${count} Schütze(n) sind dieser Klasse zugeordnet.`,
+    // Shown appended to the Alter label once a blank submission is attempted with all
+    // three tuple fields empty — SETUP-01 requires at least one of Alter/Bogentyp/
+    // Entfernung, but that requirement was previously silent (no-op submit).
+    tupleRequiredHint: '(mindestens eine Angabe erforderlich)',
   },
   registration: {
     heading: 'Schützen',

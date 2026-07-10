@@ -20,6 +20,11 @@
   let errorFeedback = $state('');
   let editingId = $state<number | undefined>(undefined);
   let formSection: HTMLElement | undefined;
+  // SETUP-01: at least one of ageGroup/bowType/distance is required. Stays false until
+  // a blank submission is attempted; once true, `tupleInvalid` below clears itself as
+  // soon as any one of the three fields gets a value (reactive derivation), so the red
+  // decoration disappears the moment the trainer starts fixing it.
+  let showValidation = $state(false);
 
   const existingClassesQuery = liveQuery(() => db.classes.toArray());
   let existingClasses = $derived($existingClassesQuery ?? []);
@@ -31,6 +36,7 @@
   let allScores = $derived($scoresQuery ?? []);
   let isFinalized = $derived(computeIsFinalized(allScores));
 
+  let tupleInvalid = $derived(showValidation && !ageGroup && !bowType && !distance);
   let tupleName = $derived(generateClassName(ageGroup, bowType, distance));
   let collisionCandidates = $derived(
     editingId !== undefined ? existingClasses.filter((c) => c.id !== editingId) : existingClasses
@@ -45,6 +51,7 @@
     distance = '';
     classNameOverride = '';
     editingId = undefined;
+    showValidation = false;
   }
 
   function startEdit(cls: ClassRecord) {
@@ -64,8 +71,12 @@
   }
 
   async function handleSubmit() {
-    // SETUP-01: at least one tuple field required — silently no-op otherwise.
-    if (!ageGroup && !bowType && !distance) return;
+    // SETUP-01: at least one tuple field required — decorate the three dropdowns and
+    // hint on Alter instead of a silent no-op.
+    if (!ageGroup && !bowType && !distance) {
+      showValidation = true;
+      return;
+    }
 
     errorFeedback = '';
     const nameToSave = autoSuffixOnCollision(
@@ -165,18 +176,22 @@
     options={ageGroupOptions}
     value={ageGroup}
     onchange={(v) => (ageGroup = v)}
+    invalid={tupleInvalid}
+    hint={tupleInvalid ? strings.setup.tupleRequiredHint : ''}
   />
   <DropdownWithCustom
     label={strings.setup.bowTypeLabel}
     options={BOW_TYPE_OPTIONS}
     value={bowType}
     onchange={(v) => (bowType = v)}
+    invalid={tupleInvalid}
   />
   <DropdownWithCustom
     label={strings.setup.distanceLabel}
     options={distanceOptions}
     value={distance}
     onchange={(v) => (distance = v)}
+    invalid={tupleInvalid}
   />
 
   <label class="block text-[14px] leading-[1.4] text-slate-700 dark:text-slate-200">

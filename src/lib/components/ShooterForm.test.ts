@@ -39,7 +39,7 @@ describe('ShooterForm', () => {
     // option to appear before interacting with it.
     await screen.findByRole('option', { name: 'RCV-U14' });
 
-    const nameInput = screen.getByLabelText('Name');
+    const nameInput = screen.getByLabelText(/Name/);
     await fireEvent.input(nameInput, { target: { value: 'Anna' } });
 
     const classSelect = screen.getByLabelText(/Klasse/) as HTMLSelectElement;
@@ -103,7 +103,7 @@ describe('ShooterForm', () => {
     render(ShooterForm, { isFinalized: true });
 
     await screen.findByRole('option', { name: 'RCV-U14' });
-    const nameInput = screen.getByLabelText('Name');
+    const nameInput = screen.getByLabelText(/Name/);
     await fireEvent.input(nameInput, { target: { value: 'Bea' } });
     const classSelect = screen.getByLabelText(/Klasse/) as HTMLSelectElement;
     await fireEvent.change(classSelect, { target: { value: String(classId) } });
@@ -135,7 +135,7 @@ describe('Registration round-robin regression', () => {
     await screen.findByRole('option', { name: 'RCV-U14' });
 
     for (let i = 0; i < 3; i++) {
-      const nameInput = screen.getByLabelText('Name');
+      const nameInput = screen.getByLabelText(/Name/);
       await fireEvent.input(nameInput, { target: { value: `Schütze ${i}` } });
 
       const classSelect = screen.getByLabelText(/Klasse/) as HTMLSelectElement;
@@ -176,7 +176,7 @@ describe('Registration mode indicator', () => {
     await screen.findByRole('option', { name: 'RCV-U14' });
 
     for (let i = 0; i < 5; i++) {
-      const nameInput = screen.getByLabelText('Name');
+      const nameInput = screen.getByLabelText(/Name/);
       await fireEvent.input(nameInput, { target: { value: `Schütze ${i}` } });
 
       const classSelect = screen.getByLabelText(/Klasse/) as HTMLSelectElement;
@@ -215,7 +215,7 @@ describe('Auto-assign once-per-session', () => {
     await screen.findByRole('option', { name: 'RCV-U14' });
 
     // First blank-line registration: modal shows, confirm via Speichern.
-    const nameInput1 = screen.getByLabelText('Name');
+    const nameInput1 = screen.getByLabelText(/Name/);
     await fireEvent.input(nameInput1, { target: { value: 'Schütze 0' } });
     const classSelect1 = screen.getByLabelText(/Klasse/) as HTMLSelectElement;
     await fireEvent.change(classSelect1, { target: { value: String(classId) } });
@@ -227,7 +227,7 @@ describe('Auto-assign once-per-session', () => {
     await waitForElementToBeRemoved(() => screen.queryByRole('button', { name: 'Speichern' }));
 
     // Second blank-line registration: no modal this time — written silently.
-    const nameInput2 = screen.getByLabelText('Name');
+    const nameInput2 = screen.getByLabelText(/Name/);
     await fireEvent.input(nameInput2, { target: { value: 'Schütze 1' } });
     const classSelect2 = screen.getByLabelText(/Klasse/) as HTMLSelectElement;
     await fireEvent.change(classSelect2, { target: { value: String(classId) } });

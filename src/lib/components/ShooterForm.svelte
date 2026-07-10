@@ -58,6 +58,12 @@
 
   let editingId = $state<number | undefined>(undefined);
   let errorFeedback = $state('');
+  // REG-01: Name and Klasse are both required. Stays false until a blank submission is
+  // attempted; each field's derived invalid flag then clears itself the moment that
+  // field gets a value, independent of the other.
+  let showValidation = $state(false);
+  let nameInvalid = $derived(showValidation && !name.trim());
+  let classInvalid = $derived(showValidation && classId === '');
 
   // Once a tournament is finalized, both editing and adding shooters are locked —
   // adding an archer post-finalization would silently invalidate the locked rankings.
@@ -78,11 +84,16 @@
     classId = '';
     lineNum = '';
     editingId = undefined;
+    showValidation = false;
   }
 
   async function handleSubmit() {
     const trimmedName = name.trim();
-    if (!trimmedName || classId === '') return; // REG-01 required fields — silent no-op
+    if (!trimmedName || classId === '') {
+      // REG-01 required fields — decorate instead of a silent no-op.
+      showValidation = true;
+      return;
+    }
 
     errorFeedback = '';
 
@@ -176,11 +187,14 @@
 <div class="flex flex-col gap-4">
   <label class="block text-[14px] leading-[1.4] text-slate-700 dark:text-slate-200">
     {strings.registration.nameLabel}
+    {strings.registration.classRequired}
     <input
       type="text"
       bind:value={name}
       disabled={editLocked}
-      class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+      class="mt-1 min-h-[44px] w-full rounded-lg border p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-100 {nameInvalid
+        ? 'border-red-500 dark:border-red-500'
+        : 'border-slate-300 dark:border-slate-600'} bg-white dark:bg-slate-800"
     />
   </label>
 
@@ -190,7 +204,9 @@
     <select
       bind:value={classId}
       disabled={editLocked}
-      class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+      class="mt-1 min-h-[44px] w-full rounded-lg border p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-100 {classInvalid
+        ? 'border-red-500 dark:border-red-500'
+        : 'border-slate-300 dark:border-slate-600'} bg-white dark:bg-slate-800"
     >
       <option value="">— Keine Angabe —</option>
       {#each classes as cls (cls.id)}

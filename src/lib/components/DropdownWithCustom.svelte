@@ -12,11 +12,15 @@
     options,
     value = '',
     onchange,
+    invalid = false,
+    hint = '',
   }: {
     label: string;
     options: readonly Option[];
     value?: string;
     onchange: (value: string) => void;
+    invalid?: boolean;
+    hint?: string;
   } = $props();
 
   let isCustom = $state(false);
@@ -58,11 +62,13 @@
 </script>
 
 <label class="block text-[14px] leading-[1.4] text-slate-700 dark:text-slate-200">
-  {label}
+  {label}{#if hint}<span class="text-red-600 dark:text-red-400"> {hint}</span>{/if}
   <select
     value={isCustom ? 'custom' : value}
     onchange={handleSelectChange}
-    class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+    class="mt-1 min-h-[44px] w-full rounded-lg border p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 dark:text-slate-100 {invalid
+      ? 'border-red-500 dark:border-red-500'
+      : 'border-slate-300 dark:border-slate-600'} bg-white dark:bg-slate-800"
   >
     <option value="">— Keine Angabe —</option>
     {#each options as option (option.value)}
@@ -77,7 +83,9 @@
       placeholder="Benutzerdefiniert eingeben"
       value={customInput}
       oninput={handleCustomInput}
-      class="mt-2 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+      class="mt-2 min-h-[44px] w-full rounded-lg border p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 dark:text-slate-100 {invalid
+        ? 'border-red-500 dark:border-red-500'
+        : 'border-slate-300 dark:border-slate-600'} bg-white dark:bg-slate-800"
     />
   {/if}
 </label>
