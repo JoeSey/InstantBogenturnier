@@ -71,6 +71,29 @@ export function isPasseComplete(
   return true;
 }
 
+// Quick task 260710-erfassung-jump-to-blank: locates the first round/passe (in
+// round-major order) that still has a blank arrow, so ScoreEntry can jump straight
+// there on initial load instead of always defaulting to round 1/passe 1. Delegates
+// the per-passe check to isPasseComplete (vacuously true with zero shooters, so this
+// returns null in that case, matching the existing default-to-1/1 behavior).
+export function findFirstIncompletePasse(
+  shooterIds: number[],
+  numberOfRounds: number,
+  passesPerRound: number,
+  arrowsPerPasse: number,
+  scores: ScoreRecord[]
+): { roundIndex: number; passeIndex: number } | null {
+  for (let roundIndex = 0; roundIndex < numberOfRounds; roundIndex++) {
+    for (let passeIndex = 0; passeIndex < passesPerRound; passeIndex++) {
+      if (!isPasseComplete(shooterIds, roundIndex, passeIndex, arrowsPerPasse, scores)) {
+        return { roundIndex, passeIndex };
+      }
+    }
+  }
+
+  return null;
+}
+
 // 04-03-PLAN.md Task 1 (D-09/D-10 per 03-CONTEXT.md, D-12 per 04-CONTEXT.md): single
 // source of truth for the permanent-lock boolean. Every RES-06-guarded view (Setup,
 // SetupRounds, ClassForm, Registration) and ScoreEntry must call this instead of

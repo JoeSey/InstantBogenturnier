@@ -4,6 +4,7 @@ import {
   calculatePasseSum,
   areAllScoresEntered,
   isPasseComplete,
+  findFirstIncompletePasse,
   computeIsFinalized,
 } from './scoreCompletion';
 import type { ScoreRecord } from '../db/schema';
@@ -96,6 +97,52 @@ describe('isPasseComplete', () => {
   it('is false when only some shooters have entered scores', () => {
     const scores = [record(1, 0, 0, 0)];
     expect(isPasseComplete([1, 2], 0, 0, 1, scores)).toBe(false);
+  });
+});
+
+// Behavior per 260710-erfassung-jump-to-blank-PLAN.md Task 1 <behavior> block: find
+// the first round/passe (round-major order) that still has a blank arrow, for the
+// Erfassung initial-jump feature.
+describe('findFirstIncompletePasse', () => {
+  it('returns null when there are zero shooters registered', () => {
+    expect(findFirstIncompletePasse([], 2, 2, 3, [])).toBeNull();
+  });
+
+  it('returns round 0/passe 0 when scores are empty and there is at least one shooter (fresh tournament, equivalent to the existing default)', () => {
+    expect(findFirstIncompletePasse([1], 2, 1, 3, [])).toEqual({
+      roundIndex: 0,
+      passeIndex: 0,
+    });
+  });
+
+  it('returns the first passe with a missing arrow when an earlier passe is fully complete', () => {
+    const scores = [
+      record(1, 0, 0, 0),
+      record(1, 0, 0, 1),
+      record(1, 0, 1, 0), // passe 1 missing arrow 1
+    ];
+    expect(findFirstIncompletePasse([1], 2, 2, 2, scores)).toEqual({
+      roundIndex: 0,
+      passeIndex: 1,
+    });
+  });
+
+  it('returns the first passe of a later round when that round has no records at all', () => {
+    const scores = [record(1, 0, 0, 0)];
+    expect(findFirstIncompletePasse([1], 2, 1, 1, scores)).toEqual({
+      roundIndex: 1,
+      passeIndex: 0,
+    });
+  });
+
+  it('returns null when every passe across all rounds is complete', () => {
+    const scores = [
+      record(1, 0, 0, 0),
+      record(1, 0, 0, 1),
+      record(1, 1, 0, 0),
+      record(1, 1, 0, 1),
+    ];
+    expect(findFirstIncompletePasse([1], 2, 1, 2, scores)).toBeNull();
   });
 });
 
