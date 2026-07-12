@@ -9,9 +9,9 @@ Requirements for the v1.3 DFBV Target Faces milestone. Each maps to roadmap phas
 
 ### Target Faces
 
-- [ ] **TARGET-01**: `db.rounds` (rounds/passes config) gains a `rings` field (`10 | 5`). Existing records without it are treated as `10` (no migration write required, just a read-time default).
+- [x] **TARGET-01**: `db.rounds` (rounds/passes config) gains a `rings` field (`10 | 5`). Existing records without it are treated as `10` (no migration write required, just a read-time default).
 - [ ] **TARGET-02**: Runden-und-Passen's top-level radio group is relabeled "Vorlagen/Benutzerdefiniert" (was: preset/custom label).
-- [ ] **TARGET-03**: Runden-und-Passen's preset (Vorlagen) list is replaced with exactly three presets: "WA 10 Passen à 3 Pfeile" (rings=10), "DFBV 6 Runden à 5 Pfeile" (rings=5), "WA 70" (rings=10). Each preset carries its own fixed `rings` value — no separate Auflagen control shown in preset mode.
+- [x] **TARGET-03**: Runden-und-Passen's preset (Vorlagen) list is replaced with exactly three presets: "WA 10 Passen à 3 Pfeile" (rings=10), "DFBV 6 Runden à 5 Pfeile" (rings=5), "WA 70" (rings=10). Each preset carries its own fixed `rings` value — no separate Auflagen control shown in preset mode.
 - [ ] **TARGET-04**: In Benutzerdefiniert mode, the free-text distance field is replaced with an explicit "Auflagen" radio choice of 10 or 5 (not free-text/user-definable).
 - [ ] **TARGET-05**: The score-entry dialog (ScorePicker) shows the value/color set matching the active tournament's rings setting: 10-ring unchanged (X/10/9 yellow, 8/7 red, 6/5 blue, 4/3 black, 2/1 white, M grey); 5-ring is X/5 white, 4-1 dark blue, M grey.
 - [ ] **TARGET-06**: Keyboard score entry (digits/X/M) continues to work correctly for both rings settings (e.g. digit "5" must resolve unambiguously in 5-ring mode).
@@ -43,9 +43,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TARGET-01 | Phase 8: Rings Configuration | Pending |
+| TARGET-01 | Phase 8: Rings Configuration | Complete |
 | TARGET-02 | Phase 8: Rings Configuration | Pending |
-| TARGET-03 | Phase 8: Rings Configuration | Pending |
+| TARGET-03 | Phase 8: Rings Configuration | Complete |
 | TARGET-04 | Phase 8: Rings Configuration | Pending |
 | TARGET-05 | Phase 9: Rings-Aware Score Entry & PDF Output | Pending |
 | TARGET-06 | Phase 9: Rings-Aware Score Entry & PDF Output | Pending |

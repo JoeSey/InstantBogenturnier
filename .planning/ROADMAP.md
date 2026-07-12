@@ -62,7 +62,7 @@ Full phase details (goals, success criteria, requirements): `.planning/milestone
 **UI hint**: yes
 
 Plans:
-- [ ] 08-01-PLAN.md — RoundConfig.rings field + new WA/DFBV presets + strings
+- [x] 08-01-PLAN.md — RoundConfig.rings field + new WA/DFBV presets + strings
 - [ ] 08-02-PLAN.md — SetupRounds.svelte Auflagen UI wiring + PresetSave.svelte rings persistence
 
 ### Phase 9: Rings-Aware Score Entry & PDF Output
@@ -94,5 +94,5 @@ Phases execute in numeric order: 8 → 9
 | 5. PDF Export | v1.1 | 3/3 | Complete | 2026-07-06 |
 | 6. Certificates PDF Export | v1.1 | 5/5 | Complete | 2026-07-07 |
 | 7. Blank Scoresheet PDF | v1.2 | 2/2 | Complete | 2026-07-07 |
-| 8. Rings Configuration | v1.3 | 0/? | Not started | - |
+| 8. Rings Configuration | v1.3 | 1/2 | In Progress|  |
 | 9. Rings-Aware Score Entry & PDF Output | v1.3 | 0/? | Not started | - |
