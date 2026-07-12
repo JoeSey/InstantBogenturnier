@@ -30,8 +30,9 @@
             numberOfRounds: roundsRecord.numberOfRounds,
             distance: roundsRecord.distance,
             presetId: roundsRecord.presetId,
+            rings: roundsRecord.rings ?? 10,
           }
-        : { arrowsPerPasse: 3, passesPerRound: 10, numberOfRounds: 1, distance: '18m' };
+        : { arrowsPerPasse: 3, passesPerRound: 10, numberOfRounds: 1, distance: '18m', rings: 10 };
 
       // `put` with the existing record's id updates it in place (overwrite), rather than
       // creating a duplicate row for the same name.

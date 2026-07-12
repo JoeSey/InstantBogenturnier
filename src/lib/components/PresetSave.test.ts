@@ -100,4 +100,28 @@ describe('PresetSave', () => {
     await screen.findByText('Maximum 8 Vorlagen. Löschen Sie eine Vorlage, bevor Sie speichern.');
     expect(await db.presets.count()).toBe(8);
   });
+
+  it('persists rings: 5 from db.rounds into the saved preset (research Pitfall 1)', async () => {
+    await db.rounds.put({
+      id: 1,
+      arrowsPerPasse: 5,
+      passesPerRound: 1,
+      numberOfRounds: 6,
+      rings: 5,
+      presetId: 'dfbv-6x5',
+    });
+
+    render(PresetSave);
+
+    const nameInput = screen.getByLabelText('Vorlagenname') as HTMLInputElement;
+    await fireEvent.input(nameInput, { target: { value: 'DFBV Turnier' } });
+
+    const saveButton = screen.getByRole('button', { name: 'Speichern' });
+    await fireEvent.click(saveButton);
+
+    await waitFor(async () => {
+      const saved = await db.presets.where('name').equals('DFBV Turnier').first();
+      expect(saved?.roundsConfig.rings).toBe(5);
+    });
+  });
 });
