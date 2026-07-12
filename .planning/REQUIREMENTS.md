@@ -17,6 +17,7 @@ Requirements for the v1.3 DFBV Target Faces milestone. Each maps to roadmap phas
 - [ ] **TARGET-06**: Keyboard score entry (digits/X/M) continues to work correctly for both rings settings (e.g. digit "5" must resolve unambiguously in 5-ring mode).
 - [ ] **TARGET-07**: The results-list PDF's score-column header reads "X/10/9" for 10-ring tournaments (unchanged) and "X/5" for 5-ring tournaments.
 - [ ] **TARGET-08**: Score values already entered under one rings setting remain valid/displayed correctly if inspected later (no retroactive re-validation needed — rings is a per-tournament setting, not changed mid-tournament in practice, but must not crash if a stored value is inspected against the current config).
+- [x] **TARGET-09**: Point-value math for X is rings-aware everywhere sums/rankings/PDF totals are computed — X is worth 10 in a 10-ring tournament, 5 in a 5-ring tournament. Found during Phase 9 research: `scoreCompletion.ts` hardcoded `arrowScoreValue('X') = 10` unconditionally, which would silently produce wrong DFBV totals/rankings if left unfixed. The results PDF's hit-count breakdown combines X+5 hits into one column for 5-ring tournaments (mirroring the 10-ring X/10/9 grouping), followed by count4-1 and countM.
 
 ## v2 Requirements
 
@@ -51,12 +52,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TARGET-06 | Phase 9: Rings-Aware Score Entry & PDF Output | Pending |
 | TARGET-07 | Phase 9: Rings-Aware Score Entry & PDF Output | Pending |
 | TARGET-08 | Phase 9: Rings-Aware Score Entry & PDF Output | Pending |
+| TARGET-09 | Phase 9: Rings-Aware Score Entry & PDF Output | Complete |
 
 **Coverage:**
-- v1 requirements: 8 total
-- Mapped to phases: 8 (Phase 8: TARGET-01..04, Phase 9: TARGET-05..08)
+- v1 requirements: 9 total
+- Mapped to phases: 9 (Phase 8: TARGET-01..04, Phase 9: TARGET-05..09)
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-07-12*
-*Last updated: 2026-07-12 after roadmap creation (Phases 8-9)*
+*Last updated: 2026-07-12 — added TARGET-09 (X point-value correctness bug found during Phase 9 research)*

@@ -79,7 +79,7 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 09-01-PLAN.md — Rings-aware arrowScoreValue/scoreColorCategory/ranking.ts (pure logic + TARGET-09 fix)
+- [x] 09-01-PLAN.md — Rings-aware arrowScoreValue/scoreColorCategory/ranking.ts (pure logic + TARGET-09 fix)
 - [ ] 09-02-PLAN.md — Rings-aware PDF hit-count header/rows (pdfExport.ts, Results.svelte)
 - [ ] 09-03-PLAN.md — Rings-aware ScorePicker UI wiring (ScorePicker.svelte, ScoreEntry.svelte)
 
@@ -98,4 +98,4 @@ Phases execute in numeric order: 8 → 9
 | 6. Certificates PDF Export | v1.1 | 5/5 | Complete | 2026-07-07 |
 | 7. Blank Scoresheet PDF | v1.2 | 2/2 | Complete | 2026-07-07 |
 | 8. Rings Configuration | v1.3 | 2/2 | Complete   | 2026-07-12 |
-| 9. Rings-Aware Score Entry & PDF Output | v1.3 | 0/? | Not started | - |
+| 9. Rings-Aware Score Entry & PDF Output | v1.3 | 1/3 | In Progress|  |
