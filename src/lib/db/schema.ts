@@ -22,8 +22,9 @@ export interface RoundConfig {
   arrowsPerPasse: number;
   passesPerRound: number;
   numberOfRounds: number;
-  distance: string;
+  distance?: string;
   presetId?: string;
+  rings?: 10 | 5;
 }
 
 export interface ShooterRecord {
