@@ -68,17 +68,20 @@ Plans:
 ### Phase 9: Rings-Aware Score Entry & PDF Output
 **Goal**: Score entry and results PDF output correctly reflect whichever rings setting (10 or 5) is active for the tournament, for both new entry and later inspection of existing scores.
 **Depends on**: Phase 8
-**Requirements**: TARGET-05, TARGET-06, TARGET-07, TARGET-08
+**Requirements**: TARGET-05, TARGET-06, TARGET-07, TARGET-08, TARGET-09
 **Success Criteria** (what must be TRUE):
   1. The score-entry dialog (ScorePicker) shows the correct value/color set for the tournament's active rings setting — 10-ring unchanged (X/10/9 yellow, 8/7 red, 6/5 blue, 4/3 black, 2/1 white, M grey); 5-ring shows X/5 white, 4-1 dark blue, M grey.
   2. Physical-keyboard score entry (digits/X/M) resolves unambiguously and correctly under both rings settings.
-  3. The results-list PDF's score-column header reads "X/10/9" for 10-ring tournaments and "X/5" for 5-ring tournaments.
+  3. The results-list PDF's score-column header reads "X/10/9" for 10-ring tournaments and a distinct 5-ring hit-count header (combining X+5, then count4-1, then countM) for 5-ring tournaments.
   4. Previously entered scores display correctly, without crashing, when inspected under the tournament's current rings setting.
-**Plans**: TBD
+  5. X's point value (10 vs 5) is correctly applied everywhere sums/rankings/PDF totals are computed, not just in the picker's displayed labels.
+**Plans**: 3 plans
 **UI hint**: yes
 
 Plans:
-- [ ] 09-01: TBD
+- [ ] 09-01-PLAN.md — Rings-aware arrowScoreValue/scoreColorCategory/ranking.ts (pure logic + TARGET-09 fix)
+- [ ] 09-02-PLAN.md — Rings-aware PDF hit-count header/rows (pdfExport.ts, Results.svelte)
+- [ ] 09-03-PLAN.md — Rings-aware ScorePicker UI wiring (ScorePicker.svelte, ScoreEntry.svelte)
 
 ## Progress
 
