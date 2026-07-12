@@ -558,7 +558,7 @@ describe('ScoreEntry', () => {
     // Second arrow: X (inner-ten) -> 10.
     arrowButtons = container.querySelectorAll('tbody button');
     await fireEvent.click(arrowButtons[1]);
-    const xButton = await screen.findByRole('button', { name: strings.scoring.pickerAriaX });
+    const xButton = await screen.findByRole('button', { name: strings.scoring.pickerAriaX(10) });
     await fireEvent.click(xButton);
 
     await waitFor(async () => {

@@ -146,7 +146,9 @@
       for (let i = 0; i < roundsConfig.arrowsPerPasse; i++) {
         arrows.push((currentPasseScoreByKey.get(`${shooter.id}-${i}`) as ScoreValue) ?? null);
       }
-      const sum = arrows.every((a) => a !== null) ? calculatePasseSum(arrows as ScoreValue[]) : null;
+      const sum = arrows.every((a) => a !== null)
+        ? calculatePasseSum(arrows as ScoreValue[], roundsConfig.rings ?? 10)
+        : null;
 
       return {
         shooterId: shooter.id as number,
@@ -330,6 +332,7 @@
       rowPreview={pickerRowPreview}
       onselect={handleScoreSelect}
       oncancel={cancelPicker}
+      rings={roundsConfig.rings ?? 10}
     />
 
     {#if isFinalized}
