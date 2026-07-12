@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: Scoresheets
-status: milestone_archived
-stopped_at: v1.2 milestone archived (Phase 7 shipped)
-last_updated: 2026-07-07T09:00:00.000Z
-last_activity: 2026-07-07 -- v1.2 milestone archived
+milestone: v1.3
+milestone_name: DFBV Target Faces
+status: planning
+last_updated: "2026-07-12T12:06:17.288Z"
+last_activity: 2026-07-12
 progress:
-  total_phases: 7
+  total_phases: 9
   completed_phases: 7
   total_plans: 22
   completed_plans: 22
-  percent: 100
+  percent: 78
 ---
 
 # Project State
@@ -21,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** Score entry and results ranking must work correctly and offline, on one device, during a live tournament at the range — everything else is secondary.
-**Current focus:** Awaiting next milestone
+**Current focus:** v1.3 DFBV Target Faces — Phase 8: Rings Configuration
 
 ## Current Position
 
-Phase: —
-Plan: Not started
-Status: Milestone archived, awaiting next milestone
-Last activity: 2026-07-07
+Phase: 8 of 9 (Rings Configuration)
+Plan: TBD — ready to plan
+Status: Roadmap created, ready for /gsd:plan-phase 8
+Last activity: 2026-07-12 — v1.3 roadmap created (Phase 8: Rings Configuration, Phase 9: Rings-Aware Score Entry & PDF Output)
 
 ## Performance Metrics
 
@@ -60,6 +59,8 @@ Last activity: 2026-07-07
 
 ### Roadmap Evolution
 
+- Phase 8 added: Rings Configuration — db.rounds `rings` field, updated Vorlagen presets (WA 10/DFBV 6/WA 70), Benutzerdefiniert Auflagen radio, v1.3 milestone
+- Phase 9 added: Rings-Aware Score Entry & PDF Output — ScorePicker value/color set, keyboard entry, PDF header text, all rings-aware; v1.3 milestone
 - Phase 5 added: PDF Export — result-list PDF export, per-shooter certificates, configurable header images
 - Phase 6 added: Certificates PDF Export — per-shooter PDF certificates, split off from Phase 5 (v1.1) via SPIDR Interfaces axis
 - Phase 4 edited: added RES-05/RES-06 (tournament reset + destructive-edit guard) requested by user
