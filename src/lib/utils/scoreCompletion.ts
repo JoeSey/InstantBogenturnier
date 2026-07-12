@@ -3,14 +3,17 @@ import type { ScoreValue, ScoreRecord } from '../db/schema';
 // Pure functions implementing the WA scoring convention (D-02, SCORE-02): M (miss)
 // counts as 0, X (inner-ten) counts as 10. Framework-free, no side effects.
 
-export function arrowScoreValue(value: ScoreValue): number {
+// Phase 9 (TARGET-09): rings-aware — X resolves to 5 points under a 5-ring (DFBV)
+// config instead of the WA 10-ring default. Every call site defaults rings=10 so
+// existing callers that haven't threaded the real value keep today's behavior.
+export function arrowScoreValue(value: ScoreValue, rings: 10 | 5 = 10): number {
   if (value === 'M') return 0;
-  if (value === 'X') return 10;
+  if (value === 'X') return rings === 5 ? 5 : 10;
   return Number(value);
 }
 
-export function calculatePasseSum(values: ScoreValue[]): number {
-  return values.reduce((sum, v) => sum + arrowScoreValue(v), 0);
+export function calculatePasseSum(values: ScoreValue[], rings: 10 | 5 = 10): number {
+  return values.reduce((sum, v) => sum + arrowScoreValue(v, rings), 0);
 }
 
 // D-09: Abschließen is only enabled once every registered shooter x every configured

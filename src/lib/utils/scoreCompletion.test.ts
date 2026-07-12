@@ -31,6 +31,24 @@ describe('arrowScoreValue', () => {
   it('returns the numeric value for ordinary scores', () => {
     expect(arrowScoreValue('7')).toBe(7);
   });
+
+  // Phase 9 (TARGET-09): rings-aware X resolution.
+  it('treats X as 10 with no rings arg (default-10 backward compat)', () => {
+    expect(arrowScoreValue('X')).toBe(10);
+  });
+
+  it('treats X as 10 with rings=10 explicit', () => {
+    expect(arrowScoreValue('X', 10)).toBe(10);
+  });
+
+  it('treats X as 5 with rings=5 (the TARGET-09 fix)', () => {
+    expect(arrowScoreValue('X', 5)).toBe(5);
+  });
+
+  it('treats numeric 5 as 5 regardless of rings mode', () => {
+    expect(arrowScoreValue('5', 5)).toBe(5);
+    expect(arrowScoreValue('5', 10)).toBe(5);
+  });
 });
 
 describe('calculatePasseSum', () => {
@@ -40,6 +58,11 @@ describe('calculatePasseSum', () => {
 
   it('sums numeric and X values, treating X as 10', () => {
     expect(calculatePasseSum(['X', '9'])).toBe(19);
+  });
+
+  // Phase 9 (TARGET-09): rings-aware sum.
+  it('sums X as 5 under a rings=5 config', () => {
+    expect(calculatePasseSum(['X', '5', 'M'], 5)).toBe(10);
   });
 });
 
