@@ -17,41 +17,36 @@
     rowPreview,
     onselect,
     oncancel,
+    rings = 10,
   }: {
     open: boolean;
     shooterName: string;
     rowPreview: (ScoreValue | null)[];
     onselect: (value: ScoreValue) => void;
     oncancel: () => void;
+    rings?: 10 | 5;
   } = $props();
 
   let previewText = $derived(rowPreview.map((v) => v ?? '-').join(' '));
 
-  const SCORE_VALUES: ScoreValue[] = [
-    '1',
-    '2',
-    '3',
-    '4',
-    '5',
-    '6',
-    '7',
-    '8',
-    '9',
-    '10',
-    'X',
-    'M',
-  ];
+  // Svelte 5 runes: module-level constants do not react to prop changes, so the
+  // rings-dependent value set/key map must be $derived.by() rather than `const`.
+  let SCORE_VALUES: ScoreValue[] = $derived.by(() =>
+    rings === 5
+      ? (['1', '2', '3', '4', '5', 'X', 'M'] as ScoreValue[])
+      : (['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'X', 'M'] as ScoreValue[])
+  );
 
   function ariaLabelFor(value: ScoreValue): string {
     if (value === 'M') return strings.scoring.pickerAriaMiss;
-    if (value === 'X') return strings.scoring.pickerAriaX;
+    if (value === 'X') return strings.scoring.pickerAriaX(rings === 5 ? 5 : 10);
     return strings.scoring.pickerAriaNumeric(value);
   }
 
   function buttonClass(value: ScoreValue): string {
     const base =
       'flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-[16px] font-semibold leading-[1.5]';
-    const category = scoreColorCategory(value);
+    const category = scoreColorCategory(value, rings);
     if (category === 'yellow') {
       return `${base} border border-amber-200 bg-amber-400 text-slate-900 hover:bg-amber-500 dark:border-amber-300/40 dark:bg-amber-500 dark:text-slate-900`;
     }
@@ -63,6 +58,9 @@
     }
     if (category === 'blue') {
       return `${base} border border-blue-400 bg-blue-500 text-white hover:bg-blue-600 dark:border-blue-400/40 dark:bg-blue-600 dark:text-white`;
+    }
+    if (category === 'darkblue') {
+      return `${base} border border-blue-900 bg-blue-800 text-white hover:bg-blue-900 dark:border-blue-950/40 dark:bg-blue-950 dark:text-white`;
     }
     if (category === 'black') {
       return `${base} border border-slate-700 bg-slate-900 text-white hover:bg-slate-950 dark:border-slate-600/40 dark:bg-slate-950 dark:text-white`;
@@ -76,20 +74,32 @@
   // on-screen keyboard. Digits 1-9 map directly; "0" maps to '10' (no ScoreValue '0'
   // exists); "x"/"X" and "m"/"M" map to the X-ring and miss values. Ignore keystrokes
   // with a modifier held (Ctrl/Meta/Alt) so this doesn't fight browser shortcuts.
-  const KEY_TO_SCORE: Record<string, ScoreValue> = {
-    '1': '1',
-    '2': '2',
-    '3': '3',
-    '4': '4',
-    '5': '5',
-    '6': '6',
-    '7': '7',
-    '8': '8',
-    '9': '9',
-    '0': '10',
-    x: 'X',
-    m: 'M',
-  };
+  let KEY_TO_SCORE: Record<string, ScoreValue> = $derived.by(() =>
+    rings === 5
+      ? {
+          '1': '1',
+          '2': '2',
+          '3': '3',
+          '4': '4',
+          '5': '5',
+          x: 'X',
+          m: 'M',
+        }
+      : {
+          '1': '1',
+          '2': '2',
+          '3': '3',
+          '4': '4',
+          '5': '5',
+          '6': '6',
+          '7': '7',
+          '8': '8',
+          '9': '9',
+          '0': '10',
+          x: 'X',
+          m: 'M',
+        }
+  );
 
   function handleKeydown(event: KeyboardEvent) {
     if (!open) return;

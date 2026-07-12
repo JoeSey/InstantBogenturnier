@@ -170,7 +170,7 @@ export const strings = {
     pickerTitle: (name: string, preview: string) => `Punkte von ${name} (${preview})`,
     pickerCancel: 'Abbrechen',
     pickerAriaMiss: 'Fehlschuss (0 Punkte)',
-    pickerAriaX: 'X-Ring (10 Punkte)',
+    pickerAriaX: (points: number) => `X-Ring (${points} Punkte)`,
     pickerAriaNumeric: (value: string) => `${value} Punkte`,
     // Phase 3 Plan 02 — sortable column headers (SCORE-04).
     sortAscending: 'aufsteigend sortiert',
