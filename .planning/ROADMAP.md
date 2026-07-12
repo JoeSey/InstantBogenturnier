@@ -45,7 +45,7 @@ Full phase details (goals, success criteria, requirements): `.planning/milestone
 **Milestone Goal:** Support 5-ring DFBV target faces alongside the existing WA 10-ring faces, so trainer colleagues running DFBV-style tournaments get correct scoring options, colors, and PDF output.
 
 - [x] **Phase 8: Rings Configuration** - Trainer can set a tournament's Auflagen (10 or 5 rings) via updated Vorlagen presets or an explicit Benutzerdefiniert choice (completed 2026-07-12)
-- [ ] **Phase 9: Rings-Aware Score Entry & PDF Output** - Score entry dialog and results PDF correctly reflect the tournament's active rings setting
+- [x] **Phase 9: Rings-Aware Score Entry & PDF Output** - Score entry dialog and results PDF correctly reflect the tournament's active rings setting (completed 2026-07-12)
 
 ## Phase Details
 
@@ -80,8 +80,8 @@ Plans:
 
 Plans:
 - [x] 09-01-PLAN.md — Rings-aware arrowScoreValue/scoreColorCategory/ranking.ts (pure logic + TARGET-09 fix)
-- [ ] 09-02-PLAN.md — Rings-aware PDF hit-count header/rows (pdfExport.ts, Results.svelte)
-- [ ] 09-03-PLAN.md — Rings-aware ScorePicker UI wiring (ScorePicker.svelte, ScoreEntry.svelte)
+- [x] 09-02-PLAN.md — Rings-aware PDF hit-count header/rows (pdfExport.ts, Results.svelte)
+- [x] 09-03-PLAN.md — Rings-aware ScorePicker UI wiring (ScorePicker.svelte, ScoreEntry.svelte)
 
 ## Progress
 
@@ -98,4 +98,4 @@ Phases execute in numeric order: 8 → 9
 | 6. Certificates PDF Export | v1.1 | 5/5 | Complete | 2026-07-07 |
 | 7. Blank Scoresheet PDF | v1.2 | 2/2 | Complete | 2026-07-07 |
 | 8. Rings Configuration | v1.3 | 2/2 | Complete   | 2026-07-12 |
-| 9. Rings-Aware Score Entry & PDF Output | v1.3 | 1/3 | In Progress|  |
+| 9. Rings-Aware Score Entry & PDF Output | v1.3 | 3/3 | Complete   | 2026-07-12 |
