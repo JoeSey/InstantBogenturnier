@@ -18,7 +18,8 @@ export function resultsPdfFilename(date: Date = new Date()): string {
 export function buildClassTableRows(
   rows: RankedRow[],
   includeIncomplete: boolean,
-  numberOfRounds: number
+  numberOfRounds: number,
+  rings: 10 | 5 = 10
 ): string[][] {
   return rows
     .filter((row) => includeIncomplete || row.isComplete)
@@ -26,7 +27,9 @@ export function buildClassTableRows(
       row.rank.toString(),
       row.name,
       ...(numberOfRounds > 1 ? row.roundSums.map((s) => s.toString()) : []),
-      `${row.countX}/${row.count10}/${row.count9}`,
+      rings === 5
+        ? `${row.countX + row.count5}/${row.count4to1}/${row.countM}`
+        : `${row.countX}/${row.count10}/${row.count9}`,
       row.sum.toString(),
     ]);
 }
@@ -66,9 +69,10 @@ export async function buildResultsPdfDoc(
   classes: ClassRecord[],
   settings: Pick<SettingsRecord, 'title' | 'logoLeftBlob' | 'logoRightBlob'> | undefined,
   includeIncomplete: boolean,
-  roundsConfig?: Pick<RoundConfig, 'numberOfRounds'>
+  roundsConfig?: Pick<RoundConfig, 'numberOfRounds' | 'rings'>
 ): Promise<jsPDF> {
   const numberOfRounds = roundsConfig?.numberOfRounds ?? 1;
+  const rings = roundsConfig?.rings ?? 10;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
   // D-04 ordering — same alphabetical-by-name order as Results.svelte's
@@ -132,7 +136,7 @@ export async function buildResultsPdfDoc(
 
   for (const cls of classesWithResults) {
     const rows = classifications.get(cls.id!) ?? [];
-    const body = buildClassTableRows(rows, includeIncomplete, numberOfRounds);
+    const body = buildClassTableRows(rows, includeIncomplete, numberOfRounds, rings);
 
     // No unconditional page break between classes — result blocks share a page when
     // they fit. Only force a break when the estimated block height (heading + table
@@ -160,7 +164,7 @@ export async function buildResultsPdfDoc(
     const roundHeaders = numberOfRounds > 1
       ? Array.from({ length: numberOfRounds }, (_, i) => `Runde ${i + 1}`)
       : [];
-    const head = ['Rang', 'Name', ...roundHeaders, 'X/10/9', 'Gesamt'];
+    const head = ['Rang', 'Name', ...roundHeaders, rings === 5 ? 'X+5/4-1/M' : 'X/10/9', 'Gesamt'];
     const gesamtColumnIndex = head.length - 1;
 
     autoTable(doc, {
@@ -187,7 +191,7 @@ export async function generateResultsPdf(
   classes: ClassRecord[],
   settings: Pick<SettingsRecord, 'title' | 'logoLeftBlob' | 'logoRightBlob'> | undefined,
   includeIncomplete: boolean,
-  roundsConfig?: Pick<RoundConfig, 'numberOfRounds'>
+  roundsConfig?: Pick<RoundConfig, 'numberOfRounds' | 'rings'>
 ): Promise<Blob> {
   const doc = await buildResultsPdfDoc(classifications, classes, settings, includeIncomplete, roundsConfig);
   return doc.output('blob');

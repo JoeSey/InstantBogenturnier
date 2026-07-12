@@ -21,6 +21,9 @@ function makeRow(overrides: Partial<RankedRow>): RankedRow {
     countX: 0,
     count10: 0,
     count9: 0,
+    count5: 0,
+    count4to1: 0,
+    countM: 0,
     ...overrides,
   };
 }
@@ -63,6 +66,34 @@ describe('buildClassTableRows', () => {
     ];
     const result = buildClassTableRows(multiRoundRows, true, 2);
     expect(result).toEqual([['1', 'Anna', '140', '140', '0/0/0', '280']]);
+  });
+
+  it('defaults to the 10-ring X/10/9 hit-count format when rings is omitted', () => {
+    const result = buildClassTableRows(rows, false, 1);
+    expect(result).toEqual([['1', 'Anna', '0/0/0', '280']]);
+  });
+
+  it('produces byte-identical X/10/9 output when rings=10 is explicit', () => {
+    const result = buildClassTableRows(rows, false, 1, 10);
+    expect(result).toEqual([['1', 'Anna', '0/0/0', '280']]);
+  });
+
+  it('combines X+5 hits into one number, followed by count4to1 and countM when rings=5', () => {
+    const fiveRingRows: RankedRow[] = [
+      makeRow({
+        shooterId: 1,
+        name: 'Anna',
+        sum: 280,
+        rank: 1,
+        isComplete: true,
+        countX: 2,
+        count5: 3,
+        count4to1: 4,
+        countM: 1,
+      }),
+    ];
+    const result = buildClassTableRows(fiveRingRows, false, 1, 5);
+    expect(result).toEqual([['1', 'Anna', '5/4/1', '280']]);
   });
 });
 
@@ -157,7 +188,37 @@ describe('generateResultsPdf', () => {
     expect(blob.type).toBe('application/pdf');
     expect(blob.size).toBeGreaterThan(0);
   });
+
+  it('renders the X/10/9 hit-count header when roundsConfig is omitted (regression guard)', async () => {
+    const doc = await buildResultsPdfDoc(makeRankings(), classes, { id: 1 }, false);
+    // Assert via the doc's autoTable head row attached at draw time.
+    expect(getAutoTableHeadRow(doc)).toContain('X/10/9');
+  });
+
+  it('renders the X/10/9 hit-count header when rings=10 is explicit (regression guard)', async () => {
+    const doc = await buildResultsPdfDoc(makeRankings(), classes, { id: 1 }, false, {
+      numberOfRounds: 1,
+      rings: 10,
+    });
+    expect(getAutoTableHeadRow(doc)).toContain('X/10/9');
+  });
+
+  it('renders a distinct 5-ring hit-count header when rings=5', async () => {
+    const doc = await buildResultsPdfDoc(makeRankings(), classes, { id: 1 }, false, {
+      numberOfRounds: 1,
+      rings: 5,
+    });
+    const head = getAutoTableHeadRow(doc);
+    expect(head).not.toContain('X/10/9');
+    expect(head).toContain('X+5/4-1/M');
+  });
 });
+
+// jspdf-autotable attaches this at runtime; not present in its type definitions.
+// `lastAutoTable.head[0].raw` is the raw header row array passed to `head: [head]`.
+function getAutoTableHeadRow(doc: Awaited<ReturnType<typeof buildResultsPdfDoc>>): string[] {
+  return (doc as unknown as { lastAutoTable: { head: [{ raw: string[] }] } }).lastAutoTable.head[0].raw;
+}
 
 describe('containFit', () => {
   it('scales a wider-than-tall image down to fit the max box without distortion', () => {
