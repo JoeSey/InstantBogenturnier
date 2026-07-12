@@ -44,7 +44,7 @@ Full phase details (goals, success criteria, requirements): `.planning/milestone
 
 **Milestone Goal:** Support 5-ring DFBV target faces alongside the existing WA 10-ring faces, so trainer colleagues running DFBV-style tournaments get correct scoring options, colors, and PDF output.
 
-- [ ] **Phase 8: Rings Configuration** - Trainer can set a tournament's Auflagen (10 or 5 rings) via updated Vorlagen presets or an explicit Benutzerdefiniert choice
+- [x] **Phase 8: Rings Configuration** - Trainer can set a tournament's Auflagen (10 or 5 rings) via updated Vorlagen presets or an explicit Benutzerdefiniert choice (completed 2026-07-12)
 - [ ] **Phase 9: Rings-Aware Score Entry & PDF Output** - Score entry dialog and results PDF correctly reflect the tournament's active rings setting
 
 ## Phase Details
@@ -63,7 +63,7 @@ Full phase details (goals, success criteria, requirements): `.planning/milestone
 
 Plans:
 - [x] 08-01-PLAN.md — RoundConfig.rings field + new WA/DFBV presets + strings
-- [ ] 08-02-PLAN.md — SetupRounds.svelte Auflagen UI wiring + PresetSave.svelte rings persistence
+- [x] 08-02-PLAN.md — SetupRounds.svelte Auflagen UI wiring + PresetSave.svelte rings persistence
 
 ### Phase 9: Rings-Aware Score Entry & PDF Output
 **Goal**: Score entry and results PDF output correctly reflect whichever rings setting (10 or 5) is active for the tournament, for both new entry and later inspection of existing scores.
@@ -94,5 +94,5 @@ Phases execute in numeric order: 8 → 9
 | 5. PDF Export | v1.1 | 3/3 | Complete | 2026-07-06 |
 | 6. Certificates PDF Export | v1.1 | 5/5 | Complete | 2026-07-07 |
 | 7. Blank Scoresheet PDF | v1.2 | 2/2 | Complete | 2026-07-07 |
-| 8. Rings Configuration | v1.3 | 1/2 | In Progress|  |
+| 8. Rings Configuration | v1.3 | 2/2 | Complete   | 2026-07-12 |
 | 9. Rings-Aware Score Entry & PDF Output | v1.3 | 0/? | Not started | - |
