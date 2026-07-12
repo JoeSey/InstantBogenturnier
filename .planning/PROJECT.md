@@ -20,7 +20,7 @@ v1.2 (Scoresheets, Phase 7) shipped and archived 2026-07-07. All 7 phases across
 - New "Auflagen" (rings) setting under Runden und Passen: fixed choice of 10 or 5, replacing the redundant custom-mode distance field (distance already lives under Bogen-/Altersklassen)
 - Rounds-config presets updated to "WA 10 Passen à 3 Pfeile", "DFBV 6 Runden à 5 Pfeile", "WA 70"; top-level radio relabeled "Vorlagen/Benutzerdefiniert"
 - In preset mode, Auflagen is derived from the chosen preset (no separate control); in Benutzerdefiniert mode, Auflagen is an explicit 10/5 radio
-- Score entry dialog adapts its value set and colors to the active rings setting: 10-ring is X/10/9 yellow, 8/7 red, 6/5 blue, 4/3 black, 2/1 white, M grey (unchanged); 5-ring is X/5 white, 4/3 blue, 2/1 blue, M grey
+- Score entry dialog adapts its value set and colors to the active rings setting: 10-ring is X/10/9 yellow, 8/7 red, 6/5 blue, 4/3 black, 2/1 white, M grey (unchanged); 5-ring is X/5 white, 4-1 dark blue, M grey
 - Results PDF score-column header adapts from "X/10/9" to "X/5" when the tournament's rings is 5
 - Existing/older rounds-config records without a `rings` field default to 10 (no behavior change for existing users)
 

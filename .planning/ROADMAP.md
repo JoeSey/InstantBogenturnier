@@ -69,7 +69,7 @@ Plans:
 **Depends on**: Phase 8
 **Requirements**: TARGET-05, TARGET-06, TARGET-07, TARGET-08
 **Success Criteria** (what must be TRUE):
-  1. The score-entry dialog (ScorePicker) shows the correct value/color set for the tournament's active rings setting — 10-ring unchanged (X/10/9 yellow, 8/7 red, 6/5 blue, 4/3 black, 2/1 white, M grey); 5-ring shows X/5 white, 4/3 blue, 2/1 blue, M grey.
+  1. The score-entry dialog (ScorePicker) shows the correct value/color set for the tournament's active rings setting — 10-ring unchanged (X/10/9 yellow, 8/7 red, 6/5 blue, 4/3 black, 2/1 white, M grey); 5-ring shows X/5 white, 4-1 dark blue, M grey.
   2. Physical-keyboard score entry (digits/X/M) resolves unambiguously and correctly under both rings settings.
   3. The results-list PDF's score-column header reads "X/10/9" for 10-ring tournaments and "X/5" for 5-ring tournaments.
   4. Previously entered scores display correctly, without crashing, when inspected under the tournament's current rings setting.
