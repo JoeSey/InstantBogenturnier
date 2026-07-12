@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { computeShooterSum, isShooterComplete, computeClassRankings } from './ranking';
+import {
+  computeShooterSum,
+  computeShooterRoundSums,
+  computeShooterHitCounts,
+  isShooterComplete,
+  computeClassRankings,
+} from './ranking';
 import type { ClassRecord, RoundConfig, ScoreRecord, ShooterRecord } from '../db/schema';
 
 function record(
@@ -54,6 +60,45 @@ describe('computeShooterSum', () => {
 
   it('returns 0 for a shooter with no recorded scores', () => {
     expect(computeShooterSum(1, [])).toBe(0);
+  });
+
+  // Phase 9 (TARGET-09): rings-aware sum — X must resolve to 5, not 10, under a
+  // 5-ring config.
+  it('sums X as 5 points when rings=5 is passed', () => {
+    const scores = [record(1, 0, 0, 0, 'X'), record(1, 0, 0, 1, '5')];
+    expect(computeShooterSum(1, scores, 5)).toBe(10);
+  });
+});
+
+describe('computeShooterRoundSums', () => {
+  // Phase 9 (TARGET-09): rings-aware round sums.
+  it('reflects a 5-point X value in the correct round bucket when rings=5', () => {
+    const scores = [record(1, 0, 0, 0, 'X'), record(1, 1, 0, 0, '7')];
+    expect(computeShooterRoundSums(1, 2, scores, 5)).toEqual([5, 7]);
+  });
+});
+
+describe('computeShooterHitCounts', () => {
+  it('returns count5, count4to1, and countM alongside countX/count10/count9', () => {
+    const scores = [
+      record(1, 0, 0, 0, 'X'),
+      record(1, 0, 0, 1, '10'),
+      record(1, 0, 0, 2, '9'),
+      record(1, 0, 0, 3, '5'),
+      record(1, 0, 0, 4, '4'),
+      record(1, 0, 0, 5, '3'),
+      record(1, 0, 0, 6, '2'),
+      record(1, 0, 0, 7, '1'),
+      record(1, 0, 0, 8, 'M'),
+    ];
+    expect(computeShooterHitCounts(1, scores)).toEqual({
+      countX: 1,
+      count10: 1,
+      count9: 1,
+      count5: 1,
+      count4to1: 4,
+      countM: 1,
+    });
   });
 });
 
@@ -132,6 +177,31 @@ describe('computeClassRankings', () => {
 
     expect(rows).toHaveLength(2);
     expect(rows.every((r) => r.isComplete === false)).toBe(true);
+  });
+
+  // Phase 9 (TARGET-09): end-to-end proof at the ranking layer that a 5-ring
+  // roundsConfig resolves X to 5 points, not 10.
+  it('produces sums reflecting 5-point X values when roundsConfig.rings is 5', () => {
+    const classes: ClassRecord[] = [{ id: 1, name: 'DFBV-Klasse' }];
+    const shooters: ShooterRecord[] = [shooter(1, 'Anna', 1)];
+    const config = roundsConfig({ numberOfRounds: 1, passesPerRound: 1, arrowsPerPasse: 2, rings: 5 });
+    const scores = [record(1, 0, 0, 0, 'X'), record(1, 0, 0, 1, '5')];
+
+    const rankings = computeClassRankings(shooters, classes, scores, config);
+    const rows = rankings.get(1)!;
+    expect(rows[0].sum).toBe(10);
+  });
+
+  // Regression guard: 10-ring (or rings-undefined) behavior is unchanged.
+  it('produces sums reflecting 10-point X values when roundsConfig.rings is undefined (10-ring default)', () => {
+    const classes: ClassRecord[] = [{ id: 1, name: 'RCV-U14' }];
+    const shooters: ShooterRecord[] = [shooter(1, 'Anna', 1)];
+    const config = roundsConfig({ numberOfRounds: 1, passesPerRound: 1, arrowsPerPasse: 2 });
+    const scores = [record(1, 0, 0, 0, 'X'), record(1, 0, 0, 1, '5')];
+
+    const rankings = computeClassRankings(shooters, classes, scores, config);
+    const rows = rankings.get(1)!;
+    expect(rows[0].sum).toBe(15);
   });
 
   it('omits a class with 0 registered shooters from the returned Map entirely', () => {

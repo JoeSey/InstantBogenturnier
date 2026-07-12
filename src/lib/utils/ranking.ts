@@ -18,27 +18,36 @@ export interface RankedRow {
   // Per-round sums (index 0-based, matching ScoreRecord.roundIndex), for the PDF's
   // "Runde 1 / Runde 2 / ..." columns when a tournament has more than one round.
   roundSums: number[];
-  // Counts of X/10/9 arrows across all rounds — the PDF's "X/10/9" column.
+  // Counts of X/10/9 arrows across all rounds — the PDF's "X/10/9" column (10-ring).
   countX: number;
   count10: number;
   count9: number;
+  // Phase 9 (TARGET-09): raw counts for the 5-ring "X+5/4-1/M" PDF column.
+  count5: number;
+  count4to1: number;
+  countM: number;
 }
 
-export function computeShooterSum(shooterId: number, scores: ScoreRecord[]): number {
+export function computeShooterSum(
+  shooterId: number,
+  scores: ScoreRecord[],
+  rings: 10 | 5 = 10
+): number {
   return scores
     .filter((s) => s.shooterId === shooterId)
-    .reduce((sum, s) => sum + arrowScoreValue(s.value), 0);
+    .reduce((sum, s) => sum + arrowScoreValue(s.value, rings), 0);
 }
 
 export function computeShooterRoundSums(
   shooterId: number,
   numberOfRounds: number,
-  scores: ScoreRecord[]
+  scores: ScoreRecord[],
+  rings: 10 | 5 = 10
 ): number[] {
   const sums = new Array(numberOfRounds).fill(0) as number[];
   for (const s of scores) {
     if (s.shooterId === shooterId && s.roundIndex >= 0 && s.roundIndex < numberOfRounds) {
-      sums[s.roundIndex] += arrowScoreValue(s.value);
+      sums[s.roundIndex] += arrowScoreValue(s.value, rings);
     }
   }
   return sums;
@@ -47,17 +56,23 @@ export function computeShooterRoundSums(
 export function computeShooterHitCounts(
   shooterId: number,
   scores: ScoreRecord[]
-): { countX: number; count10: number; count9: number } {
+): { countX: number; count10: number; count9: number; count5: number; count4to1: number; countM: number } {
   let countX = 0;
   let count10 = 0;
   let count9 = 0;
+  let count5 = 0;
+  let count4to1 = 0;
+  let countM = 0;
   for (const s of scores) {
     if (s.shooterId !== shooterId) continue;
     if (s.value === 'X') countX += 1;
     else if (s.value === '10') count10 += 1;
     else if (s.value === '9') count9 += 1;
+    if (s.value === '5') count5 += 1;
+    else if (s.value === '4' || s.value === '3' || s.value === '2' || s.value === '1') count4to1 += 1;
+    else if (s.value === 'M') countM += 1;
   }
-  return { countX, count10, count9 };
+  return { countX, count10, count9, count5, count4to1, countM };
 }
 
 export function isShooterComplete(
@@ -114,14 +129,16 @@ export function computeClassRankings(
       continue;
     }
 
+    const rings = roundsConfig.rings ?? 10;
+
     const unranked = classShooters
       .map((shooter) => ({
         shooterId: shooter.id as number,
         name: shooter.name,
         line: shooter.lineAssignment ?? null,
-        sum: computeShooterSum(shooter.id as number, scores),
+        sum: computeShooterSum(shooter.id as number, scores, rings),
         isComplete: isShooterComplete(shooter.id as number, roundsConfig, scores),
-        roundSums: computeShooterRoundSums(shooter.id as number, roundsConfig.numberOfRounds, scores),
+        roundSums: computeShooterRoundSums(shooter.id as number, roundsConfig.numberOfRounds, scores, rings),
         ...computeShooterHitCounts(shooter.id as number, scores),
       }))
       // Sort descending by sum; alphabetical-by-name as the row-order tiebreak (rank
