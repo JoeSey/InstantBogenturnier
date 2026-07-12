@@ -64,15 +64,17 @@ export const strings = {
     linesLabel: 'Scheiben',
     linesHelper: 'Anzahl der Scheiben für das Turnier',
     roundsLabel: 'Runden und Passen',
-    waPresetsLabel: 'WA-Vorlagen',
+    waPresetsLabel: 'Vorlagen',
     customLabel: 'Benutzerdefiniert',
-    wa18m: 'WA 18m — 10 Passen à 3 Pfeile (30 gesamt)',
-    wa25m: 'WA 25m — 10 Passen à 3 Pfeile (30 gesamt)',
-    wa70m: 'WA 70m — 6 Passen à 6 Pfeile (36 gesamt)',
+    presetWa10x3: 'WA 10 Passen à 3 Pfeile',
+    presetDfbv6x5: 'DFBV 6 Runden à 5 Pfeile',
+    presetWa70: 'WA 70',
     roundsCountLabel: 'Runden',
     passesPerRoundLabel: 'Passen pro Runde',
     arrowsPerPassLabel: 'Pfeile pro Passe',
-    customDistanceLabel: 'Entfernung',
+    customRingsLabel: 'Auflagen',
+    rings10Label: '10 Ringe',
+    rings5Label: '5 Ringe',
     // Additions beyond the UI-SPEC verbatim block — needed for the Classes card's
     // inline delete-confirmation row (plan Task 2 action text); not itself listed in
     // 02-UI-SPEC.md's Strings Module Extension code block.
