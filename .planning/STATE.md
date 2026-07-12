@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** Score entry and results ranking must work correctly and offline, on one device, during a live tournament at the range — everything else is secondary.
-**Current focus:** v1.3 DFBV Target Faces — Phase 8: Rings Configuration
+**Current focus:** v1.3 DFBV Target Faces — both phases complete, milestone ready to close
 
 ## Current Position
 
-Phase: 8 of 9 (Rings Configuration)
-Plan: 01 of 1 complete — ready for Plan 02 planning (SetupRounds.svelte rewiring)
-Status: Phase complete — ready for verification
+Phase: 9 of 9 (Rings-Aware Score Entry & PDF Output)
+Plan: 3 of 3 complete
+Status: Milestone v1.3 complete — all 9 TARGET requirements done, 214/214 tests pass, typecheck clean
 Last activity: 2026-07-12
 
 ## Performance Metrics
