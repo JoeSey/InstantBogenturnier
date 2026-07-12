@@ -58,11 +58,12 @@ Full phase details (goals, success criteria, requirements): `.planning/milestone
   2. Trainer can switch to Benutzerdefiniert mode and explicitly choose Auflagen 10 or 5 via a radio control, in place of the old free-text distance field.
   3. The top-level radio group in Runden und Passen reads "Vorlagen/Benutzerdefiniert".
   4. A tournament configured before this change (no `rings` field stored) continues to behave exactly as a 10-ring tournament, with no manual migration step required.
-**Plans**: TBD
+**Plans**: 2 plans
 **UI hint**: yes
 
 Plans:
-- [ ] 08-01: TBD
+- [ ] 08-01-PLAN.md — RoundConfig.rings field + new WA/DFBV presets + strings
+- [ ] 08-02-PLAN.md — SetupRounds.svelte Auflagen UI wiring + PresetSave.svelte rings persistence
 
 ### Phase 9: Rings-Aware Score Entry & PDF Output
 **Goal**: Score entry and results PDF output correctly reflect whichever rings setting (10 or 5) is active for the tournament, for both new entry and later inspection of existing scores.
