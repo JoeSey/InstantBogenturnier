@@ -12,12 +12,11 @@
     disabled,
     onRoundChange,
     onPasseChange,
-    showAdvance,
-    onAdvance,
     canGoPrevious,
     canGoNext,
     onPrevious,
     onNext,
+    nextHighlighted,
   }: {
     numberOfRounds: number;
     passesPerRound: number;
@@ -26,12 +25,15 @@
     disabled: boolean;
     onRoundChange: (index: number) => void;
     onPasseChange: (index: number) => void;
-    showAdvance: boolean;
-    onAdvance: () => void;
     canGoPrevious: boolean;
     canGoNext: boolean;
     onPrevious: () => void;
     onNext: () => void;
+    // Highlights the Next button teal once the current passe is fully scored — the
+    // same "you're done here, move on" signal the old standalone advance button gave,
+    // folded into this button instead of a second redundant ">" (post-ship feedback:
+    // two ">" buttons on the same row/screen was confusing on both phone and tablet).
+    nextHighlighted: boolean;
   } = $props();
 </script>
 
@@ -88,20 +90,11 @@
       aria-label={strings.scoring.nextButtonAria}
       disabled={disabled || !canGoNext}
       onclick={onNext}
-      class="min-h-[44px] min-w-[44px] rounded-lg border border-slate-200 bg-white px-3 text-[16px] font-semibold leading-[1.5] text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+      class={nextHighlighted
+        ? 'min-h-[44px] min-w-[44px] rounded-lg bg-teal-500 px-3 text-[16px] font-semibold leading-[1.5] text-white hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300'
+        : 'min-h-[44px] min-w-[44px] rounded-lg border border-slate-200 bg-white px-3 text-[16px] font-semibold leading-[1.5] text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'}
     >
       &gt;
     </button>
   </div>
-
-  {#if showAdvance}
-    <button
-      type="button"
-      aria-label={strings.scoring.advanceButtonAria}
-      onclick={onAdvance}
-      class="min-h-[44px] min-w-[44px] rounded-lg bg-teal-500 px-4 text-[16px] font-semibold leading-[1.5] text-white hover:bg-teal-600 dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300"
-    >
-      &gt;
-    </button>
-  {/if}
 </div>

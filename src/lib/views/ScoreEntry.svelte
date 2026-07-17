@@ -280,10 +280,12 @@
   // Unconditional linear prev/next navigation across the whole round/passe sequence —
   // added after post-ship feedback that switching between two halves of the archer
   // roster (e.g. lines A/B vs C/D shooting different ends at the same time) via the
-  // Runde/Passe dropdowns was clumsy. Unlike handleAdvance/showAdvanceButton above
-  // (which only appears once the *current* passe is fully scored, nudging the trainer
-  // to move on), these are always available regardless of completion — free back-and-
-  // forth navigation, not a "you're done here" prompt.
+  // Runde/Passe dropdowns was clumsy. Always available regardless of completion — free
+  // back-and-forth navigation. The Next button additionally highlights teal
+  // (nextHighlighted, passed to RoundPasseSelector below) once the current passe is
+  // fully scored — folding in the "you're done here, move on" signal that used to be a
+  // second standalone advance button, removed after feedback that two ">" buttons on
+  // the same row/screen was confusing on both phone and tablet.
   let canGoPrevious = $derived(selectedRound > 0 || selectedPasse > 0);
   let canGoNext = $derived(roundsConfig ? !isLastPasseOfTournament : false);
 
@@ -358,8 +360,7 @@
       disabled={isFinalized}
       onRoundChange={(index) => (selectedRound = index)}
       onPasseChange={(index) => (selectedPasse = index)}
-      showAdvance={showAdvanceButton}
-      onAdvance={handleAdvance}
+      nextHighlighted={showAdvanceButton}
       {canGoPrevious}
       {canGoNext}
       onPrevious={handlePrevious}

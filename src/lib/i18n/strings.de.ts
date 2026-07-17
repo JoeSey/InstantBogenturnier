@@ -161,7 +161,6 @@ export const strings = {
     notConfiguredBody: 'Gehen Sie zu Einrichtung, um zu beginnen.',
     roundLabel: 'Runde',
     passeLabel: 'Passe',
-    advanceButtonAria: 'Nächste Passe',
     previousButtonAria: 'Vorherige Passe',
     nextButtonAria: 'Nächste Passe',
     columnLine: 'Linie',
