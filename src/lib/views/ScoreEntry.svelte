@@ -20,6 +20,7 @@
   import ConfirmDialog from '../components/ConfirmDialog.svelte';
   import { sortRows } from '../utils/sortComparators';
   import type { SortColumn, SortDirection } from '../utils/sortComparators';
+  import { playConfirmTone } from '../utils/scoreFeedback';
 
   // Score entry vertical slice (03-01-PLAN.md Task 2, SCORE-01/02/03/05). Loads the
   // full scores table (not scoped to the current round/passe) and filters in-memory —
@@ -75,6 +76,11 @@
     return preview;
   });
   let errorFeedback = $state('');
+
+  // Bumped on every registered score tap to retrigger the confirmation flash overlay
+  // below (see the {#key flashToken} block) — a plain boolean toggle wouldn't replay
+  // the CSS animation for two consecutive taps of the same parity.
+  let flashToken = $state(0);
 
   // SCORE-04: ephemeral (non-persisted) column-header sort state — reloading the app
   // resets to the default (by Linie, ascending); never written to Dexie.
@@ -211,6 +217,14 @@
   function handleScoreSelect(value: ScoreValue) {
     if (!pickerCell || !roundsConfig) return;
     const { shooterId, arrowIndex, wasFilled } = pickerCell;
+
+    // Confirms the tap was registered by the app, independent of whether the picker
+    // dialog auto-advances/closes right after and independent of the (fire-and-forget)
+    // db.scores.put below — trainers on iPad/iPhone reported mistyped scores from not
+    // noticing a tap hadn't registered. No haptics: iOS Safari (incl. installed PWAs)
+    // doesn't expose the Vibration API to web content at all.
+    playConfirmTone();
+    flashToken += 1;
     // D-06: deliberately no `await` — autosave must be non-blocking. Errors are
     // surfaced via errorFeedback (WR-04) without blocking further cell edits.
     db.scores
@@ -287,6 +301,14 @@
     finalizeDialogOpen = false;
   }
 </script>
+
+<!-- Score-tap confirmation flash — remounted via {#key flashToken} so the CSS animation
+     replays on every tap, including two consecutive taps of the same picked value. -->
+{#key flashToken}
+  {#if flashToken > 0}
+    <div class="score-confirm-flash pointer-events-none fixed inset-0 z-40 bg-teal-400"></div>
+  {/if}
+{/key}
 
 {#if !roundsConfig}
   <PlaceholderScreen
@@ -368,3 +390,20 @@
     oncancel={handleFinalizeCancel}
   />
 {/if}
+
+<style>
+  @keyframes score-confirm-flash {
+    0% {
+      opacity: 0;
+    }
+    15% {
+      opacity: 0.35;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+  .score-confirm-flash {
+    animation: score-confirm-flash 220ms ease-out;
+  }
+</style>
