@@ -106,16 +106,56 @@ describe('Dexie v4 schema', () => {
   });
 
   it('supports a singleton roundtrip on the settings table', async () => {
-    await db.settings.put({ id: 1, title: 'Test', logoLeftBlob: undefined, logoRightBlob: undefined });
+    await db.settings.put({
+      id: 1,
+      title: 'Test',
+      logoLeftDataUri: undefined,
+      logoRightDataUri: undefined,
+    });
     const record = await db.settings.get(1);
     expect(record?.title).toBe('Test');
   });
 
-  it('round-trips a Blob value for logoLeftBlob as a Blob instance', async () => {
-    const blob = new Blob(['fake-image-bytes'], { type: 'image/png' });
-    await db.settings.put({ id: 1, title: 'With Logo', logoLeftBlob: blob });
+  it('round-trips a data URI value for logoLeftDataUri as a string', async () => {
+    const dataUri = 'data:image/png;base64,ZmFrZS1pbWFnZS1ieXRlcw==';
+    await db.settings.put({ id: 1, title: 'With Logo', logoLeftDataUri: dataUri });
     const record = await db.settings.get(1);
-    expect(record?.logoLeftBlob).toBeInstanceOf(Blob);
+    expect(record?.logoLeftDataUri).toBe(dataUri);
+  });
+});
+
+// Dexie v6 schema: migrates logoLeftBlob/logoRightBlob (Blob) to logoLeftDataUri/
+// logoRightDataUri (string). WebKit's IndexedDB invalidates a previously-read Blob on
+// any subsequent write to the same object store, throwing NotFoundError on the next
+// read — storing logos as plain strings instead sidesteps that bug entirely.
+describe('Dexie v6 schema', () => {
+  beforeEach(async () => {
+    await resetDb();
+  });
+
+  it('migrates an existing logoLeftBlob to logoLeftDataUri and drops the Blob field', async () => {
+    db.close();
+    await Dexie.delete('InstantBogenturnierDB');
+
+    const v5Db = new Dexie('InstantBogenturnierDB');
+    v5Db.version(5).stores({
+      classes: '++id, name',
+      shootingLines: 'id',
+      rounds: 'id',
+      shooters: '++id, classId, lineAssignment',
+      presets: '++id, name',
+      scores: '[shooterId+roundIndex+passeIndex+arrowIndex], shooterId, roundIndex',
+      settings: 'id',
+    });
+    await v5Db.open();
+    const blob = new Blob(['fake-image-bytes'], { type: 'image/png' });
+    await v5Db.table('settings').put({ id: 1, title: 'Test', logoLeftBlob: blob });
+    v5Db.close();
+
+    await db.open();
+    const record = await db.settings.get(1);
+    expect(record?.logoLeftDataUri).toMatch(/^data:image\/png;base64,/);
+    expect((record as unknown as { logoLeftBlob?: Blob }).logoLeftBlob).toBeUndefined();
   });
 });
 

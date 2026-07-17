@@ -34,15 +34,6 @@ export function buildClassTableRows(
     ]);
 }
 
-function blobToDataUri(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(blob);
-  });
-}
-
 // 05-03 gap closure (WR-02): downscaleImageBlob() preserves the source logo's aspect
 // ratio, but the PDF previously drew every logo into a hard-coded 25x20mm (1.25:1)
 // box, stretching/squashing any logo whose aspect ratio differs. containFit() scales
@@ -67,7 +58,7 @@ export function containFit(
 export async function buildResultsPdfDoc(
   classifications: Map<number, RankedRow[]>,
   classes: ClassRecord[],
-  settings: Pick<SettingsRecord, 'title' | 'logoLeftBlob' | 'logoRightBlob'> | undefined,
+  settings: Pick<SettingsRecord, 'title' | 'logoLeftDataUri' | 'logoRightDataUri'> | undefined,
   includeIncomplete: boolean,
   roundsConfig?: Pick<RoundConfig, 'numberOfRounds' | 'rings'>
 ): Promise<jsPDF> {
@@ -81,8 +72,8 @@ export async function buildResultsPdfDoc(
     .filter((cls) => cls.id !== undefined && classifications.has(cls.id))
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  const logoLeftData = settings?.logoLeftBlob ? await blobToDataUri(settings.logoLeftBlob) : undefined;
-  const logoRightData = settings?.logoRightBlob ? await blobToDataUri(settings.logoRightBlob) : undefined;
+  const logoLeftData = settings?.logoLeftDataUri;
+  const logoRightData = settings?.logoRightDataUri;
 
   const PAGE_HEIGHT = doc.internal.pageSize.getHeight();
   const BOTTOM_MARGIN = 20;
@@ -189,7 +180,7 @@ export async function buildResultsPdfDoc(
 export async function generateResultsPdf(
   classifications: Map<number, RankedRow[]>,
   classes: ClassRecord[],
-  settings: Pick<SettingsRecord, 'title' | 'logoLeftBlob' | 'logoRightBlob'> | undefined,
+  settings: Pick<SettingsRecord, 'title' | 'logoLeftDataUri' | 'logoRightDataUri'> | undefined,
   includeIncomplete: boolean,
   roundsConfig?: Pick<RoundConfig, 'numberOfRounds' | 'rings'>
 ): Promise<Blob> {

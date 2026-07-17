@@ -1,5 +1,18 @@
 import Dexie, { type Table } from 'dexie';
 
+// Uses Blob.arrayBuffer() + manual base64 encoding rather than FileReader: fake-
+// indexeddb (used under jsdom in tests) constructs Blobs against a different global
+// than jsdom's own FileReader expects, which rejects them as "not of type Blob".
+// arrayBuffer() is a plain Blob-prototype method and works across that boundary.
+async function blobToDataUri(blob: Blob): Promise<string> {
+  const buffer = await blob.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  const base64 = btoa(binary);
+  return `data:${blob.type || 'application/octet-stream'};base64,${base64}`;
+}
+
 // Phase 2 data model — all 5 tables this phase (and Plans 02/03/04) need. Defined up
 // front, not incrementally per plan, so Wave 2 plans (lines/rounds, registration,
 // presets) can build against a stable schema without touching this file again.
@@ -72,14 +85,23 @@ export interface ScoreRecord {
   finalized: boolean;
 }
 
-// Phase 5 data model — settings singleton (title + optional header logo Blobs) used by
+// Phase 5 data model — settings singleton (title + optional header logo images) used by
 // the PDF export feature (Plan 02) and, per 05-CONTEXT.md D-05, built generically now
 // for reuse by the future certificates phase (Phase 6) rather than PDF-export-specific.
+//
+// Logos are stored as data URI strings, not Blobs (see v6 migration below) — WebKit's
+// IndexedDB has a documented bug where any write transaction against an object store
+// holding Blobs can invalidate previously-read Blob references from that same store,
+// making them throw `NotFoundError` on the next read. That's exactly what surfaced as
+// "Schießformular konnte nicht generiert werden" after every title save: saving the
+// settings row invalidated the already-open logoLeftBlob/logoRightBlob, and the next
+// PDF export's FileReader read of that Blob threw. Data URI strings aren't subject to
+// this bug at all.
 export interface SettingsRecord {
   id: 1;
   title?: string;
-  logoLeftBlob?: Blob;
-  logoRightBlob?: Blob;
+  logoLeftDataUri?: string;
+  logoRightDataUri?: string;
   certificateHeading?: string;
 }
 
@@ -149,6 +171,34 @@ class InstantBogenturnierDB extends Dexie {
             }
           })
       );
+    // v6: migrates logoLeftBlob/logoRightBlob (Blob) to logoLeftDataUri/logoRightDataUri
+    // (string) — see the SettingsRecord comment above for why. Every prior version's
+    // stores must be restated unchanged per Dexie's versioning requirement.
+    this.version(6)
+      .stores({
+        classes: '++id, name',
+        shootingLines: 'id',
+        rounds: 'id',
+        shooters: '++id, classId, lineAssignment',
+        presets: '++id, name',
+        scores: '[shooterId+roundIndex+passeIndex+arrowIndex], shooterId, roundIndex',
+        settings: 'id',
+      })
+      .upgrade(async (tx) => {
+        const table = tx.table('settings');
+        const records = await table.toArray();
+        for (const record of records) {
+          if (record.logoLeftBlob instanceof Blob) {
+            record.logoLeftDataUri = await blobToDataUri(record.logoLeftBlob);
+            delete record.logoLeftBlob;
+          }
+          if (record.logoRightBlob instanceof Blob) {
+            record.logoRightDataUri = await blobToDataUri(record.logoRightBlob);
+            delete record.logoRightBlob;
+          }
+          await table.put(record);
+        }
+      });
   }
 }
 

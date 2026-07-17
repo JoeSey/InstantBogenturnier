@@ -14,57 +14,29 @@
 
   let title = $state('');
   let certificateHeading = $state('');
-  let logoLeftBlob = $state<Blob | undefined>(undefined);
-  let logoRightBlob = $state<Blob | undefined>(undefined);
-  // Tracks whether the trainer actually replaced/removed a logo in this session, as
-  // opposed to logoLeftBlob/logoRightBlob merely holding the Blob instance that was
-  // read back from IndexedDB on load. WebKit's IndexedDB has a known bug where writing
-  // a Blob that was itself retrieved from IndexedDB back into IndexedDB (a "round-trip"
-  // put) corrupts it — reads succeed until the next put, then the stored blob becomes
-  // unreadable (FileReader/jsPDF throws) until the app restarts and gets a fresh
-  // connection. Editing only the title triggered exactly this: save() used to put the
-  // whole record, including the already-once-read logo blobs, on every save. Only
-  // including the blob fields in the write when they were actually changed avoids the
-  // round-trip entirely.
-  let logoLeftDirty = false;
-  let logoRightDirty = false;
-  let logoLeftPreview = $state<string | undefined>(undefined);
-  let logoRightPreview = $state<string | undefined>(undefined);
+  // Logos are stored (and kept in this form) as data URI strings, not Blobs — see the
+  // SettingsRecord comment in db/schema.ts for why: writing a Blob that was itself read
+  // back from IndexedDB corrupts it under WebKit, which is what caused every PDF export
+  // to fail right after a settings save. Data URIs double as their own <img> preview, so
+  // no separate preview state or object-URL revocation is needed anymore either.
+  let logoLeftDataUri = $state<string | undefined>(undefined);
+  let logoRightDataUri = $state<string | undefined>(undefined);
   let logoLeftInput = $state<HTMLInputElement | undefined>(undefined);
   let logoRightInput = $state<HTMLInputElement | undefined>(undefined);
   let errorFeedback = $state('');
   let successFeedback = $state('');
 
   // Sync local form state from the loaded record once it arrives (liveQuery starts as
-  // `undefined` before the first read resolves). Rebuilds object-URL previews for any
-  // previously saved logo Blobs so a page reload shows the same images, not just the
-  // title text.
+  // `undefined` before the first read resolves).
   let initialized = $state(false);
   $effect(() => {
     if (!initialized && settings !== undefined) {
       title = settings?.title ?? '';
       certificateHeading = settings?.certificateHeading ?? '';
-      logoLeftBlob = settings?.logoLeftBlob;
-      logoRightBlob = settings?.logoRightBlob;
-      logoLeftPreview = logoLeftBlob ? URL.createObjectURL(logoLeftBlob) : undefined;
-      logoRightPreview = logoRightBlob ? URL.createObjectURL(logoRightBlob) : undefined;
+      logoLeftDataUri = settings?.logoLeftDataUri;
+      logoRightDataUri = settings?.logoRightDataUri;
       initialized = true;
     }
-  });
-
-  // WR-03: revoke any blob: object URL before it's replaced/discarded, and on
-  // component teardown, so navigating away from Setup doesn't leak one object URL
-  // per previously-saved logo for the life of the SPA session. Data URIs (from
-  // downscaleImageBlob) aren't real object URLs — revokeObjectURL is a documented
-  // no-op for them, so this helper is safe to call unconditionally.
-  function revokePreview(preview: string | undefined) {
-    if (preview?.startsWith('blob:')) URL.revokeObjectURL(preview);
-  }
-  $effect(() => {
-    return () => {
-      revokePreview(logoLeftPreview);
-      revokePreview(logoRightPreview);
-    };
   });
 
   const MAX_LOGO_BYTES = 200 * 1024;
@@ -93,15 +65,9 @@
         return;
       }
       if (side === 'left') {
-        revokePreview(logoLeftPreview);
-        logoLeftBlob = blob;
-        logoLeftPreview = dataUri;
-        logoLeftDirty = true;
+        logoLeftDataUri = dataUri;
       } else {
-        revokePreview(logoRightPreview);
-        logoRightBlob = blob;
-        logoRightPreview = dataUri;
-        logoRightDirty = true;
+        logoRightDataUri = dataUri;
       }
     } catch {
       errorFeedback = strings.settingsForm.errorUploadFailed;
@@ -112,16 +78,10 @@
     errorFeedback = '';
     successFeedback = '';
     if (side === 'left') {
-      revokePreview(logoLeftPreview);
-      logoLeftBlob = undefined;
-      logoLeftPreview = undefined;
-      logoLeftDirty = true;
+      logoLeftDataUri = undefined;
       if (logoLeftInput) logoLeftInput.value = '';
     } else {
-      revokePreview(logoRightPreview);
-      logoRightBlob = undefined;
-      logoRightPreview = undefined;
-      logoRightDirty = true;
+      logoRightDataUri = undefined;
       if (logoRightInput) logoRightInput.value = '';
     }
   }
@@ -130,28 +90,13 @@
     errorFeedback = '';
     successFeedback = '';
     try {
-      const existing = await db.settings.get(1);
-      if (existing) {
-        // Only touch the logo Blob fields when this save actually changed them —
-        // see logoLeftDirty/logoRightDirty above for why re-writing an unchanged,
-        // previously-read-back Blob corrupts it under WebKit's IndexedDB.
-        await db.settings.update(1, {
-          title,
-          certificateHeading,
-          ...(logoLeftDirty ? { logoLeftBlob } : {}),
-          ...(logoRightDirty ? { logoRightBlob } : {}),
-        });
-      } else {
-        await db.settings.put({
-          id: 1,
-          title,
-          certificateHeading,
-          logoLeftBlob,
-          logoRightBlob,
-        });
-      }
-      logoLeftDirty = false;
-      logoRightDirty = false;
+      await db.settings.put({
+        id: 1,
+        title,
+        certificateHeading,
+        logoLeftDataUri,
+        logoRightDataUri,
+      });
       successFeedback = strings.settingsForm.saveSuccess;
     } catch (err) {
       errorFeedback =
@@ -201,9 +146,9 @@
         {strings.settingsForm.logoSizeHint}
       </span>
     </label>
-    {#if logoLeftPreview}
+    {#if logoLeftDataUri}
       <div class="flex items-start gap-2">
-        <img src={logoLeftPreview} alt="" class="max-h-[80px] rounded-lg" />
+        <img src={logoLeftDataUri} alt="" class="max-h-[80px] rounded-lg" />
         <button
           type="button"
           onclick={() => removeLogo('left')}
@@ -230,9 +175,9 @@
         {strings.settingsForm.logoSizeHint}
       </span>
     </label>
-    {#if logoRightPreview}
+    {#if logoRightDataUri}
       <div class="flex items-start gap-2">
-        <img src={logoRightPreview} alt="" class="max-h-[80px] rounded-lg" />
+        <img src={logoRightDataUri} alt="" class="max-h-[80px] rounded-lg" />
         <button
           type="button"
           onclick={() => removeLogo('right')}

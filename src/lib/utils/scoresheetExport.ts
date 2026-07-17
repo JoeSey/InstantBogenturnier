@@ -14,15 +14,6 @@ export function scoresheetPdfFilename(date: Date = new Date()): string {
   return `Schießformular_${date.toISOString().split('T')[0]}.pdf`;
 }
 
-function blobToDataUri(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(blob);
-  });
-}
-
 // Scaled down proportionally from pdfExport.ts's 25mm/20mm A4 header logos to suit
 // A5's smaller page (148x210mm vs A4's 210x297mm).
 const LOGO_MAX_WIDTH = 18;
@@ -32,15 +23,15 @@ const MARGIN = 15;
 
 export async function buildScoresheetPdfDoc(
   roundsConfig: RoundConfig,
-  settings: Pick<SettingsRecord, 'title' | 'logoLeftBlob' | 'logoRightBlob'> | undefined
+  settings: Pick<SettingsRecord, 'title' | 'logoLeftDataUri' | 'logoRightDataUri'> | undefined
 ): Promise<jsPDF> {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a5' });
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 
-  const logoLeftData = settings?.logoLeftBlob ? await blobToDataUri(settings.logoLeftBlob) : undefined;
-  const logoRightData = settings?.logoRightBlob ? await blobToDataUri(settings.logoRightBlob) : undefined;
+  const logoLeftData = settings?.logoLeftDataUri;
+  const logoRightData = settings?.logoRightDataUri;
 
   let cursorY = MARGIN;
 
@@ -215,7 +206,7 @@ export async function buildScoresheetPdfDoc(
 
 export async function generateScoresheetPdf(
   roundsConfig: RoundConfig,
-  settings: Pick<SettingsRecord, 'title' | 'logoLeftBlob' | 'logoRightBlob'> | undefined
+  settings: Pick<SettingsRecord, 'title' | 'logoLeftDataUri' | 'logoRightDataUri'> | undefined
 ): Promise<Blob> {
   const doc = await buildScoresheetPdfDoc(roundsConfig, settings);
   return doc.output('blob');

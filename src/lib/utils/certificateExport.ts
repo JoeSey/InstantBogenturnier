@@ -18,15 +18,6 @@ export function zipFilename(date: Date = new Date()): string {
   return `Urkunden_${date.toISOString().split('T')[0]}.zip`;
 }
 
-function blobToDataUri(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(blob);
-  });
-}
-
 const LOGO_MAX_WIDTH = 40;
 const LOGO_MAX_HEIGHT = 35;
 const LOGO_GAP = 10;
@@ -41,15 +32,15 @@ export async function buildCertPdf(
   rankedRow: RankedRow,
   className: string,
   settings:
-    | Pick<SettingsRecord, 'title' | 'logoLeftBlob' | 'logoRightBlob' | 'certificateHeading'>
+    | Pick<SettingsRecord, 'title' | 'logoLeftDataUri' | 'logoRightDataUri' | 'certificateHeading'>
     | undefined,
   now: Date = new Date()
 ): Promise<jsPDF> {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageCenterX = doc.internal.pageSize.getWidth() / 2;
 
-  const logoLeftData = settings?.logoLeftBlob ? await blobToDataUri(settings.logoLeftBlob) : undefined;
-  const logoRightData = settings?.logoRightBlob ? await blobToDataUri(settings.logoRightBlob) : undefined;
+  const logoLeftData = settings?.logoLeftDataUri;
+  const logoRightData = settings?.logoRightDataUri;
 
   // Header — both logos centered together at the top (not left/right corners), and
   // bigger than the original results-list header treatment. Revised post-ship per
@@ -120,7 +111,7 @@ export async function generateSingleCertPdf(
   rankedRow: RankedRow,
   className: string,
   settings:
-    | Pick<SettingsRecord, 'title' | 'logoLeftBlob' | 'logoRightBlob' | 'certificateHeading'>
+    | Pick<SettingsRecord, 'title' | 'logoLeftDataUri' | 'logoRightDataUri' | 'certificateHeading'>
     | undefined,
   now: Date = new Date()
 ): Promise<Blob> {
@@ -132,7 +123,7 @@ export async function generateBulkCerts(
   classifications: Map<number, RankedRow[]>,
   classes: ClassRecord[],
   settings:
-    | Pick<SettingsRecord, 'title' | 'logoLeftBlob' | 'logoRightBlob' | 'certificateHeading'>
+    | Pick<SettingsRecord, 'title' | 'logoLeftDataUri' | 'logoRightDataUri' | 'certificateHeading'>
     | undefined,
   now: Date = new Date()
 ): Promise<Blob> {
