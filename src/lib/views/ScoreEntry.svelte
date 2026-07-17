@@ -277,6 +277,30 @@
     }
   }
 
+  // Unconditional linear prev/next navigation across the whole round/passe sequence —
+  // added after post-ship feedback that switching between two halves of the archer
+  // roster (e.g. lines A/B vs C/D shooting different ends at the same time) via the
+  // Runde/Passe dropdowns was clumsy. Unlike handleAdvance/showAdvanceButton above
+  // (which only appears once the *current* passe is fully scored, nudging the trainer
+  // to move on), these are always available regardless of completion — free back-and-
+  // forth navigation, not a "you're done here" prompt.
+  let canGoPrevious = $derived(selectedRound > 0 || selectedPasse > 0);
+  let canGoNext = $derived(roundsConfig ? !isLastPasseOfTournament : false);
+
+  function handlePrevious() {
+    if (!roundsConfig) return;
+    if (selectedPasse > 0) {
+      selectedPasse -= 1;
+    } else if (selectedRound > 0) {
+      selectedRound -= 1;
+      selectedPasse = roundsConfig.passesPerRound - 1;
+    }
+  }
+
+  function handleNext() {
+    handleAdvance();
+  }
+
   async function handleFinalizeClick() {
     finalizeDialogOpen = true;
   }
@@ -336,6 +360,10 @@
       onPasseChange={(index) => (selectedPasse = index)}
       showAdvance={showAdvanceButton}
       onAdvance={handleAdvance}
+      {canGoPrevious}
+      {canGoNext}
+      onPrevious={handlePrevious}
+      onNext={handleNext}
     />
 
     <ScoreTable

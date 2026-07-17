@@ -162,6 +162,8 @@ export const strings = {
     roundLabel: 'Runde',
     passeLabel: 'Passe',
     advanceButtonAria: 'Nächste Passe',
+    previousButtonAria: 'Vorherige Passe',
+    nextButtonAria: 'Nächste Passe',
     columnLine: 'Linie',
     columnName: 'Name',
     columnClass: 'Klasse',
