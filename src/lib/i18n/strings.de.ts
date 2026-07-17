@@ -254,4 +254,26 @@ export const strings = {
     downloadButton: 'Schießformular (PDF) drucken',
     exportError: 'Schießformular konnte nicht generiert werden',
   },
+  // Quick task — whole-tournament export/import on the Ergebnisse tab, so a trainer can
+  // continue the same tournament on another device (e.g. iPad via iCloud Drive). Distinct
+  // from presets.* (Vorlagen): this transfers the live classes/shooters/scores/settings,
+  // not reusable templates.
+  tournamentTransfer: {
+    heading: 'Turnier übertragen',
+    helper: 'Übertragen Sie das laufende Turnier auf ein anderes Gerät, z.B. über iCloud Drive.',
+    exportButton: 'Turnier exportieren',
+    exportError: 'Export fehlgeschlagen: {error}',
+    exportFeedback: 'Turnier exportiert: {filename}',
+    importButton: 'Turnier importieren',
+    importFileLabel: 'Importierte Datei wählen',
+    importInvalidFile: 'Datei ist keine gültige Turnier-Exportdatei.',
+    importIncompleteFile: 'Datei ist unvollständig (fehlt: {tables}) und wird nicht importiert.',
+    importConfirmTitle: 'Turnier importieren?',
+    importConfirmBody:
+      'Alle aktuellen Klassen, Schützen, Ergebnisse und Einstellungen auf diesem Gerät werden durch die importierte Datei ersetzt ({shooterCount} Schützen, {scoreCount} Ergebnisse). Diese Aktion kann nicht rückgängig gemacht werden.',
+    importConfirmYes: 'Ja, ersetzen',
+    importConfirmCancel: 'Abbrechen',
+    importSuccess: 'Turnier erfolgreich importiert.',
+    importError: 'Import fehlgeschlagen: {error}',
+  },
 } as const;

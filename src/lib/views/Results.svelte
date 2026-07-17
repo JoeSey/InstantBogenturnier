@@ -1,6 +1,7 @@
 <script lang="ts">
   import { liveQuery } from 'dexie';
-  import { RotateCcw, FileDown } from '@lucide/svelte';
+  import { exportDB, importInto } from 'dexie-export-import';
+  import { RotateCcw, FileDown, Upload } from '@lucide/svelte';
   import { db } from '../db/schema';
   import { strings } from '../i18n/strings.de';
   import { computeClassRankings } from '../utils/ranking';
@@ -143,6 +144,107 @@
   function handleResetCancel() {
     resetDialogOpen = false;
   }
+
+  // Quick task — whole-tournament export/import ("continue on another device", e.g. via
+  // iCloud Drive). Mirrors PresetList.svelte's exportDB/importInto pattern exactly, but
+  // with the opposite skip-list: this transfers the live tournament data, not reusable
+  // preset templates, so `presets` is the one table intentionally left untouched. Unlike
+  // PresetList's preset-load flow (which has to reconcile shooters.classId by name
+  // because it replaces classes while leaving shooters alone), this import clears and
+  // replaces classes AND shooters together from the same snapshot file — so a shooter's
+  // classId always matches a class that exists, with no reconciliation needed.
+  const TOURNAMENT_TABLES = ['classes', 'shootingLines', 'rounds', 'shooters', 'scores', 'settings'];
+
+  let transferFeedback = $state('');
+  let importFile = $state<File | null>(null);
+  let importShooterCount = $state(0);
+  let importScoreCount = $state(0);
+  let importDialogOpen = $state(false);
+  let transferFileInputEl = $state<HTMLInputElement | undefined>(undefined);
+
+  async function handleTournamentExport() {
+    errorFeedback = '';
+    transferFeedback = '';
+    try {
+      const blob = await exportDB(db, { skipTables: ['presets'] });
+      const filename = `Turnier_${new Date().toISOString().split('T')[0]}.json`;
+      await downloadBlob(blob, filename);
+      transferFeedback = strings.tournamentTransfer.exportFeedback.replace('{filename}', filename);
+    } catch (err) {
+      errorFeedback = strings.tournamentTransfer.exportError.replace('{error}', describeError(err));
+    }
+  }
+
+  async function handleTransferFileSelected(e: Event) {
+    errorFeedback = '';
+    transferFeedback = '';
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text) as {
+        formatName?: string;
+        data?: {
+          databaseName?: string;
+          tables?: Array<{ name: string; rowCount: number }>;
+        };
+      };
+      const tables = parsed.data?.tables;
+      if (parsed.formatName !== 'dexie' || parsed.data?.databaseName !== db.name || !tables) {
+        errorFeedback = strings.tournamentTransfer.importInvalidFile;
+        input.value = '';
+        return;
+      }
+      // WR-05-equivalent: refuse a structurally-valid-but-incomplete export (e.g.
+      // hand-edited or truncated) rather than importing a partial tournament snapshot —
+      // clearTablesBeforeImport only clears tables actually listed in the file, so a
+      // missing `shooters` entry would silently leave stale local shooters in place
+      // pointing at freshly-replaced classes.
+      const tableNames = new Set(tables.map((t) => t.name));
+      const missing = TOURNAMENT_TABLES.filter((name) => !tableNames.has(name));
+      if (missing.length > 0) {
+        errorFeedback = strings.tournamentTransfer.importIncompleteFile.replace('{tables}', missing.join(', '));
+        input.value = '';
+        return;
+      }
+
+      importShooterCount = tables.find((t) => t.name === 'shooters')?.rowCount ?? 0;
+      importScoreCount = tables.find((t) => t.name === 'scores')?.rowCount ?? 0;
+    } catch (err) {
+      errorFeedback = strings.tournamentTransfer.importError.replace('{error}', describeError(err));
+      input.value = '';
+      return;
+    }
+
+    importFile = file;
+    importDialogOpen = true;
+  }
+
+  function cancelTournamentImport() {
+    importDialogOpen = false;
+    importFile = null;
+    if (transferFileInputEl) transferFileInputEl.value = '';
+  }
+
+  async function confirmTournamentImport() {
+    if (!importFile) return;
+    errorFeedback = '';
+    try {
+      await importInto(db, importFile, {
+        clearTablesBeforeImport: true,
+        skipTables: ['presets'],
+      });
+      transferFeedback = strings.tournamentTransfer.importSuccess;
+    } catch (err) {
+      errorFeedback = strings.tournamentTransfer.importError.replace('{error}', describeError(err));
+    } finally {
+      importDialogOpen = false;
+      importFile = null;
+      if (transferFileInputEl) transferFileInputEl.value = '';
+    }
+  }
 </script>
 
 <div class="mx-auto flex max-w-[1280px] flex-col gap-6 p-4">
@@ -244,6 +346,47 @@
     </div>
   </GlassCard>
 
+  <GlassCard class="flex flex-col gap-4 p-4 md:p-6">
+    <div>
+      <h2 class="text-[20px] font-semibold leading-[1.2] text-slate-900 dark:text-slate-100">
+        {strings.tournamentTransfer.heading}
+      </h2>
+      <p class="text-[14px] leading-[1.4] text-slate-600 dark:text-slate-300">
+        {strings.tournamentTransfer.helper}
+      </p>
+    </div>
+
+    {#if transferFeedback}
+      <p class="text-[14px] leading-[1.4] text-teal-700 dark:text-teal-300">{transferFeedback}</p>
+    {/if}
+
+    <div class="flex flex-col gap-2 md:flex-row">
+      <button
+        type="button"
+        onclick={handleTournamentExport}
+        class="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-[16px] leading-[1.5] text-slate-700 hover:bg-slate-100 md:w-auto dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
+      >
+        <FileDown size={20} />
+        {strings.tournamentTransfer.exportButton}
+      </button>
+
+      <label
+        class="flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-[16px] leading-[1.5] text-slate-700 hover:bg-slate-100 md:w-auto dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
+      >
+        <Upload size={20} />
+        {strings.tournamentTransfer.importButton}
+        <input
+          bind:this={transferFileInputEl}
+          type="file"
+          accept=".json"
+          aria-label={strings.tournamentTransfer.importFileLabel}
+          class="sr-only"
+          onchange={handleTransferFileSelected}
+        />
+      </label>
+    </div>
+  </GlassCard>
+
   {#if resetSuccessMessage}
     <p class="text-[14px] leading-[1.4] text-teal-600 dark:text-teal-400">{resetSuccessMessage}</p>
   {/if}
@@ -267,4 +410,17 @@
   destructive={true}
   onconfirm={handleResetConfirm}
   oncancel={handleResetCancel}
+/>
+
+<ConfirmDialog
+  open={importDialogOpen}
+  title={strings.tournamentTransfer.importConfirmTitle}
+  body={strings.tournamentTransfer.importConfirmBody
+    .replace('{shooterCount}', String(importShooterCount))
+    .replace('{scoreCount}', String(importScoreCount))}
+  confirmLabel={strings.tournamentTransfer.importConfirmYes}
+  cancelLabel={strings.tournamentTransfer.importConfirmCancel}
+  destructive={true}
+  onconfirm={confirmTournamentImport}
+  oncancel={cancelTournamentImport}
 />
