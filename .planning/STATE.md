@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.3
-milestone_name: DFBV Target Faces
-status: verifying
-stopped_at: v1.2 milestone archived
-last_updated: "2026-07-12T13:50:53.451Z"
-last_activity: 2026-07-12
+milestone: v1.5
+milestone_name: Post-Ship Robustness & Cross-Device Continuation
+status: shipped
+stopped_at: v1.5 milestone archived
+last_updated: "2026-07-17T19:00:00.000Z"
+last_activity: 2026-07-17
 progress:
-  total_phases: 2
-  completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
   percent: 100
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** Score entry and results ranking must work correctly and offline, on one device, during a live tournament at the range — everything else is secondary.
-**Current focus:** v1.3 DFBV Target Faces — both phases complete, milestone ready to close
+**Current focus:** v1.5 shipped (six quick tasks, no phases — see MILESTONES.md); also closes out v1.3 DFBV Target Faces, which was code-complete since 2026-07-12 but never separately tagged/released.
 
 ## Current Position
 
-Phase: 9 of 9 (Rings-Aware Score Entry & PDF Output)
-Plan: 3 of 3 complete
-Status: Milestone v1.3 complete — all 9 TARGET requirements done, 214/214 tests pass, typecheck clean
-Last activity: 2026-07-12
+Phase: n/a (v1.5 has no phases — six quick tasks, see MILESTONES.md)
+Plan: n/a
+Status: Milestone v1.5 shipped — 223/223 tests pass, typecheck clean, production build verified
+Last activity: 2026-07-17
 
 ## Performance Metrics
 
@@ -103,6 +103,12 @@ None yet.
 | 260705-p25 | Score table phone-view compaction: hide Klasse column, tighter padding below md breakpoint | 2026-07-05 | f3cf656 | [260705-p25-score-table-phone-view-compaction-on-pho](./quick/260705-p25-score-table-phone-view-compaction-on-pho/) |
 | 260706-9iv | v1.0 final polish: sidebar nav 240px→120px, Setup two-column layout, auto-save Runden und Passen (remove Speichern button), disable Abschließen with message when zero shooters registered | 2026-07-06 | 74578fa | [260706-9iv-v1-0-final-polish-nav-width-setup-respon](./quick/260706-9iv-v1-0-final-polish-nav-width-setup-respon/) |
 | 260710-erfassung-jump-to-blank | Erfassung tab opens at first incomplete round/passe instead of round 1/passe 1 when a tournament already has partial scores (one-shot jump, no override once user navigates manually) | 2026-07-10 | a586d1a | [260710-erfassung-jump-to-blank](./quick/260710-erfassung-jump-to-blank/) |
+| 260717-pwa-download | Fix PDF/preset exports failing (and requiring force-quit) in installed standalone PWAs on iPadOS/macOS — downloadBlob() opens the blob in a new window instead of `<a download>`+click | 2026-07-17 | bf0fe25 | — (ad hoc, no GSD quick-task directory; see MILESTONES.md v1.5 entry) |
+| 260717-logo-blob-bug | Root-cause fix: migrate settings logos from Blob to base64 data URI (Dexie v6) — WebKit invalidates a previously-read Blob on any later write to the same IndexedDB object store | 2026-07-17 | 00627ab | — (ad hoc, see MILESTONES.md v1.5 entry) |
+| 260717-branch-rename | Rename git default branch master → main to match GitHub; delete old master | 2026-07-17 | 153c7fc | — (ad hoc, see MILESTONES.md v1.5 entry) |
+| 260717-score-feedback | Audio tone + screen-flash confirmation on every score tap (no haptics available on iOS Safari/PWA); fixed a stuck-flash CSS bug | 2026-07-17 | a9e2b44, 3c6c1c1 | — (ad hoc, see MILESTONES.md v1.5 entry) |
+| 260717-tournament-transfer | Whole-tournament export/import ("continue on another device") on the Ergebnisse tab, with pre-import completeness validation and an overwrite-confirm dialog | 2026-07-17 | 55b0256 | — (ad hoc, see MILESTONES.md v1.5 entry) |
+| 260717-prev-next-nav | Unconditional prev/next buttons around the Runde/Passe selector, folding the old conditional advance arrow into the new Next button | 2026-07-17 | 03f2ae8, 6af8f96 | — (ad hoc, see MILESTONES.md v1.5 entry) |
 
 ## Deferred Items
 
@@ -124,8 +130,8 @@ Items acknowledged and deferred at milestone close on 2026-07-06 (v1.0). Re-ackn
 
 ## Session Continuity
 
-Last session: 2026-07-12T13:43:01.741Z
-Stopped at: v1.2 milestone archived
+Last session: 2026-07-17T19:00:00.000Z
+Stopped at: v1.5 milestone archived (git tag v1.5)
 Resume file: None
 
 ## Operator Next Steps

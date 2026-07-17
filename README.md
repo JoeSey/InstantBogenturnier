@@ -6,10 +6,12 @@ A client-side web app (installable PWA) that lets an archery club trainer run in
 
 ## Features
 
-- **Setup** — define classes (age group / bow type / distance), shooting lines, and rounds/passes (WA presets or custom), with 4–8 savable/loadable tournament presets (export/import included)
+- **Setup** — define classes (age group / bow type / distance), shooting lines, and rounds/passes (WA 10-ring or DFBV 5-ring presets, or fully custom), with 4–8 savable/loadable tournament presets (export/import included)
 - **Registration** — register shooters with name, class, and optional shooting-line assignment; app detects AB vs. AB/CD mode automatically
-- **Score Entry** — per-arrow score entry with instant autosave (no explicit save step, no data loss), sortable table, and an explicit "Abschließen" (finalize/lock) step once every arrow is entered
+- **Score Entry** — per-arrow tap-button or keyboard score entry with instant autosave (no explicit save step, no data loss), an audio+screen-flash confirmation on every tap, unconditional "<"/">" buttons for quickly stepping back and forth through ends (wrapping at round boundaries), a sortable table, and an explicit "Abschließen" (finalize/lock) step once every arrow is entered
 - **Results** — live-updating, correctly-ranked results per class (standard "1-2-2-4" tie handling), adaptive layout: dropdown class selector on phone, responsive multi-column grid on tablet/desktop
+- **PDF export** — ranked results list, per-shooter certificates (bulk ZIP or single), and a blank A5 scoresheet for paper fallback, all with a configurable title and header logos
+- **Continue on another device** — export the whole live tournament (classes, shooters, scores, settings) to a file from the Ergebnisse tab and re-import it on another device (e.g. via iCloud Drive) to keep going
 - **Reset** — explicit "Neues Turnier starten" action clears shooters/scores while keeping classes, lines, rounds, and presets configured
 - **Offline-first PWA** — installable to your device's home screen, fully functional with zero network connectivity, automatic light/dark theme with manual override
 - **Data safety** — once a tournament is finalized, destructive edits (deleting shooters, changing rounds/passes) are blocked until you reset
@@ -127,7 +129,7 @@ commit a deployment-specific value — set it as a build-time env var each time.
 
 ## Project Status
 
-All v1.0 milestone phases are complete: Foundation, Setup & Registration, Score Entry, Results. See [`specs.md`](specs.md) for the original feature spec and [`.planning/`](.planning/) for detailed requirements, decisions, and per-phase implementation records.
+Current release: **v1.5**. See [`.planning/MILESTONES.md`](.planning/MILESTONES.md) for the full milestone history and [`specs.md`](specs.md) for the original feature spec; [`.planning/`](.planning/) has detailed requirements, decisions, and per-phase implementation records.
 
 ## License
 

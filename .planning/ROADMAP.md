@@ -5,7 +5,8 @@
 - ✅ **v1.0 MVP** — Phases 1-4 (shipped 2026-07-06)
 - ✅ **v1.1 PDF Export** — Phases 5-6 (shipped 2026-07-07)
 - ✅ **v1.2 Scoresheets** — Phase 7 (shipped 2026-07-07)
-- 🚧 **v1.3 DFBV Target Faces** — Phases 8-9 (in progress)
+- ✅ **v1.3 DFBV Target Faces** — Phases 8-9 (shipped 2026-07-12)
+- ✅ **v1.5 Post-Ship Robustness & Cross-Device Continuation** — quick tasks, no phases (shipped 2026-07-17)
 
 ## Phases
 
@@ -40,53 +41,29 @@ Full phase details (goals, success criteria, requirements): `.planning/milestone
 
 </details>
 
-### 🚧 v1.3 DFBV Target Faces (In Progress)
+<details>
+<summary>✅ v1.3 DFBV Target Faces (Phases 8-9) — SHIPPED 2026-07-12</summary>
 
-**Milestone Goal:** Support 5-ring DFBV target faces alongside the existing WA 10-ring faces, so trainer colleagues running DFBV-style tournaments get correct scoring options, colors, and PDF output.
+- [x] Phase 8: Rings Configuration (2/2 plans) — completed 2026-07-12
+- [x] Phase 9: Rings-Aware Score Entry & PDF Output (3/3 plans) — completed 2026-07-12
 
-- [x] **Phase 8: Rings Configuration** - Trainer can set a tournament's Auflagen (10 or 5 rings) via updated Vorlagen presets or an explicit Benutzerdefiniert choice (completed 2026-07-12)
-- [x] **Phase 9: Rings-Aware Score Entry & PDF Output** - Score entry dialog and results PDF correctly reflect the tournament's active rings setting (completed 2026-07-12)
+Full phase details (goals, success criteria, requirements): `.planning/milestones/v1.3-ROADMAP.md`
 
-## Phase Details
+</details>
 
-### Phase 8: Rings Configuration
-**Goal**: Trainer can configure a tournament's Auflagen (10 or 5 rings) — automatically via a Vorlagen preset, or explicitly in Benutzerdefiniert mode — with older configs defaulting safely to 10.
-**Depends on**: Phase 7 (Blank Scoresheet PDF; builds on the same `db.rounds` config surface in `SetupRounds.svelte`)
-**Requirements**: TARGET-01, TARGET-02, TARGET-03, TARGET-04
-**Success Criteria** (what must be TRUE):
-  1. Trainer can pick one of three Vorlagen presets ("WA 10 Passen à 3 Pfeile", "DFBV 6 Runden à 5 Pfeile", "WA 70"), each silently applying its correct Auflagen (10 or 5) with no separate rings control shown.
-  2. Trainer can switch to Benutzerdefiniert mode and explicitly choose Auflagen 10 or 5 via a radio control, in place of the old free-text distance field.
-  3. The top-level radio group in Runden und Passen reads "Vorlagen/Benutzerdefiniert".
-  4. A tournament configured before this change (no `rings` field stored) continues to behave exactly as a 10-ring tournament, with no manual migration step required.
-**Plans**: 2 plans
-**UI hint**: yes
+<details>
+<summary>✅ v1.5 Post-Ship Robustness & Cross-Device Continuation (quick tasks) — SHIPPED 2026-07-17</summary>
 
-Plans:
-- [x] 08-01-PLAN.md — RoundConfig.rings field + new WA/DFBV presets + strings
-- [x] 08-02-PLAN.md — SetupRounds.svelte Auflagen UI wiring + PresetSave.svelte rings persistence
+No phases/plans — six quick tasks executed directly per user request (a first-real-deployment PWA crash fix plus five follow-on requests in the same session), bypassing the discuss/plan/execute workflow. Includes v1.3's DFBV work above, tagged together since v1.3 was never separately tagged/released.
 
-### Phase 9: Rings-Aware Score Entry & PDF Output
-**Goal**: Score entry and results PDF output correctly reflect whichever rings setting (10 or 5) is active for the tournament, for both new entry and later inspection of existing scores.
-**Depends on**: Phase 8
-**Requirements**: TARGET-05, TARGET-06, TARGET-07, TARGET-08, TARGET-09
-**Success Criteria** (what must be TRUE):
-  1. The score-entry dialog (ScorePicker) shows the correct value/color set for the tournament's active rings setting — 10-ring unchanged (X/10/9 yellow, 8/7 red, 6/5 blue, 4/3 black, 2/1 white, M grey); 5-ring shows X/5 white, 4-1 dark blue, M grey.
-  2. Physical-keyboard score entry (digits/X/M) resolves unambiguously and correctly under both rings settings.
-  3. The results-list PDF's score-column header reads "X/10/9" for 10-ring tournaments and a distinct 5-ring hit-count header (combining X+5, then count4-1, then countM) for 5-ring tournaments.
-  4. Previously entered scores display correctly, without crashing, when inspected under the tournament's current rings setting.
-  5. X's point value (10 vs 5) is correctly applied everywhere sums/rankings/PDF totals are computed, not just in the picker's displayed labels.
-**Plans**: 3 plans
-**UI hint**: yes
+Full summary: `.planning/milestones/v1.5-ROADMAP.md`
 
-Plans:
-- [x] 09-01-PLAN.md — Rings-aware arrowScoreValue/scoreColorCategory/ranking.ts (pure logic + TARGET-09 fix)
-- [x] 09-02-PLAN.md — Rings-aware PDF hit-count header/rows (pdfExport.ts, Results.svelte)
-- [x] 09-03-PLAN.md — Rings-aware ScorePicker UI wiring (ScorePicker.svelte, ScoreEntry.svelte)
+</details>
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 8 → 9
+Phases execute in numeric order: 8 → 9. v1.5 has no phases (quick tasks only).
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|-----------------|--------|-----------|
@@ -99,3 +76,4 @@ Phases execute in numeric order: 8 → 9
 | 7. Blank Scoresheet PDF | v1.2 | 2/2 | Complete | 2026-07-07 |
 | 8. Rings Configuration | v1.3 | 2/2 | Complete   | 2026-07-12 |
 | 9. Rings-Aware Score Entry & PDF Output | v1.3 | 3/3 | Complete   | 2026-07-12 |
+| (quick tasks, no phase) | v1.5 | n/a | Complete | 2026-07-17 |

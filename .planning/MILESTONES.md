@@ -1,5 +1,45 @@
 # Milestones
 
+## v1.5 Post-Ship Robustness & Cross-Device Continuation (Shipped: 2026-07-17)
+
+**Delivered:** Fixed a first-real-deployment PWA-only crash discovered live at a tournament, then shipped five follow-on requests from the same session as quick tasks (no phases/plans — executed directly per user request, bypassing the discuss/plan/execute workflow for this batch of small, independently-shippable items).
+
+**Phases completed:** 0 phases, 6 quick tasks
+**Timeline:** 2026-07-17 (single-day milestone)
+**Git range:** bf0fe25 (PWA download fix) → 6af8f96 (advance-button dedup) — see `.planning/milestones/v1.5-ROADMAP.md` for the itemized list
+**Known deferred items at close:** none new; v1.0-era false positives from prior closes remain (see Deferred Items in STATE.md)
+
+**Key accomplishments:**
+
+- **PWA export/download reliability**: installed (standalone-display-mode) PWAs on iPadOS/macOS Safari couldn't reliably trigger any file export (scoresheet, results PDF, certificates, presets) — the `<a download>` + blob: URL pattern could throw and even required force-quitting the app. Replaced with a `downloadBlob()` helper that opens the blob in a new window.
+- **Root-caused a second, recurring failure** ("Schießformular konnte nicht generiert werden" right after every settings save): WebKit's IndexedDB invalidates a previously-read Blob on any subsequent write to the same object store. Migrated `SettingsRecord`'s header-logo fields from `Blob` to base64 data URI strings (Dexie v6 migration) rather than working around the bug — eliminates the precondition entirely. Diagnosed via an on-screen `describeError()` debug pass after two earlier guessed fixes (download mechanism, then write-timing) didn't resolve it, since installed PWAs have no accessible devtools console.
+- Renamed the git default branch `master` → `main` to match GitHub's default; old branch deleted.
+- **Score-entry audio + flash confirmation**: a short tone (Web Audio) plus a brief full-screen flash on every registered score tap. True haptic feedback (Vibration API) isn't available on iOS Safari, including installed PWAs, at all — this is the cross-platform substitute. Fixed a follow-up CSS bug (missing `animation-fill-mode: forwards`) that left the flash stuck solid instead of fading out.
+- **Whole-tournament export/import** ("continue on another device"): new controls on the Ergebnisse tab export classes/shooters/scores/settings to a file (iOS's native save/share sheet handles iCloud Drive) and re-import with an overwrite-confirm dialog naming exactly what will be replaced. Pre-import validation rejects a structurally-incomplete file before ever showing that dialog. Reuses `PresetList.svelte`'s `exportDB`/`importInto` pattern with the opposite skip-list (`presets` untouched instead of everything-but-presets); unlike the preset-load flow, no `classId` reconciliation is needed since classes and shooters are replaced together from the same snapshot.
+- **Runde/Passe prev/next navigation**: unconditional "<"/">" buttons flanking the Runde/Passe dropdowns, stepping linearly through the whole round/passe sequence (wrapping at round boundaries) — added after feedback that switching between two halves of the archer roster mid-tournament via the dropdowns alone was clumsy. The old conditional teal "advance" arrow (shown only once the current passe was fully scored) was folded into the new Next button instead of staying a second, redundant ">" control.
+- This milestone also folds in **v1.3 DFBV Target Faces** (Phases 8-9, completed 2026-07-12 per STATE.md but never separately tagged/released) — see that entry below and `.planning/milestones/v1.3-ROADMAP.md`.
+
+---
+
+## v1.3 DFBV Target Faces (Shipped: 2026-07-12, tagged retroactively with v1.5)
+
+**Delivered:** 5-ring DFBV target face support alongside the existing WA 10-ring faces — correct scoring options, colors, and PDF output for DFBV-style tournaments.
+
+**Phases completed:** 2 phases (Phase 8, Phase 9), 5 plans
+**Timeline:** 2026-07-12 (single-day milestone)
+**Git range:** see `.planning/milestones/v1.3-ROADMAP.md` for phase/plan breakdown
+**Known deferred items at close:** 10 (see STATE.md Deferred Items — carried over unchanged from prior milestone closes; all verified false positives, no real open work)
+
+**Key accomplishments:**
+
+- Trainer can pick one of three Vorlagen presets ("WA 10 Passen à 3 Pfeile", "DFBV 6 Runden à 5 Pfeile", "WA 70"), each silently applying its correct Auflagen (10 or 5 rings) with no separate rings control shown, or switch to Benutzerdefiniert mode and explicitly choose Auflagen 10 or 5.
+- A tournament configured before this change (no `rings` field stored) continues to behave exactly as a 10-ring tournament, with no manual migration step required.
+- The score-entry dialog (ScorePicker) shows the correct value/color set for the tournament's active rings setting, both via tap and physical-keyboard entry — 10-ring unchanged, 5-ring shows X/5 white, 4-1 dark blue, M grey.
+- The results-list PDF's score-column header reads "X/10/9" for 10-ring tournaments and a distinct 5-ring hit-count header for 5-ring tournaments; X's point value (10 vs 5) is correctly applied everywhere sums/rankings/PDF totals are computed.
+- Previously entered scores display correctly, without crashing, when inspected under the tournament's current rings setting.
+
+---
+
 ## v1.2 Scoresheets (Shipped: 2026-07-07)
 
 **Delivered:** Downloadable blank A5 scoresheet PDF, grid sized to the current rounds/passes/arrows config, as a paper fallback at the range.
