@@ -6,6 +6,7 @@
   import type { PresetRecord } from '../db/schema';
   import { strings } from '../i18n/strings.de';
   import ConfirmDialog from '../components/ConfirmDialog.svelte';
+  import { downloadBlob } from '../utils/downloadBlob';
 
   // SETUP-05/06 (D-11 through D-15): load/delete a saved preset, plus export-all /
   // import-all-replace for cross-device preset transfer.
@@ -124,15 +125,8 @@
     errorFeedback = '';
     feedback = '';
     const blob = await exportDB(db, { skipTables: NON_PRESET_TABLES });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
     const dateStamp = new Date().toISOString();
-    a.href = url;
-    a.download = `presets-${dateStamp}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    await downloadBlob(blob, `presets-${dateStamp}.json`);
     feedback = strings.presets.exportFeedback.replace('{date}', dateStamp);
   }
 

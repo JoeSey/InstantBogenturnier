@@ -13,6 +13,7 @@
     zipFilename,
   } from '../utils/certificateExport';
   import type { RankedRow } from '../utils/ranking';
+  import { downloadBlob } from '../utils/downloadBlob';
   import GlassCard from '../components/GlassCard.svelte';
   import ClassSelector from '../components/ClassSelector.svelte';
   import ResultsTable from '../components/ResultsTable.svelte';
@@ -75,16 +76,7 @@
         includeIncomplete,
         roundsConfig
       );
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = resultsPdfFilename();
-      // WR-04: some WebKit/iOS Safari versions silently ignore .click() on an anchor
-      // that was never attached to the DOM — append before clicking, then clean up.
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      await downloadBlob(blob, resultsPdfFilename());
     } catch {
       errorFeedback = strings.resultsPdf.exportError;
     }
@@ -97,14 +89,7 @@
     try {
       const settings = (await db.settings.get(1)) ?? { id: 1 as const };
       const blob = await generateBulkCerts(rankings, classesWithResults, settings);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = zipFilename();
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      await downloadBlob(blob, zipFilename());
     } catch {
       errorFeedback = strings.certificateExport.bulkExportError;
     }
@@ -118,14 +103,7 @@
     try {
       const settings = (await db.settings.get(1)) ?? { id: 1 as const };
       const blob = await generateSingleCertPdf(row, className, settings);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = certificatePdfFilename(row.name);
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      await downloadBlob(blob, certificatePdfFilename(row.name));
     } catch {
       errorFeedback = strings.certificateExport.singleExportError;
     }
