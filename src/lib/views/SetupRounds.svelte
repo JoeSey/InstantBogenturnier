@@ -5,6 +5,7 @@
   import { WA_PRESETS } from '../fixtures/waPresets';
   import { strings } from '../i18n/strings.de';
   import { generateScoresheetPdf, scoresheetPdfFilename } from '../utils/scoresheetExport';
+  import { downloadBlob } from '../utils/downloadBlob';
 
   // RES-06/D-11/D-12 (04-03-PLAN.md Task 3): once finalized, the entire rounds/passes
   // config form is disabled — the parent Setup.svelte derives and passes this down via
@@ -127,14 +128,7 @@
     try {
       const settings = (await db.settings.get(1)) ?? { id: 1 as const };
       const blob = await generateScoresheetPdf(existingConfig, settings);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = scoresheetPdfFilename();
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      await downloadBlob(blob, scoresheetPdfFilename());
     } catch {
       errorFeedback = strings.scoresheetExport.exportError;
     }
