@@ -755,4 +755,62 @@ describe('ScoreEntry', () => {
       expect(screen.queryByText(strings.scoring.completionHelper)).toBeNull();
     });
   });
+
+  // Post-ship feedback (2026-07-17 quick task): unconditional linear prev/next
+  // navigation across the whole round/passe sequence, wrapping at round boundaries.
+  describe('prev/next navigation buttons', () => {
+    async function seedTwoRoundTournament() {
+      const classId = await db.classes.add({ name: 'RCV-U14' });
+      await db.rounds.put({
+        id: 1,
+        arrowsPerPasse: 1,
+        passesPerRound: 2,
+        numberOfRounds: 2,
+        distance: '18m',
+      });
+      await db.shooters.add({ name: 'Anna', classId, lineAssignment: 1 });
+    }
+
+    it('disables the previous button on round 1/passe 1 and the next button on the last passe of the last round', async () => {
+      await seedTwoRoundTournament();
+      render(ScoreEntry);
+      await screen.findByText('Anna');
+
+      expect(
+        (screen.getByRole('button', { name: strings.scoring.previousButtonAria }) as HTMLButtonElement)
+          .disabled
+      ).toBe(true);
+
+      await fireEvent.change(screen.getByLabelText(strings.scoring.roundLabel), { target: { value: '1' } });
+      await fireEvent.change(screen.getByLabelText(strings.scoring.passeLabel), { target: { value: '1' } });
+
+      expect(
+        (screen.getByRole('button', { name: strings.scoring.nextButtonAria }) as HTMLButtonElement).disabled
+      ).toBe(true);
+    });
+
+    it('next wraps from the last passe of a round into passe 1 of the next round', async () => {
+      await seedTwoRoundTournament();
+      render(ScoreEntry);
+      await screen.findByText('Anna');
+
+      await fireEvent.change(screen.getByLabelText(strings.scoring.passeLabel), { target: { value: '1' } });
+      await fireEvent.click(screen.getByRole('button', { name: strings.scoring.nextButtonAria }));
+
+      expect((screen.getByLabelText(strings.scoring.roundLabel) as HTMLSelectElement).value).toBe('1');
+      expect((screen.getByLabelText(strings.scoring.passeLabel) as HTMLSelectElement).value).toBe('0');
+    });
+
+    it('previous wraps backward from passe 1 of a round into the last passe of the previous round', async () => {
+      await seedTwoRoundTournament();
+      render(ScoreEntry);
+      await screen.findByText('Anna');
+
+      await fireEvent.change(screen.getByLabelText(strings.scoring.roundLabel), { target: { value: '1' } });
+      await fireEvent.click(screen.getByRole('button', { name: strings.scoring.previousButtonAria }));
+
+      expect((screen.getByLabelText(strings.scoring.roundLabel) as HTMLSelectElement).value).toBe('0');
+      expect((screen.getByLabelText(strings.scoring.passeLabel) as HTMLSelectElement).value).toBe('1');
+    });
+  });
 });
