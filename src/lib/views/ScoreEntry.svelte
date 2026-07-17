@@ -404,6 +404,9 @@
     }
   }
   .score-confirm-flash {
-    animation: score-confirm-flash 220ms ease-out;
+    /* fill-mode forwards: without it, once the animation ends the element reverts to
+       its un-animated default (opacity 1 — solid teal), instead of staying at the
+       final keyframe's opacity 0. That's what left the screen "stuck" blue. */
+    animation: score-confirm-flash 220ms ease-out forwards;
   }
 </style>
