@@ -4,6 +4,7 @@
   import { db } from '../db/schema';
   import { downscaleImageBlob } from '../utils/imageDownscale';
   import { strings } from '../i18n/strings.de';
+  import { describeError } from '../utils/errorDetail';
 
   // 05-01-PLAN.md Task 2: title + two logo uploads, singleton settings row (id: 1).
   // Built generically (not PDF-export-specific) per 05-CONTEXT.md D-05 so the future
@@ -156,7 +157,7 @@
       errorFeedback =
         err instanceof Error && err.name === 'QuotaExceededError'
           ? strings.settingsForm.errorQuotaExceeded
-          : strings.settingsForm.errorSaveFailed;
+          : `${strings.settingsForm.errorSaveFailed} [${describeError(err)}]`;
     }
   }
 </script>

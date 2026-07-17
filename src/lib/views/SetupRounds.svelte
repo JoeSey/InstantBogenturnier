@@ -6,6 +6,7 @@
   import { strings } from '../i18n/strings.de';
   import { generateScoresheetPdf, scoresheetPdfFilename } from '../utils/scoresheetExport';
   import { downloadBlob } from '../utils/downloadBlob';
+  import { describeError } from '../utils/errorDetail';
 
   // RES-06/D-11/D-12 (04-03-PLAN.md Task 3): once finalized, the entire rounds/passes
   // config form is disabled — the parent Setup.svelte derives and passes this down via
@@ -129,8 +130,8 @@
       const settings = (await db.settings.get(1)) ?? { id: 1 as const };
       const blob = await generateScoresheetPdf(existingConfig, settings);
       await downloadBlob(blob, scoresheetPdfFilename());
-    } catch {
-      errorFeedback = strings.scoresheetExport.exportError;
+    } catch (err) {
+      errorFeedback = `${strings.scoresheetExport.exportError} [${describeError(err)}]`;
     }
   }
 </script>

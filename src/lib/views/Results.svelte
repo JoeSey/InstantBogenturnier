@@ -14,6 +14,7 @@
   } from '../utils/certificateExport';
   import type { RankedRow } from '../utils/ranking';
   import { downloadBlob } from '../utils/downloadBlob';
+  import { describeError } from '../utils/errorDetail';
   import GlassCard from '../components/GlassCard.svelte';
   import ClassSelector from '../components/ClassSelector.svelte';
   import ResultsTable from '../components/ResultsTable.svelte';
@@ -77,8 +78,8 @@
         roundsConfig
       );
       await downloadBlob(blob, resultsPdfFilename());
-    } catch {
-      errorFeedback = strings.resultsPdf.exportError;
+    } catch (err) {
+      errorFeedback = `${strings.resultsPdf.exportError} [${describeError(err)}]`;
     }
   }
 
@@ -90,8 +91,8 @@
       const settings = (await db.settings.get(1)) ?? { id: 1 as const };
       const blob = await generateBulkCerts(rankings, classesWithResults, settings);
       await downloadBlob(blob, zipFilename());
-    } catch {
-      errorFeedback = strings.certificateExport.bulkExportError;
+    } catch (err) {
+      errorFeedback = `${strings.certificateExport.bulkExportError} [${describeError(err)}]`;
     }
   }
 
@@ -104,8 +105,8 @@
       const settings = (await db.settings.get(1)) ?? { id: 1 as const };
       const blob = await generateSingleCertPdf(row, className, settings);
       await downloadBlob(blob, certificatePdfFilename(row.name));
-    } catch {
-      errorFeedback = strings.certificateExport.singleExportError;
+    } catch (err) {
+      errorFeedback = `${strings.certificateExport.singleExportError} [${describeError(err)}]`;
     }
   }
 
