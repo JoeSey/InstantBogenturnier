@@ -82,7 +82,11 @@
       }
 
       await db.shootingLines.put({ id: 1, count: preset.shootingLineCount });
-      await db.rounds.put({ id: 1, ...preset.roundsConfig });
+      // entryMode is a device-local view preference, not part of a preset — carry the
+      // current value across so applying a preset doesn't silently reset the
+      // Erfassungsart chosen for this tournament.
+      const currentEntryMode = (await db.rounds.get(1))?.entryMode;
+      await db.rounds.put({ id: 1, ...preset.roundsConfig, entryMode: currentEntryMode });
       feedback = strings.presets.loadFeedback.replace('{name}', preset.name);
     } catch (err) {
       // WR-04: surface write failures instead of failing silently.

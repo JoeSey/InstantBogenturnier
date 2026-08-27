@@ -31,6 +31,7 @@ describe('SetupRounds', () => {
         numberOfRounds: 6,
         rings: 5,
         presetId: 'dfbv-6x5',
+        entryMode: 'byRound',
       });
     });
   });
@@ -62,6 +63,7 @@ describe('SetupRounds', () => {
         numberOfRounds: 2,
         rings: 5,
         presetId: undefined,
+        entryMode: 'byRound',
       });
     });
   });
@@ -188,5 +190,53 @@ describe('SetupRounds', () => {
     expect(
       (screen.getByLabelText(strings.setup.rings5Label) as HTMLInputElement).disabled
     ).toBe(true);
+  });
+
+  it('persists the chosen entry mode onto the rounds singleton', async () => {
+    render(SetupRounds);
+
+    await fireEvent.click(screen.getByLabelText(strings.setup.entryModeByLine));
+
+    await waitFor(async () => {
+      expect((await db.rounds.get(1))?.entryMode).toBe('byArcherLine');
+    });
+
+    await fireEvent.click(screen.getByLabelText(strings.setup.entryModeByRound));
+
+    await waitFor(async () => {
+      expect((await db.rounds.get(1))?.entryMode).toBe('byRound');
+    });
+  });
+
+  it('rehydrates the entry-mode radio from an existing rounds record', async () => {
+    await db.rounds.put({
+      id: 1,
+      arrowsPerPasse: 3,
+      passesPerRound: 10,
+      numberOfRounds: 1,
+      rings: 10,
+      presetId: 'wa-10x3',
+      entryMode: 'byArcherName',
+    });
+
+    render(SetupRounds);
+
+    await waitFor(() => {
+      expect(
+        (screen.getByLabelText(strings.setup.entryModeByName) as HTMLInputElement).checked
+      ).toBe(true);
+    });
+  });
+
+  it('keeps the entry mode available even when the tournament is finalized', async () => {
+    render(SetupRounds, { isFinalized: true });
+
+    const byLine = screen.getByLabelText(strings.setup.entryModeByLine) as HTMLInputElement;
+    expect(byLine.disabled).toBe(false);
+
+    await fireEvent.click(byLine);
+    await waitFor(async () => {
+      expect((await db.rounds.get(1))?.entryMode).toBe('byArcherLine');
+    });
   });
 });

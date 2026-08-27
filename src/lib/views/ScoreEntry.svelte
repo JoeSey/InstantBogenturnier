@@ -16,6 +16,8 @@
   import RoundPasseSelector from '../components/RoundPasseSelector.svelte';
   import ScoreTable from '../components/ScoreTable.svelte';
   import type { ScoreRow } from '../components/ScoreTable.svelte';
+  import ArcherScoreCard from '../components/ArcherScoreCard.svelte';
+  import type { ArcherScoreCardRow } from '../components/ArcherScoreCard.svelte';
   import ScorePicker from '../components/ScorePicker.svelte';
   import ConfirmDialog from '../components/ConfirmDialog.svelte';
   import { sortRows } from '../utils/sortComparators';
@@ -38,16 +40,39 @@
   const scoresQuery = liveQuery(() => db.scores.toArray());
   let allScores = $derived($scoresQuery ?? []);
 
+  // 3D-/Feldturnier support: 'byRound' keeps the classic all-shooters-per-Passe table;
+  // 'byArcherLine'/'byArcherName' switch to a single-archer whole-scorecard layout
+  // (see ArcherScoreCard.svelte). The mode is chosen on the Einrichtung tab and stored
+  // on the rounds singleton; undefined means the classic layout.
+  let entryMode = $derived(roundsConfig?.entryMode ?? 'byRound');
+
+  // Single flat lookup of every score by its full cell coordinate, used by both
+  // layouts. Cheap even for a large tournament (a few thousand entries).
+  const cellKey = (shooterId: number, r: number, p: number, a: number) =>
+    `${shooterId}-${r}-${p}-${a}`;
+  let allScoreByKey = $derived(
+    new Map(
+      allScores.map((s) => [cellKey(s.shooterId, s.roundIndex, s.passeIndex, s.arrowIndex), s.value])
+    )
+  );
+
   let selectedRound = $state(0);
   let selectedPasse = $state(0);
+  // Single-archer layout: which archer's card is currently shown. Initialised by the
+  // effect below to the first archer with an incomplete card once data has loaded.
+  let selectedShooterId = $state<number | null>(null);
   // Quick task 260710-erfassung-jump-to-blank: tracks whether the one-shot initial
   // jump to the first incomplete round/passe has already run, so it never fires
   // again after mount (manual navigation and subsequent liveQuery updates to
   // allScores must not retrigger it).
   let hasAppliedInitialJump = $state(false);
-  let pickerCell = $state<{ shooterId: number; arrowIndex: number; wasFilled: boolean } | null>(
-    null
-  );
+  let pickerCell = $state<{
+    shooterId: number;
+    roundIndex: number;
+    passeIndex: number;
+    arrowIndex: number;
+    wasFilled: boolean;
+  } | null>(null);
   // Quick task 260705-ok7: accumulates every pick made during the current
   // row-filling session so the title preview can show them before
   // currentPasseScoreByKey (async liveQuery) catches up. Reset on every session
@@ -68,9 +93,9 @@
     if (!cell || !roundsConfig) return [];
     const preview: (ScoreValue | null)[] = [];
     for (let i = 0; i < roundsConfig.arrowsPerPasse; i++) {
-      const key = `${cell.shooterId}-${i}`;
+      const key = cellKey(cell.shooterId, cell.roundIndex, cell.passeIndex, i);
       preview.push(
-        justPickedValues.get(key) ?? (currentPasseScoreByKey.get(key) as ScoreValue | undefined) ?? null
+        justPickedValues.get(key) ?? (allScoreByKey.get(key) as ScoreValue | undefined) ?? null
       );
     }
     return preview;
@@ -136,21 +161,17 @@
     !isFinalized && currentPasseComplete && !isLastPasseOfTournament
   );
 
-  let currentPasseScoreByKey = $derived(
-    new Map(
-      allScores
-        .filter((s) => s.roundIndex === selectedRound && s.passeIndex === selectedPasse)
-        .map((s) => [`${s.shooterId}-${s.arrowIndex}`, s.value])
-    )
-  );
-
   let rows: ScoreRow[] = $derived.by(() => {
     if (!roundsConfig) return [];
 
     const built = shooters.map((shooter): ScoreRow => {
       const arrows: (ScoreValue | null)[] = [];
       for (let i = 0; i < roundsConfig.arrowsPerPasse; i++) {
-        arrows.push((currentPasseScoreByKey.get(`${shooter.id}-${i}`) as ScoreValue) ?? null);
+        arrows.push(
+          (allScoreByKey.get(
+            cellKey(shooter.id as number, selectedRound, selectedPasse, i)
+          ) as ScoreValue) ?? null
+        );
       }
       const sum = arrows.every((a) => a !== null)
         ? calculatePasseSum(arrows as ScoreValue[], roundsConfig.rings ?? 10)
@@ -168,6 +189,95 @@
 
     return sortRows(built, sortBy, sortDir);
   });
+
+  // ---- Single-archer scorecard layout (entryMode 'byArcherLine' / 'byArcherName') ----
+
+  // Archer picker order: by Schießplatz (unassigned last, name as tie-breaker) or
+  // alphabetically by name.
+  let orderedShooters = $derived.by(() => {
+    const list = [...shooters];
+    if (entryMode === 'byArcherName') {
+      return list.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return list.sort((a, b) => {
+      const la = a.lineAssignment ?? Number.MAX_SAFE_INTEGER;
+      const lb = b.lineAssignment ?? Number.MAX_SAFE_INTEGER;
+      return la !== lb ? la - lb : a.name.localeCompare(b.name);
+    });
+  });
+
+  function isCardComplete(shooterId: number): boolean {
+    if (!roundsConfig) return false;
+    for (let r = 0; r < roundsConfig.numberOfRounds; r++) {
+      for (let p = 0; p < roundsConfig.passesPerRound; p++) {
+        for (let a = 0; a < roundsConfig.arrowsPerPasse; a++) {
+          if (!allScoreByKey.has(cellKey(shooterId, r, p, a))) return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  // Keep selectedShooterId valid: on first entry to a byArcher mode (or if the chosen
+  // archer is deleted) jump to the first archer whose card still has a blank, else the
+  // first archer. Guarded so it never overrides a still-valid manual selection or
+  // re-fires on later liveQuery updates.
+  $effect(() => {
+    if (entryMode === 'byRound' || orderedShooters.length === 0) return;
+    if (selectedShooterId !== null && orderedShooters.some((s) => s.id === selectedShooterId)) return;
+    const firstIncomplete = orderedShooters.find((s) => !isCardComplete(s.id as number));
+    selectedShooterId = (firstIncomplete ?? orderedShooters[0]).id as number;
+  });
+
+  let selectedShooterIndex = $derived(
+    orderedShooters.findIndex((s) => s.id === selectedShooterId)
+  );
+  let canPrevArcher = $derived(selectedShooterIndex > 0);
+  let canNextArcher = $derived(
+    selectedShooterIndex >= 0 && selectedShooterIndex < orderedShooters.length - 1
+  );
+
+  function prevArcher() {
+    if (canPrevArcher) selectedShooterId = orderedShooters[selectedShooterIndex - 1].id as number;
+  }
+  function nextArcher() {
+    if (canNextArcher) selectedShooterId = orderedShooters[selectedShooterIndex + 1].id as number;
+  }
+
+  function archerOptionLabel(s: { name: string; lineAssignment?: number | null }): string {
+    if (entryMode === 'byArcherLine') {
+      return `${s.lineAssignment ?? strings.scoring.sumIncomplete} — ${s.name}`;
+    }
+    return s.name;
+  }
+
+  let cardRows: ArcherScoreCardRow[] = $derived.by(() => {
+    if (!roundsConfig || selectedShooterId === null) return [];
+    const built: ArcherScoreCardRow[] = [];
+    for (let r = 0; r < roundsConfig.numberOfRounds; r++) {
+      for (let p = 0; p < roundsConfig.passesPerRound; p++) {
+        const arrows: (ScoreValue | null)[] = [];
+        for (let a = 0; a < roundsConfig.arrowsPerPasse; a++) {
+          arrows.push(
+            (allScoreByKey.get(cellKey(selectedShooterId, r, p, a)) as ScoreValue) ?? null
+          );
+        }
+        const sum = arrows.every((x) => x !== null)
+          ? calculatePasseSum(arrows as ScoreValue[], roundsConfig.rings ?? 10)
+          : null;
+        built.push({
+          roundIndex: r,
+          passeIndex: p,
+          label: roundsConfig.numberOfRounds > 1 ? `${r + 1}.${p + 1}` : `${p + 1}`,
+          arrows,
+          sum,
+        });
+      }
+    }
+    return built;
+  });
+
+  let cardTotal = $derived(cardRows.reduce((acc, row) => acc + (row.sum ?? 0), 0));
 
   // Quick task 260710-erfassung-jump-to-blank: one-shot initial jump to the first
   // round/passe that still has a blank arrow, so reopening Erfassung mid-tournament
@@ -205,18 +315,20 @@
     }
   }
 
-  function openPicker(shooterId: number, arrowIndex: number) {
+  // Both layouts route through here: the classic table always taps into the currently
+  // selected Runde/Passe, the single-archer card passes each row's own round/passe.
+  function openPicker(shooterId: number, roundIndex: number, passeIndex: number, arrowIndex: number) {
     if (isFinalized) return;
-    const wasFilled = currentPasseScoreByKey.has(`${shooterId}-${arrowIndex}`);
+    const wasFilled = allScoreByKey.has(cellKey(shooterId, roundIndex, passeIndex, arrowIndex));
     // A fresh tap always starts a new session — never carry over picks from a
     // previous cell/shooter.
     justPickedValues = new Map();
-    pickerCell = { shooterId, arrowIndex, wasFilled };
+    pickerCell = { shooterId, roundIndex, passeIndex, arrowIndex, wasFilled };
   }
 
   function handleScoreSelect(value: ScoreValue) {
     if (!pickerCell || !roundsConfig) return;
-    const { shooterId, arrowIndex, wasFilled } = pickerCell;
+    const { shooterId, roundIndex, passeIndex, arrowIndex, wasFilled } = pickerCell;
 
     // Confirms the tap was registered by the app, independent of whether the picker
     // dialog auto-advances/closes right after and independent of the (fire-and-forget)
@@ -230,8 +342,8 @@
     db.scores
       .put({
         shooterId,
-        roundIndex: selectedRound,
-        passeIndex: selectedPasse,
+        roundIndex,
+        passeIndex,
         arrowIndex,
         value,
         finalized: false,
@@ -243,7 +355,7 @@
         );
       });
 
-    justPickedValues.set(`${shooterId}-${arrowIndex}`, value);
+    justPickedValues.set(cellKey(shooterId, roundIndex, passeIndex, arrowIndex), value);
 
     // Quick task 260705-ok7: editing an already-filled cell always closes the
     // dialog — the trainer was correcting a single value, not filling a row.
@@ -255,11 +367,14 @@
     // Auto-advance to the next empty arrow within the SAME shooter's row only —
     // cross-row auto-advance is retired.
     const isFilled = (aIdx: number) => {
-      const key = `${shooterId}-${aIdx}`;
-      return justPickedValues.has(key) || currentPasseScoreByKey.has(key);
+      const key = cellKey(shooterId, roundIndex, passeIndex, aIdx);
+      return justPickedValues.has(key) || allScoreByKey.has(key);
     };
     const nextArrowIndex = findNextEmptyArrowInRow(roundsConfig.arrowsPerPasse, arrowIndex, isFilled);
-    pickerCell = nextArrowIndex !== null ? { shooterId, arrowIndex: nextArrowIndex, wasFilled: false } : null;
+    pickerCell =
+      nextArrowIndex !== null
+        ? { shooterId, roundIndex, passeIndex, arrowIndex: nextArrowIndex, wasFilled: false }
+        : null;
   }
 
   function cancelPicker() {
@@ -352,30 +467,85 @@
       <p class="text-[14px] leading-[1.4] text-red-600 dark:text-red-400">{errorFeedback}</p>
     {/if}
 
-    <RoundPasseSelector
-      numberOfRounds={roundsConfig.numberOfRounds}
-      passesPerRound={roundsConfig.passesPerRound}
-      {selectedRound}
-      {selectedPasse}
-      disabled={isFinalized}
-      onRoundChange={(index) => (selectedRound = index)}
-      onPasseChange={(index) => (selectedPasse = index)}
-      nextHighlighted={showAdvanceButton}
-      {canGoPrevious}
-      {canGoNext}
-      onPrevious={handlePrevious}
-      onNext={handleNext}
-    />
+    {#if entryMode === 'byRound'}
+      <RoundPasseSelector
+        numberOfRounds={roundsConfig.numberOfRounds}
+        passesPerRound={roundsConfig.passesPerRound}
+        {selectedRound}
+        {selectedPasse}
+        disabled={isFinalized}
+        onRoundChange={(index) => (selectedRound = index)}
+        onPasseChange={(index) => (selectedPasse = index)}
+        nextHighlighted={showAdvanceButton}
+        {canGoPrevious}
+        {canGoNext}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+      />
 
-    <ScoreTable
-      {rows}
-      arrowsPerPasse={roundsConfig.arrowsPerPasse}
-      finalized={isFinalized}
-      {sortBy}
-      {sortDir}
-      oncelltap={openPicker}
-      onsort={handleSort}
-    />
+      <ScoreTable
+        {rows}
+        arrowsPerPasse={roundsConfig.arrowsPerPasse}
+        finalized={isFinalized}
+        {sortBy}
+        {sortDir}
+        oncelltap={(shooterId, arrowIndex) =>
+          openPicker(shooterId, selectedRound, selectedPasse, arrowIndex)}
+        onsort={handleSort}
+      />
+    {:else if orderedShooters.length === 0}
+      <p class="text-[16px] leading-[1.5] text-slate-600 dark:text-slate-300">
+        {strings.scoring.noShootersForCard}
+      </p>
+    {:else}
+      <div class="flex items-end gap-2">
+        <button
+          type="button"
+          aria-label={strings.scoring.previousArcherAria}
+          disabled={!canPrevArcher}
+          onclick={prevArcher}
+          class="min-h-[44px] min-w-[44px] rounded-lg border border-slate-200 bg-white px-3 text-[16px] font-semibold leading-[1.5] text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+        >
+          &lt;
+        </button>
+
+        <label class="flex flex-1 flex-col gap-1">
+          <span class="text-[14px] leading-[1.4] text-slate-500 dark:text-slate-400"
+            >{strings.scoring.archerLabel}</span
+          >
+          <select
+            value={selectedShooterId}
+            onchange={(e) =>
+              (selectedShooterId = Number((e.target as HTMLSelectElement).value))}
+            class="min-h-[44px] rounded-lg border border-slate-200 bg-white px-3 text-[16px] leading-[1.5] text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+          >
+            {#each orderedShooters as s (s.id)}
+              <option value={s.id}>{archerOptionLabel(s)}</option>
+            {/each}
+          </select>
+        </label>
+
+        <button
+          type="button"
+          aria-label={strings.scoring.nextArcherAria}
+          disabled={!canNextArcher}
+          onclick={nextArcher}
+          class="min-h-[44px] min-w-[44px] rounded-lg border border-slate-200 bg-white px-3 text-[16px] font-semibold leading-[1.5] text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+        >
+          &gt;
+        </button>
+      </div>
+
+      <ArcherScoreCard
+        rows={cardRows}
+        arrowsPerPasse={roundsConfig.arrowsPerPasse}
+        finalized={isFinalized}
+        total={cardTotal}
+        oncelltap={(roundIndex, passeIndex, arrowIndex) =>
+          selectedShooterId !== null &&
+          openPicker(selectedShooterId, roundIndex, passeIndex, arrowIndex)}
+      />
+    {/if}
 
     <ScorePicker
       open={pickerCell !== null}

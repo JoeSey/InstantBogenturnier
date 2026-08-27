@@ -813,4 +813,131 @@ describe('ScoreEntry', () => {
       expect((screen.getByLabelText(strings.scoring.passeLabel) as HTMLSelectElement).value).toBe('1');
     });
   });
+
+  // Single-archer scorecard layouts for 3D-/Feldturniere (entryMode byArcherLine /
+  // byArcherName): one archer at a time, every Runde/Passe as a row.
+  describe('single-archer scorecard entry modes', () => {
+    async function seedThreeArcherCourse(entryMode: 'byArcherLine' | 'byArcherName') {
+      const classId = await db.classes.add({ name: 'RCV-U14' });
+      await db.rounds.put({
+        id: 1,
+        arrowsPerPasse: 2,
+        passesPerRound: 3,
+        numberOfRounds: 1,
+        distance: '3D',
+        entryMode,
+      });
+      await db.shooters.add({ name: 'Cara', classId, lineAssignment: 1 });
+      await db.shooters.add({ name: 'Bea', classId, lineAssignment: 2 });
+      await db.shooters.add({ name: 'Ada', classId, lineAssignment: 3 });
+      return classId;
+    }
+
+    it('shows an archer picker ordered by Schießplatz and a row per target', async () => {
+      await seedThreeArcherCourse('byArcherLine');
+      const { container } = render(ScoreEntry);
+
+      const select = (await screen.findByLabelText(strings.scoring.archerLabel)) as HTMLSelectElement;
+      const optionLabels = Array.from(select.options).map((o) => o.textContent?.trim());
+      expect(optionLabels).toEqual(['1 — Cara', '2 — Bea', '3 — Ada']);
+
+      // 1 round × 3 passes = 3 target rows, single-digit labels (no "r.p" form).
+      const rowLabels = Array.from(container.querySelectorAll('tbody tr td:first-child')).map((c) =>
+        c.textContent?.trim()
+      );
+      expect(rowLabels).toEqual(['1', '2', '3']);
+    });
+
+    it('orders the archer picker alphabetically by name in byArcherName mode', async () => {
+      await seedThreeArcherCourse('byArcherName');
+      render(ScoreEntry);
+
+      const select = (await screen.findByLabelText(strings.scoring.archerLabel)) as HTMLSelectElement;
+      expect(Array.from(select.options).map((o) => o.textContent?.trim())).toEqual([
+        'Ada',
+        'Bea',
+        'Cara',
+      ]);
+    });
+
+    it('writes a score with the tapped row/target coordinates for the selected archer', async () => {
+      await seedThreeArcherCourse('byArcherLine');
+      const { container } = render(ScoreEntry);
+      await screen.findByLabelText(strings.scoring.archerLabel);
+
+      // Second target row (passeIndex 1), second arrow (arrowIndex 1).
+      const secondRow = container.querySelectorAll('tbody tr')[1];
+      const arrowButtons = secondRow.querySelectorAll('td button');
+      await fireEvent.click(arrowButtons[1]);
+
+      await fireEvent.click(await screen.findByRole('button', { name: '7 Punkte' }));
+
+      await waitFor(async () => {
+        expect(await db.scores.count()).toBe(1);
+      });
+      const cara = (await db.shooters.toArray()).find((s) => s.name === 'Cara');
+      const [record] = await db.scores.toArray();
+      expect(record).toMatchObject({
+        shooterId: cara!.id,
+        roundIndex: 0,
+        passeIndex: 1,
+        arrowIndex: 1,
+        value: '7',
+      });
+    });
+
+    it('steps to the next archer with the > button', async () => {
+      await seedThreeArcherCourse('byArcherLine');
+      render(ScoreEntry);
+
+      const select = (await screen.findByLabelText(strings.scoring.archerLabel)) as HTMLSelectElement;
+      const all = await db.shooters.toArray();
+      const caraId = String(all.find((s) => s.name === 'Cara')!.id);
+      const beaId = String(all.find((s) => s.name === 'Bea')!.id);
+      expect(select.value).toBe(caraId);
+
+      await fireEvent.click(screen.getByRole('button', { name: strings.scoring.nextArcherAria }));
+      expect(select.value).toBe(beaId);
+    });
+
+    it('labels target rows as "round.passe" when there is more than one round', async () => {
+      const classId = await db.classes.add({ name: 'RCV-U14' });
+      await db.rounds.put({
+        id: 1,
+        arrowsPerPasse: 1,
+        passesPerRound: 2,
+        numberOfRounds: 2,
+        distance: '3D',
+        entryMode: 'byArcherLine',
+      });
+      await db.shooters.add({ name: 'Ada', classId, lineAssignment: 1 });
+
+      const { container } = render(ScoreEntry);
+      await screen.findByLabelText(strings.scoring.archerLabel);
+
+      const rowLabels = Array.from(container.querySelectorAll('tbody tr td:first-child')).map((c) =>
+        c.textContent?.trim()
+      );
+      expect(rowLabels).toEqual(['1.1', '1.2', '2.1', '2.2']);
+    });
+
+    it('falls back to the classic per-passe table when entryMode is byRound', async () => {
+      const classId = await db.classes.add({ name: 'RCV-U14' });
+      await db.rounds.put({
+        id: 1,
+        arrowsPerPasse: 2,
+        passesPerRound: 3,
+        numberOfRounds: 1,
+        distance: '18m',
+        entryMode: 'byRound',
+      });
+      await db.shooters.add({ name: 'Ada', classId, lineAssignment: 1 });
+
+      render(ScoreEntry);
+      await screen.findByText('Ada');
+
+      expect(screen.getByLabelText(strings.scoring.roundLabel)).toBeTruthy();
+      expect(screen.queryByLabelText(strings.scoring.archerLabel)).toBeNull();
+    });
+  });
 });

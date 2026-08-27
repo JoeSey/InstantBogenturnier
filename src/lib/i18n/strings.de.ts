@@ -91,6 +91,15 @@ export const strings = {
     // three tuple fields empty — SETUP-01 requires at least one of Alter/Bogentyp/
     // Entfernung, but that requirement was previously silent (no-op submit).
     tupleRequiredHint: '(mindestens eine Angabe erforderlich)',
+    // Score-entry layout toggle (Erfassungsart). 'byRound' is the classic
+    // all-shooters-per-Passe table; the two 'byArcher*' modes switch Erfassung to a
+    // single-archer whole-scorecard layout for 3D-/Feldturniere.
+    entryModeLabel: 'Erfassungsart',
+    entryModeByRound: 'Nach Passe (alle Schützen)',
+    entryModeByLine: 'Nach Schießplatz (ein Schütze)',
+    entryModeByName: 'Nach Name (ein Schütze)',
+    entryModeHelper:
+      'Für 3D-/Feldturniere: ganzer Wertungszettel pro Schütze statt Passe für Passe.',
   },
   registration: {
     heading: 'Schützen',
@@ -163,6 +172,13 @@ export const strings = {
     passeLabel: 'Passe',
     previousButtonAria: 'Vorherige Passe',
     nextButtonAria: 'Nächste Passe',
+    // Single-archer scorecard layout (Erfassungsart "Nach Schießplatz/Name").
+    archerLabel: 'Schütze',
+    previousArcherAria: 'Vorheriger Schütze',
+    nextArcherAria: 'Nächster Schütze',
+    columnTarget: 'Ziel',
+    cardTotalLabel: 'Gesamt',
+    noShootersForCard: 'Registrieren Sie zuerst Schützen, um Wertungszettel zu erfassen.',
     columnLine: 'Linie',
     columnName: 'Name',
     columnClass: 'Klasse',

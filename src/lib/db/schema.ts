@@ -30,6 +30,16 @@ export interface ShootingLineConfig {
   count: number;
 }
 
+// Score-entry layout preference (Erfassung tab). View-only — never affects stored
+// scores or ranking, and deliberately NOT carried into saved presets. `undefined`
+// means the original 'byRound' layout (all shooters as rows for one selected
+// Runde/Passe). The two 'byArcher*' modes switch Erfassung to a single-archer,
+// whole-scorecard layout (every Runde/Passe as rows) for 3D/field tournaments where
+// each archer hands in a completed card at the end rather than everyone shooting the
+// same target together; they differ only in how the archer picker is ordered/labelled
+// (by Schießplatz vs. alphabetically by name).
+export type ScoreEntryMode = 'byRound' | 'byArcherLine' | 'byArcherName';
+
 export interface RoundConfig {
   id?: number;
   arrowsPerPasse: number;
@@ -38,6 +48,7 @@ export interface RoundConfig {
   distance?: string;
   presetId?: string;
   rings?: 10 | 5;
+  entryMode?: ScoreEntryMode;
 }
 
 export interface ShooterRecord {

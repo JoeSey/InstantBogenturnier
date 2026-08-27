@@ -2,6 +2,7 @@
   import { liveQuery } from 'dexie';
   import { FileDown } from '@lucide/svelte';
   import { db } from '../db/schema';
+  import type { ScoreEntryMode } from '../db/schema';
   import { WA_PRESETS } from '../fixtures/waPresets';
   import { strings } from '../i18n/strings.de';
   import { generateScoresheetPdf, scoresheetPdfFilename } from '../utils/scoresheetExport';
@@ -27,6 +28,17 @@
   let customArrowsPerPasse = $state(3);
   let customRings = $state<10 | 5>(10);
 
+  // Score-entry layout preference — persisted on the same db.rounds singleton, but
+  // view-only (never affects stored scores/ranking) and, unlike the rounds config
+  // itself, intentionally left OUT of saved presets. Rehydrated below alongside the
+  // rest of the config.
+  let entryMode = $state<ScoreEntryMode>('byRound');
+  const entryModeOptions = [
+    { value: 'byRound', label: strings.setup.entryModeByRound },
+    { value: 'byArcherLine', label: strings.setup.entryModeByLine },
+    { value: 'byArcherName', label: strings.setup.entryModeByName },
+  ] as const;
+
   // CR-01 (04-REVIEW.md): App.svelte destroys/recreates views on nav, so this component
   // remounts to hardcoded defaults every time the trainer revisits Einrichtung. Rehydrate
   // from the persisted db.rounds record once on first load so saving doesn't silently
@@ -38,6 +50,7 @@
     const cfg = existingConfig;
     if (!cfg || hydrated) return;
     hydrated = true;
+    entryMode = cfg.entryMode ?? 'byRound';
     if (cfg.presetId) {
       selectedMode = 'preset';
       selectedPresetId = cfg.presetId;
@@ -113,7 +126,15 @@
 
   async function save() {
     if (!isValidResolvedConfig(resolvedConfig)) return;
-    await db.rounds.put({ id: 1, ...resolvedConfig });
+    await db.rounds.put({ id: 1, ...resolvedConfig, entryMode });
+  }
+
+  // The entry-mode toggle stays available even once the tournament is finalized: it
+  // changes no tournament data, only how the Erfassung tab is laid out, so a trainer
+  // reviewing finished 3D cards can still switch to the per-archer view.
+  function setEntryMode(mode: ScoreEntryMode) {
+    entryMode = mode;
+    save();
   }
 
   // SHEET-01/T-07-04: blank scoresheet PDF download, mirrors Results.svelte's
@@ -276,6 +297,29 @@
   <p class="text-[16px] leading-[1.5] text-slate-600 dark:text-slate-300">
     {resolvedConfig.passesPerRound} Passen, {resolvedConfig.arrowsPerPasse} Pfeile, {resolvedConfig.rings} Ringe
   </p>
+
+  <div class="flex flex-col gap-2 border-t border-slate-200 pt-4 dark:border-slate-600">
+    <span class="block text-[14px] font-semibold leading-[1.4] text-slate-700 dark:text-slate-200">
+      {strings.setup.entryModeLabel}
+    </span>
+    <p class="text-[14px] leading-[1.4] text-slate-500 dark:text-slate-400">
+      {strings.setup.entryModeHelper}
+    </p>
+    {#each entryModeOptions as opt (opt.value)}
+      <label
+        class="flex items-center gap-2 text-[14px] leading-[1.4] text-slate-700 dark:text-slate-200"
+      >
+        <input
+          type="radio"
+          name="entry-mode"
+          value={opt.value}
+          checked={entryMode === opt.value}
+          onchange={() => setEntryMode(opt.value)}
+        />
+        {opt.label}
+      </label>
+    {/each}
+  </div>
 
   <button
     type="button"
