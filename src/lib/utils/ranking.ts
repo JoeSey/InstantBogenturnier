@@ -1,5 +1,16 @@
 import type { ClassRecord, RoundConfig, ScoreRecord, ShooterRecord } from '../db/schema';
-import { arrowScoreValue, areAllScoresEntered } from './scoreCompletion';
+import { arrowScoreValue } from './scoreCompletion';
+import { buildScoringContext, isTournamentComplete, type ScoringContext } from './scoringContext';
+
+// v2 slice 2: the per-shooter sum helpers accept either a legacy ring count (10 | 5,
+// the historical 3rd arg — kept so existing callers/tests are untouched) or a
+// ScoringContext. A number reproduces today's arrowScoreValue behaviour exactly; a
+// context routes through mode-aware `pointsFor` (3D outcome-token lookup).
+type ScoringArg = ScoringContext | 10 | 5;
+
+function pointsFn(arg: ScoringArg): (record: ScoreRecord) => number {
+  return typeof arg === 'number' ? (record) => arrowScoreValue(record.value, arg) : arg.pointsFor;
+}
 
 // Pure tournament-wide ranking functions (D-01, D-02, RES-01, RES-02). Framework-free,
 // no side effects — mirrors scoreCompletion.ts's plain-function style. Every registered
@@ -26,28 +37,34 @@ export interface RankedRow {
   count5: number;
   count4to1: number;
   countM: number;
+  // v2 (3D milestone): ordered tie-break count vector (e.g. [killCount, vitalCount,
+  // woundCount]) aligned with the ScoringContext's tieBreakLabels. Empty/absent in
+  // rings mode, where ranks break ties by name only as before.
+  tieBreakCounts?: number[];
 }
 
 export function computeShooterSum(
   shooterId: number,
   scores: ScoreRecord[],
-  rings: 10 | 5 = 10
+  scoring: ScoringArg = 10
 ): number {
+  const points = pointsFn(scoring);
   return scores
     .filter((s) => s.shooterId === shooterId)
-    .reduce((sum, s) => sum + arrowScoreValue(s.value, rings), 0);
+    .reduce((sum, s) => sum + points(s), 0);
 }
 
 export function computeShooterRoundSums(
   shooterId: number,
   numberOfRounds: number,
   scores: ScoreRecord[],
-  rings: 10 | 5 = 10
+  scoring: ScoringArg = 10
 ): number[] {
+  const points = pointsFn(scoring);
   const sums = new Array(numberOfRounds).fill(0) as number[];
   for (const s of scores) {
     if (s.shooterId === shooterId && s.roundIndex >= 0 && s.roundIndex < numberOfRounds) {
-      sums[s.roundIndex] += arrowScoreValue(s.value, rings);
+      sums[s.roundIndex] += points(s);
     }
   }
   return sums;
@@ -80,28 +97,49 @@ export function isShooterComplete(
   roundsConfig: RoundConfig,
   scores: ScoreRecord[]
 ): boolean {
-  return areAllScoresEntered(
-    [shooterId],
-    roundsConfig.numberOfRounds,
-    roundsConfig.passesPerRound,
-    roundsConfig.arrowsPerPasse,
-    scores
-  );
+  return isTournamentComplete([shooterId], roundsConfig, scores);
 }
 
-// Standard competition ranking: sort descending by sum has already happened by the time
-// this runs. Rank = 1-based index of the first occurrence of this sum in the sorted
-// array (not an incrementing counter) — this is what produces "1-2-2-4" rather than
-// "1-2-2-3" for a 2-way tie at position 2 (Pitfall 1).
-function assignRanks(sortedBySumDesc: { sum: number }[]): number[] {
-  const ranks: number[] = [];
-  let firstIndexOfSum = 0;
+// Ranking key: total score, then the tie-break count vector (Kill/Vital/… in 3d mode,
+// empty in rings mode). Two rows share a rank iff every key element is equal.
+function rankKey(row: { sum: number; tieBreakCounts?: number[] }): number[] {
+  return [row.sum, ...(row.tieBreakCounts ?? [])];
+}
 
-  sortedBySumDesc.forEach((row, index) => {
-    if (index === 0 || row.sum !== sortedBySumDesc[index - 1].sum) {
-      firstIndexOfSum = index;
+function keysEqual(a: number[], b: number[]): boolean {
+  return a.length === b.length && a.every((v, i) => v === b[i]);
+}
+
+// Descending comparator over the ranking key — [sum, ...tieBreakCounts], all higher-is-
+// better. Rows must already be sorted with this (name as the final row-order tiebreak)
+// before assignRanks runs.
+export function compareRankKeyDesc(
+  a: { sum: number; tieBreakCounts?: number[] },
+  b: { sum: number; tieBreakCounts?: number[] }
+): number {
+  const ka = rankKey(a);
+  const kb = rankKey(b);
+  for (let i = 0; i < Math.max(ka.length, kb.length); i++) {
+    const diff = (kb[i] ?? 0) - (ka[i] ?? 0);
+    if (diff !== 0) return diff;
+  }
+  return 0;
+}
+
+// Standard competition ranking: the rows are already sorted by the ranking key by the
+// time this runs. Rank = 1-based index of the first row sharing this key (not an
+// incrementing counter) — produces "1-2-2-4" rather than "1-2-2-3" for a 2-way tie at
+// position 2 (Pitfall 1). In rings mode the key is [sum] only, so behaviour is
+// unchanged from the old sum-only implementation.
+function assignRanks(sortedDesc: { sum: number; tieBreakCounts?: number[] }[]): number[] {
+  const ranks: number[] = [];
+  let firstIndexOfKey = 0;
+
+  sortedDesc.forEach((row, index) => {
+    if (index === 0 || !keysEqual(rankKey(row), rankKey(sortedDesc[index - 1]))) {
+      firstIndexOfKey = index;
     }
-    ranks.push(firstIndexOfSum + 1);
+    ranks.push(firstIndexOfKey + 1);
   });
 
   return ranks;
@@ -119,6 +157,8 @@ export function computeClassRankings(
     return rankings;
   }
 
+  const ctx = buildScoringContext(roundsConfig);
+
   for (const cls of classes) {
     if (cls.id === undefined) continue;
 
@@ -129,21 +169,31 @@ export function computeClassRankings(
       continue;
     }
 
-    const rings = roundsConfig.rings ?? 10;
-
     const unranked = classShooters
-      .map((shooter) => ({
-        shooterId: shooter.id as number,
-        name: shooter.name,
-        line: shooter.lineAssignment ?? null,
-        sum: computeShooterSum(shooter.id as number, scores, rings),
-        isComplete: isShooterComplete(shooter.id as number, roundsConfig, scores),
-        roundSums: computeShooterRoundSums(shooter.id as number, roundsConfig.numberOfRounds, scores, rings),
-        ...computeShooterHitCounts(shooter.id as number, scores),
-      }))
-      // Sort descending by sum; alphabetical-by-name as the row-order tiebreak (rank
-      // number is identical either way, per the UI-SPEC's ranking computation section).
-      .sort((a, b) => b.sum - a.sum || a.name.localeCompare(b.name));
+      .map((shooter) => {
+        const shooterScores = scores.filter((s) => s.shooterId === shooter.id);
+        return {
+          shooterId: shooter.id as number,
+          name: shooter.name,
+          line: shooter.lineAssignment ?? null,
+          sum: computeShooterSum(shooter.id as number, scores, ctx),
+          isComplete: isShooterComplete(shooter.id as number, roundsConfig, scores),
+          roundSums: computeShooterRoundSums(
+            shooter.id as number,
+            roundsConfig.numberOfRounds,
+            scores,
+            ctx
+          ),
+          // Ring-face buckets for the rings-mode PDF; all zero in 3d mode (no ring tokens).
+          ...computeShooterHitCounts(shooter.id as number, scores),
+          // Kill/Vital/Wound counts in 3d; [] in rings mode.
+          tieBreakCounts: ctx.tieBreakCounts(shooterScores),
+        };
+      })
+      // Sort by the ranking key descending ([sum, ...tieBreakCounts]); alphabetical-by-
+      // name as the final row-order tiebreak (rank number is identical either way). In
+      // rings mode the key is [sum] only, so this matches the old sort exactly.
+      .sort((a, b) => compareRankKeyDesc(a, b) || a.name.localeCompare(b.name));
 
     const ranks = assignRanks(unranked);
 

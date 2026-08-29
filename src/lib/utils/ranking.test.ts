@@ -6,6 +6,8 @@ import {
   isShooterComplete,
   computeClassRankings,
 } from './ranking';
+import { buildScoringContext } from './scoringContext';
+import { defaultRoundRuleset } from './threeDScoring';
 import type { ClassRecord, RoundConfig, ScoreRecord, ShooterRecord } from '../db/schema';
 
 function record(
@@ -216,5 +218,97 @@ describe('computeClassRankings', () => {
 
     expect(rankings.has(1)).toBe(true);
     expect(rankings.has(2)).toBe(false);
+  });
+
+  // v2 (3D milestone) slice 2 — ranking in 3d mode: sums come from the per-round
+  // ruleset, ties break on Kill count then Vital count.
+  describe('3d scoringMode', () => {
+    function threeDConfig(): RoundConfig {
+      return {
+        id: 1,
+        arrowsPerPasse: 1,
+        passesPerRound: 3,
+        numberOfRounds: 1,
+        scoringMode: '3d',
+        roundRulesets: [defaultRoundRuleset('dfbv-3arrow')],
+      };
+    }
+
+    it('sums targets via the round ruleset and exposes the Kill/Vital/Wound vector', () => {
+      const classes: ClassRecord[] = [{ id: 1, name: 'Blank' }];
+      const shooters: ShooterRecord[] = [shooter(1, 'Anna', 1)];
+      // K1 (20) + V2 (12) + M (0) = 32
+      const scores = [record(1, 0, 0, 0, 'K1'), record(1, 0, 1, 0, 'V2'), record(1, 0, 2, 0, 'M')];
+
+      const rows = computeClassRankings(shooters, classes, scores, threeDConfig()).get(1)!;
+      expect(rows[0].sum).toBe(32);
+      expect(rows[0].tieBreakCounts).toEqual([1, 1, 0]);
+      expect(rows[0].isComplete).toBe(true);
+    });
+
+    it('assigns shared/skip-next ranks when score AND zone counts are identical', () => {
+      const classes: ClassRecord[] = [{ id: 1, name: 'Blank' }];
+      const shooters: ShooterRecord[] = [
+        shooter(1, 'Anna', 1),
+        shooter(2, 'Bea', 1),
+        shooter(3, 'Cara', 1),
+      ];
+      const scores = [
+        // Anna: K1(20) K1(20) M = 40, kills 2
+        record(1, 0, 0, 0, 'K1'),
+        record(1, 0, 1, 0, 'K1'),
+        record(1, 0, 2, 0, 'M'),
+        // Bea:  K1(20) V1(18) M = 38, kills 1, vitals 1
+        record(2, 0, 0, 0, 'K1'),
+        record(2, 0, 1, 0, 'V1'),
+        record(2, 0, 2, 0, 'M'),
+        // Cara: K1(20) V1(18) M = 38, kills 1, vitals 1  (identical key to Bea)
+        record(3, 0, 0, 0, 'K1'),
+        record(3, 0, 1, 0, 'V1'),
+        record(3, 0, 2, 0, 'M'),
+      ];
+
+      const rows = computeClassRankings(shooters, classes, scores, threeDConfig()).get(1)!;
+      const byName = new Map(rows.map((r) => [r.name, r.rank]));
+      expect(byName.get('Anna')).toBe(1);
+      expect(byName.get('Bea')).toBe(2);
+      expect(byName.get('Cara')).toBe(2);
+      expect(rows.map((r) => r.rank)).toEqual([1, 2, 2]);
+    });
+
+    it('a higher Kill count outranks an equal-score shooter with fewer kills', () => {
+      const classes: ClassRecord[] = [{ id: 1, name: 'Blank' }];
+      const shooters: ShooterRecord[] = [shooter(1, 'Anna', 1), shooter(2, 'Bea', 1)];
+      const scores = [
+        // Anna: V1(18) V1(18) M = 36, kills 0, vitals 2
+        record(1, 0, 0, 0, 'V1'),
+        record(1, 0, 1, 0, 'V1'),
+        record(1, 0, 2, 0, 'M'),
+        // Bea: K1(20) V2(12) W3(4) = 36, kills 1
+        record(2, 0, 0, 0, 'K1'),
+        record(2, 0, 1, 0, 'V2'),
+        record(2, 0, 2, 0, 'W3'),
+      ];
+
+      const rows = computeClassRankings(shooters, classes, scores, threeDConfig()).get(1)!;
+      const byName = new Map(rows.map((r) => [r.name, r]));
+      expect(byName.get('Anna')!.sum).toBe(36);
+      expect(byName.get('Bea')!.sum).toBe(36);
+      expect(byName.get('Bea')!.rank).toBe(1); // 1 kill beats 0 kills at equal score
+      expect(byName.get('Anna')!.rank).toBe(2);
+    });
+
+    it('rings-mode ranking still carries an empty tie-break vector', () => {
+      const classes: ClassRecord[] = [{ id: 1, name: 'RCV-U14' }];
+      const shooters: ShooterRecord[] = [shooter(1, 'Anna', 1)];
+      const config = roundsConfig({ numberOfRounds: 1, passesPerRound: 1, arrowsPerPasse: 1 });
+      const rows = computeClassRankings(shooters, classes, [record(1, 0, 0, 0, '8')], config).get(1)!;
+      expect(rows[0].tieBreakCounts).toEqual([]);
+    });
+
+    it('buildScoringContext labels match the tie-break vector order', () => {
+      const ctx = buildScoringContext(threeDConfig());
+      expect(ctx.tieBreakLabels).toEqual(['Kill', 'Vital', 'Wound']);
+    });
   });
 });
