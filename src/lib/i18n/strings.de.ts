@@ -100,6 +100,22 @@ export const strings = {
     entryModeByName: 'Nach Name (ein Schütze)',
     entryModeHelper:
       'Für 3D-/Feldturniere: ganzer Wertungszettel pro Schütze statt Passe für Passe.',
+    // v2 — Wertungsmodus-Umschalter und 3D-Aufbau-Panel.
+    scoringModeLabel: 'Wertung',
+    scoringModeRings: 'Zielscheibe (Ringe)',
+    scoringMode3d: '3D / Feldparcours',
+    threeDLegsLabel: 'Durchgänge (Runden)',
+    threeDLegsHelper: 'z.B. 2× Drei-Pfeil-Runde plus 1× Hunter-Runde = 3 Durchgänge.',
+    threeDStationsLabel: 'Stationen pro Durchgang',
+    threeDLegHeading: (n: number) => `Durchgang ${n}`,
+    threeDTemplateLabel: 'Wertungsart',
+    threeDPointsSummary: 'Punkte anpassen',
+    threeDPointsStandard: '(Standardwerte)',
+    threeDPointsCustom: '(angepasst)',
+    threeDPointsReset: 'Auf Standard zurücksetzen',
+    threeDArrowColumn: (n: number) => `${n}. Pfeil`,
+    threeDScoresheetUnavailable:
+      'Ein Schießzettel-PDF für die 3D-Wertung folgt in einer späteren Version.',
   },
   registration: {
     heading: 'Schützen',

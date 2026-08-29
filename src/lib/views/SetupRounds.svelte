@@ -2,8 +2,17 @@
   import { liveQuery } from 'dexie';
   import { FileDown } from '@lucide/svelte';
   import { db } from '../db/schema';
-  import type { ScoreEntryMode } from '../db/schema';
+  import type {
+    RoundConfig,
+    RoundRuleset,
+    ScoreEntryMode,
+    ScoringMode,
+    ThreeDTemplateId,
+  } from '../db/schema';
   import { WA_PRESETS } from '../fixtures/waPresets';
+  import { THREE_D_TEMPLATES, getThreeDTemplate } from '../fixtures/threeDTemplates';
+  import { defaultRoundRuleset } from '../utils/threeDScoring';
+  import ThreeDPointGrid from '../components/ThreeDPointGrid.svelte';
   import { strings } from '../i18n/strings.de';
   import { generateScoresheetPdf, scoresheetPdfFilename } from '../utils/scoresheetExport';
   import { downloadBlob } from '../utils/downloadBlob';
@@ -39,6 +48,102 @@
     { value: 'byArcherName', label: strings.setup.entryModeByName },
   ] as const;
 
+  // v2 — 3D-Wertung. `scoringMode` toggles the whole card between the ring-target
+  // setup above and the 3D parcours setup below. In 3d mode a course has
+  // `threeDLegs` legs, `threeDStations` stations per leg (shared), and one ruleset
+  // per leg (`threeDRulesets`, kept length-synced with `threeDLegs`). Persisted
+  // shape: RoundConfig { scoringMode:'3d', numberOfRounds=legs, passesPerRound=
+  // stations, arrowsPerPasse=entriesPerTarget, roundRulesets }.
+  let scoringMode = $state<ScoringMode>('rings');
+  const scoringModeOptions = [
+    { value: 'rings', label: strings.setup.scoringModeRings },
+    { value: '3d', label: strings.setup.scoringMode3d },
+  ] as const;
+  const threeDTemplateOptions = THREE_D_TEMPLATES.map((t) => ({ value: t.id, label: t.label }));
+  let threeDLegs = $state(1);
+  let threeDStations = $state(20);
+  let threeDRulesets = $state<RoundRuleset[]>([defaultRoundRuleset('dfbv-3arrow')]);
+
+  function syncRulesetLength() {
+    const n = threeDLegs;
+    if (!Number.isInteger(n) || n < 1) return;
+    if (threeDRulesets.length < n) {
+      threeDRulesets = [
+        ...threeDRulesets,
+        ...Array.from({ length: n - threeDRulesets.length }, () =>
+          defaultRoundRuleset('dfbv-3arrow')
+        ),
+      ];
+    } else if (threeDRulesets.length > n) {
+      threeDRulesets = threeDRulesets.slice(0, n);
+    }
+  }
+
+  let threeDResolvedConfig = $derived<Omit<RoundConfig, 'id'>>({
+    arrowsPerPasse: Math.max(
+      1,
+      ...threeDRulesets.map((rr) => getThreeDTemplate(rr.templateId).entriesPerTarget)
+    ),
+    passesPerRound: threeDStations,
+    numberOfRounds: threeDLegs,
+    rings: 10,
+    presetId: undefined,
+    scoringMode: '3d',
+    // Plain (non-proxy) copies — a raw Svelte $state array/object can't be
+    // structured-cloned into IndexedDB (DataCloneError).
+    roundRulesets: threeDRulesets.map((rr) => ({
+      templateId: rr.templateId,
+      points: { ...rr.points },
+    })),
+  });
+
+  function isValidThreeDConfig(): boolean {
+    return (
+      Number.isInteger(threeDLegs) &&
+      threeDLegs >= 1 &&
+      threeDLegs <= 10 &&
+      Number.isInteger(threeDStations) &&
+      threeDStations >= 1 &&
+      threeDStations <= 60 &&
+      threeDRulesets.length === threeDLegs &&
+      threeDRulesets.every((rr) => THREE_D_TEMPLATES.some((t) => t.id === rr.templateId))
+    );
+  }
+
+  function legIsCustomised(index: number): boolean {
+    const rr = threeDRulesets[index];
+    if (!rr) return false;
+    const template = getThreeDTemplate(rr.templateId);
+    return template.tokens.some(
+      (token) => (rr.points[token] ?? template.defaultPoints[token]) !== template.defaultPoints[token]
+    );
+  }
+
+  function setScoringMode(mode: ScoringMode) {
+    scoringMode = mode;
+    if (mode === '3d') {
+      syncRulesetLength();
+      // 'byRound' entry has no meaning on a 3D parcours — everyone hands in a whole card.
+      if (entryMode === 'byRound') entryMode = 'byArcherLine';
+    }
+    save();
+  }
+
+  function setLegTemplate(index: number, templateId: ThreeDTemplateId) {
+    // Switching the ruleset resets that leg's points to the new template's defaults.
+    threeDRulesets = threeDRulesets.map((rr, i) => (i === index ? defaultRoundRuleset(templateId) : rr));
+    save();
+  }
+
+  function setLegPoints(index: number, points: RoundRuleset['points']) {
+    threeDRulesets = threeDRulesets.map((rr, i) => (i === index ? { ...rr, points } : rr));
+    save();
+  }
+
+  function resetLegPoints(index: number) {
+    setLegPoints(index, { ...getThreeDTemplate(threeDRulesets[index].templateId).defaultPoints });
+  }
+
   // CR-01 (04-REVIEW.md): App.svelte destroys/recreates views on nav, so this component
   // remounts to hardcoded defaults every time the trainer revisits Einrichtung. Rehydrate
   // from the persisted db.rounds record once on first load so saving doesn't silently
@@ -51,7 +156,16 @@
     if (!cfg || hydrated) return;
     hydrated = true;
     entryMode = cfg.entryMode ?? 'byRound';
-    if (cfg.presetId) {
+    scoringMode = cfg.scoringMode ?? 'rings';
+    if (cfg.scoringMode === '3d') {
+      threeDLegs = cfg.numberOfRounds;
+      threeDStations = cfg.passesPerRound;
+      threeDRulesets = (cfg.roundRulesets ?? []).map((rr) => ({
+        templateId: rr.templateId,
+        points: { ...rr.points },
+      }));
+      syncRulesetLength();
+    } else if (cfg.presetId) {
       selectedMode = 'preset';
       selectedPresetId = cfg.presetId;
     } else {
@@ -125,6 +239,11 @@
   }
 
   async function save() {
+    if (scoringMode === '3d') {
+      if (!isValidThreeDConfig()) return;
+      await db.rounds.put({ id: 1, ...threeDResolvedConfig, entryMode });
+      return;
+    }
     if (!isValidResolvedConfig(resolvedConfig)) return;
     await db.rounds.put({ id: 1, ...resolvedConfig, entryMode });
   }
@@ -158,6 +277,30 @@
 </script>
 
 <div class="flex flex-col gap-4">
+  <div class="flex flex-col gap-2">
+    <span class="block text-[14px] font-semibold leading-[1.4] text-slate-700 dark:text-slate-200">
+      {strings.setup.scoringModeLabel}
+    </span>
+    <div class="flex flex-wrap gap-4">
+      {#each scoringModeOptions as opt (opt.value)}
+        <label
+          class="flex items-center gap-2 text-[14px] leading-[1.4] text-slate-700 dark:text-slate-200"
+        >
+          <input
+            type="radio"
+            name="scoring-mode"
+            value={opt.value}
+            checked={scoringMode === opt.value}
+            onchange={() => setScoringMode(opt.value)}
+            disabled={isFinalized}
+          />
+          {opt.label}
+        </label>
+      {/each}
+    </div>
+  </div>
+
+  {#if scoringMode === 'rings'}
   <div class="flex gap-4">
     <label
       class="flex items-center gap-2 text-[14px] leading-[1.4] text-slate-700 dark:text-slate-200"
@@ -297,6 +440,91 @@
   <p class="text-[16px] leading-[1.5] text-slate-600 dark:text-slate-300">
     {resolvedConfig.passesPerRound} Passen, {resolvedConfig.arrowsPerPasse} Pfeile, {resolvedConfig.rings} Ringe
   </p>
+  {:else}
+  <div class="flex flex-col gap-4">
+    <label class="block text-[14px] leading-[1.4] text-slate-700 dark:text-slate-200">
+      {strings.setup.threeDStationsLabel}
+      <input
+        type="number"
+        min="1"
+        max="60"
+        step="1"
+        bind:value={threeDStations}
+        onchange={save}
+        disabled={isFinalized}
+        class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+      />
+    </label>
+    <label class="block text-[14px] leading-[1.4] text-slate-700 dark:text-slate-200">
+      {strings.setup.threeDLegsLabel}
+      <input
+        type="number"
+        min="1"
+        max="10"
+        step="1"
+        bind:value={threeDLegs}
+        onchange={() => {
+          syncRulesetLength();
+          save();
+        }}
+        disabled={isFinalized}
+        class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+      />
+    </label>
+    <p class="text-[14px] leading-[1.4] text-slate-500 dark:text-slate-400">
+      {strings.setup.threeDLegsHelper}
+    </p>
+
+    {#each threeDRulesets as ruleset, i (i)}
+      <div class="flex flex-col gap-2 rounded-lg border border-slate-200 p-3 dark:border-slate-600">
+        <span class="text-[14px] font-semibold leading-[1.4] text-slate-700 dark:text-slate-200">
+          {strings.setup.threeDLegHeading(i + 1)}
+        </span>
+        <label class="block text-[14px] leading-[1.4] text-slate-700 dark:text-slate-200">
+          {strings.setup.threeDTemplateLabel}
+          <select
+            value={ruleset.templateId}
+            onchange={(e) =>
+              setLegTemplate(i, (e.currentTarget as HTMLSelectElement).value as ThreeDTemplateId)}
+            disabled={isFinalized}
+            class="mt-1 min-h-[44px] w-full rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+          >
+            {#each threeDTemplateOptions as opt (opt.value)}
+              <option value={opt.value}>{opt.label}</option>
+            {/each}
+          </select>
+        </label>
+        <details>
+          <summary class="cursor-pointer text-[14px] leading-[1.4] text-slate-600 dark:text-slate-300">
+            {strings.setup.threeDPointsSummary}
+            <span class="text-slate-400 dark:text-slate-500">
+              {legIsCustomised(i)
+                ? strings.setup.threeDPointsCustom
+                : strings.setup.threeDPointsStandard}
+            </span>
+          </summary>
+          <div class="mt-2 flex flex-col gap-2">
+            <ThreeDPointGrid
+              templateId={ruleset.templateId}
+              points={ruleset.points}
+              disabled={isFinalized}
+              onchange={(points) => setLegPoints(i, points)}
+            />
+            {#if legIsCustomised(i) && !isFinalized}
+              <button
+                type="button"
+                onclick={() => resetLegPoints(i)}
+                class="self-start text-[14px] leading-[1.4] text-teal-600 underline hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
+              >
+                {strings.setup.threeDPointsReset}
+              </button>
+            {/if}
+          </div>
+        </details>
+      </div>
+    {/each}
+  </div>
+  {/if}
 
   <div class="flex flex-col gap-2 border-t border-slate-200 pt-4 dark:border-slate-600">
     <span class="block text-[14px] font-semibold leading-[1.4] text-slate-700 dark:text-slate-200">
@@ -315,21 +543,28 @@
           value={opt.value}
           checked={entryMode === opt.value}
           onchange={() => setEntryMode(opt.value)}
+          disabled={opt.value === 'byRound' && scoringMode === '3d'}
         />
         {opt.label}
       </label>
     {/each}
   </div>
 
-  <button
-    type="button"
-    onclick={handleScoresheetExport}
-    disabled={!existingConfig}
-    class="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-teal-500 px-4 py-2 text-[16px] font-semibold leading-[1.5] text-white hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300"
-  >
-    <FileDown size={20} />
-    {strings.scoresheetExport.downloadButton}
-  </button>
+  {#if scoringMode === '3d'}
+    <p class="text-[14px] leading-[1.4] text-slate-500 dark:text-slate-400">
+      {strings.setup.threeDScoresheetUnavailable}
+    </p>
+  {:else}
+    <button
+      type="button"
+      onclick={handleScoresheetExport}
+      disabled={!existingConfig}
+      class="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-teal-500 px-4 py-2 text-[16px] font-semibold leading-[1.5] text-white hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300"
+    >
+      <FileDown size={20} />
+      {strings.scoresheetExport.downloadButton}
+    </button>
+  {/if}
 
   {#if errorFeedback}
     <p class="text-[14px] leading-[1.4] text-red-600 dark:text-red-400">{errorFeedback}</p>

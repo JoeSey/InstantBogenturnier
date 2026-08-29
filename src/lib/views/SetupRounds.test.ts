@@ -239,4 +239,147 @@ describe('SetupRounds', () => {
       expect((await db.rounds.get(1))?.entryMode).toBe('byArcherLine');
     });
   });
+
+  // v2 (3D milestone) slice 3 — the scoring-mode toggle and the 3D parcours panel.
+  describe('3D scoring mode', () => {
+    it('switching to 3D persists a 3d config with one default 3-Pfeil ruleset per leg', async () => {
+      render(SetupRounds);
+
+      await fireEvent.click(screen.getByLabelText(strings.setup.scoringMode3d));
+
+      await waitFor(async () => {
+        const cfg = await db.rounds.get(1);
+        expect(cfg?.scoringMode).toBe('3d');
+        expect(cfg?.numberOfRounds).toBe(1);
+        expect(cfg?.passesPerRound).toBe(20);
+        expect(cfg?.arrowsPerPasse).toBe(1);
+        expect(cfg?.roundRulesets).toHaveLength(1);
+        expect(cfg?.roundRulesets?.[0].templateId).toBe('dfbv-3arrow');
+        expect(cfg?.roundRulesets?.[0].points.K1).toBe(20);
+      });
+    });
+
+    it('auto-switches entry mode away from byRound when 3D is selected', async () => {
+      render(SetupRounds);
+
+      await fireEvent.click(screen.getByLabelText(strings.setup.scoringMode3d));
+
+      await waitFor(async () => {
+        expect((await db.rounds.get(1))?.entryMode).toBe('byArcherLine');
+      });
+      expect(
+        (screen.getByLabelText(strings.setup.entryModeByRound) as HTMLInputElement).disabled
+      ).toBe(true);
+    });
+
+    it('keeps one ruleset per leg as the leg count changes', async () => {
+      render(SetupRounds);
+      await fireEvent.click(screen.getByLabelText(strings.setup.scoringMode3d));
+
+      const legs = screen.getByLabelText(strings.setup.threeDLegsLabel);
+      await fireEvent.input(legs, { target: { value: '3' } });
+      await fireEvent.change(legs, { target: { value: '3' } });
+
+      await waitFor(async () => {
+        const cfg = await db.rounds.get(1);
+        expect(cfg?.numberOfRounds).toBe(3);
+        expect(cfg?.roundRulesets).toHaveLength(3);
+      });
+
+      await fireEvent.input(legs, { target: { value: '2' } });
+      await fireEvent.change(legs, { target: { value: '2' } });
+
+      await waitFor(async () => {
+        expect((await db.rounds.get(1))?.roundRulesets).toHaveLength(2);
+      });
+    });
+
+    it('persists a per-leg template choice', async () => {
+      render(SetupRounds);
+      await fireEvent.click(screen.getByLabelText(strings.setup.scoringMode3d));
+      await screen.findByLabelText(strings.setup.threeDTemplateLabel);
+
+      await fireEvent.change(screen.getByLabelText(strings.setup.threeDTemplateLabel), {
+        target: { value: 'dfbv-hunter' },
+      });
+
+      await waitFor(async () => {
+        const cfg = await db.rounds.get(1);
+        expect(cfg?.roundRulesets?.[0].templateId).toBe('dfbv-hunter');
+        expect(cfg?.roundRulesets?.[0].points.K1).toBe(20);
+        expect(cfg?.roundRulesets?.[0].points.K2).toBeUndefined();
+      });
+    });
+
+    it('persists an edited point value and resets it on demand', async () => {
+      render(SetupRounds);
+      await fireEvent.click(screen.getByLabelText(strings.setup.scoringMode3d));
+
+      const killFirst = await screen.findByLabelText('Kill 1. Pfeil');
+      await fireEvent.change(killFirst, { target: { value: '25' } });
+
+      await waitFor(async () => {
+        expect((await db.rounds.get(1))?.roundRulesets?.[0].points.K1).toBe(25);
+      });
+      // badge flips to "(angepasst)"
+      await screen.findByText(strings.setup.threeDPointsCustom);
+
+      await fireEvent.click(screen.getByText(strings.setup.threeDPointsReset));
+
+      await waitFor(async () => {
+        expect((await db.rounds.get(1))?.roundRulesets?.[0].points.K1).toBe(20);
+      });
+    });
+
+    it('switching back to a ring mode drops the 3D ruleset fields', async () => {
+      render(SetupRounds);
+      await fireEvent.click(screen.getByLabelText(strings.setup.scoringMode3d));
+      await waitFor(async () => {
+        expect((await db.rounds.get(1))?.scoringMode).toBe('3d');
+      });
+
+      await fireEvent.click(screen.getByLabelText(strings.setup.scoringModeRings));
+
+      await waitFor(async () => {
+        const cfg = await db.rounds.get(1);
+        expect(cfg?.scoringMode).toBeUndefined();
+        expect(cfg?.roundRulesets).toBeUndefined();
+      });
+    });
+
+    it('rehydrates the 3D panel from an existing 3d rounds record', async () => {
+      await db.rounds.put({
+        id: 1,
+        arrowsPerPasse: 1,
+        passesPerRound: 28,
+        numberOfRounds: 2,
+        scoringMode: '3d',
+        roundRulesets: [
+          { templateId: 'dfbv-3arrow', points: { K1: 21 } },
+          { templateId: 'dfbv-hunter', points: {} },
+        ],
+        entryMode: 'byArcherLine',
+      });
+
+      render(SetupRounds);
+
+      await waitFor(() => {
+        expect(
+          (screen.getByLabelText(strings.setup.scoringMode3d) as HTMLInputElement).checked
+        ).toBe(true);
+      });
+      expect(
+        (screen.getByLabelText(strings.setup.threeDStationsLabel) as HTMLInputElement).value
+      ).toBe('28');
+      expect((screen.getByLabelText(strings.setup.threeDLegsLabel) as HTMLInputElement).value).toBe(
+        '2'
+      );
+      // Two legs ⇒ two grids; leg 1 carries the K1:21 override.
+      const killFirstInputs = (await screen.findAllByLabelText(
+        'Kill 1. Pfeil'
+      )) as HTMLInputElement[];
+      expect(killFirstInputs).toHaveLength(2);
+      expect(killFirstInputs[0].value).toBe('21');
+    });
+  });
 });

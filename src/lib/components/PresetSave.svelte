@@ -31,6 +31,11 @@
             distance: roundsRecord.distance,
             presetId: roundsRecord.presetId,
             rings: roundsRecord.rings ?? 10,
+            // v2: a 3D tournament's scoring mode + per-leg rulesets travel with the
+            // preset. A rings preset simply omits both (scoringMode undefined ⇒ rings).
+            ...(roundsRecord.scoringMode === '3d'
+              ? { scoringMode: '3d' as const, roundRulesets: roundsRecord.roundRulesets ?? [] }
+              : {}),
           }
         : { arrowsPerPasse: 3, passesPerRound: 10, numberOfRounds: 1, distance: '18m', rings: 10 };
 

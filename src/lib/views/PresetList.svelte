@@ -4,6 +4,7 @@
   import { exportDB, importInto } from 'dexie-export-import';
   import { db } from '../db/schema';
   import type { PresetRecord } from '../db/schema';
+  import { THREE_D_TEMPLATES } from '../fixtures/threeDTemplates';
   import { strings } from '../i18n/strings.de';
   import ConfirmDialog from '../components/ConfirmDialog.svelte';
   import { downloadBlob } from '../utils/downloadBlob';
@@ -193,6 +194,25 @@
       !Number.isFinite(rc.numberOfRounds)
     ) {
       return false;
+    }
+    // v2: a 3D preset must carry one well-formed ruleset per leg with a known
+    // template id — resolveRuleset()/buildScoringContext() trust this shape.
+    if (rc.scoringMode === '3d') {
+      if (!Array.isArray(rc.roundRulesets) || rc.roundRulesets.length !== rc.numberOfRounds) {
+        return false;
+      }
+      if (
+        !rc.roundRulesets.every(
+          (r) =>
+            r !== null &&
+            typeof r === 'object' &&
+            THREE_D_TEMPLATES.some((t) => t.id === r.templateId) &&
+            typeof r.points === 'object' &&
+            r.points !== null
+        )
+      ) {
+        return false;
+      }
     }
     return true;
   }
