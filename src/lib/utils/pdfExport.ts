@@ -3,6 +3,25 @@ import autoTable from 'jspdf-autotable';
 import type { RankedRow } from './ranking';
 import type { ClassRecord, RoundConfig, SettingsRecord } from '../db/schema';
 import { expandClassName } from './classNameGenerator';
+import { resolveRuleset } from './threeDScoring';
+
+// v2 (3D milestone): the subset of RoundConfig the results PDF reads. Widened from
+// the original numberOfRounds/rings pick so 3D exports can pick up the per-leg
+// rulesets (for column labels) and the tie-break zones (Kill/Vital/Wound counts).
+type ResultsRoundConfig = Pick<
+  RoundConfig,
+  'numberOfRounds' | 'rings' | 'scoringMode' | 'roundRulesets'
+>;
+
+// Ordered tie-break zone labels for a 3D config, e.g. ['Kill', 'Vital', 'Wound'];
+// [] for a ring config (or a 3D config with no rulesets yet).
+function threeDTieBreakLabels(roundsConfig?: ResultsRoundConfig): string[] {
+  if (roundsConfig?.scoringMode !== '3d') return [];
+  const primary = (roundsConfig.roundRulesets ?? [])[0];
+  if (!primary) return [];
+  const rs = resolveRuleset(primary);
+  return rs.tieBreak.map((zone) => rs.zones.find((z) => z.zone === zone)?.label ?? zone);
+}
 
 // Pure PDF generation (PDF-01/04/05/07, 05-RESEARCH.md Pattern 1): framework-free,
 // no side effects, no Svelte dependency — mirrors ranking.ts's pure-function style so
@@ -19,17 +38,25 @@ export function buildClassTableRows(
   rows: RankedRow[],
   includeIncomplete: boolean,
   numberOfRounds: number,
-  rings: 10 | 5 = 10
+  rings: 10 | 5 = 10,
+  // v2: non-empty ⇒ 3D mode — the single ring-count column (X/10/9 …) is replaced by
+  // one column per label, each reading row.tieBreakCounts[i].
+  tieBreakLabels: string[] = []
 ): string[][] {
+  const is3d = tieBreakLabels.length > 0;
   return rows
     .filter((row) => includeIncomplete || row.isComplete)
     .map((row) => [
       row.rank.toString(),
       row.name,
       ...(numberOfRounds > 1 ? row.roundSums.map((s) => s.toString()) : []),
-      rings === 5
-        ? `${row.countX + row.count5}/${row.count4to1}/${row.countM}`
-        : `${row.countX}/${row.count10}/${row.count9}`,
+      ...(is3d
+        ? tieBreakLabels.map((_, i) => (row.tieBreakCounts?.[i] ?? 0).toString())
+        : [
+            rings === 5
+              ? `${row.countX + row.count5}/${row.count4to1}/${row.countM}`
+              : `${row.countX}/${row.count10}/${row.count9}`,
+          ]),
       row.sum.toString(),
     ]);
 }
@@ -60,10 +87,23 @@ export async function buildResultsPdfDoc(
   classes: ClassRecord[],
   settings: Pick<SettingsRecord, 'title' | 'logoLeftDataUri' | 'logoRightDataUri'> | undefined,
   includeIncomplete: boolean,
-  roundsConfig?: Pick<RoundConfig, 'numberOfRounds' | 'rings'>
+  roundsConfig?: ResultsRoundConfig
 ): Promise<jsPDF> {
   const numberOfRounds = roundsConfig?.numberOfRounds ?? 1;
   const rings = roundsConfig?.rings ?? 10;
+  const is3d = roundsConfig?.scoringMode === '3d';
+  const tieBreakLabels = threeDTieBreakLabels(roundsConfig);
+  // Per-leg column labels in 3D (e.g. '3-Pfeil-Runde', 'Hunter-Runde'); only shown
+  // when there is more than one leg, matching the ring-mode 'Runde N' behaviour.
+  const legLabels = is3d
+    ? Array.from(
+        { length: numberOfRounds },
+        (_, i) =>
+          (roundsConfig?.roundRulesets ?? [])[i]
+            ? resolveRuleset((roundsConfig!.roundRulesets ?? [])[i]).label
+            : `Runde ${i + 1}`
+      )
+    : [];
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
   // D-04 ordering — same alphabetical-by-name order as Results.svelte's
@@ -127,7 +167,7 @@ export async function buildResultsPdfDoc(
 
   for (const cls of classesWithResults) {
     const rows = classifications.get(cls.id!) ?? [];
-    const body = buildClassTableRows(rows, includeIncomplete, numberOfRounds, rings);
+    const body = buildClassTableRows(rows, includeIncomplete, numberOfRounds, rings, tieBreakLabels);
 
     // No unconditional page break between classes — result blocks share a page when
     // they fit. Only force a break when the estimated block height (heading + table
@@ -152,10 +192,14 @@ export async function buildResultsPdfDoc(
     doc.setFont('helvetica', 'bold');
     doc.text(expandClassName(cls), 20, cursorY);
 
-    const roundHeaders = numberOfRounds > 1
-      ? Array.from({ length: numberOfRounds }, (_, i) => `Runde ${i + 1}`)
-      : [];
-    const head = ['Rang', 'Name', ...roundHeaders, rings === 5 ? 'X+5/4-1/M' : 'X/10/9', 'Gesamt'];
+    const roundHeaders =
+      numberOfRounds > 1
+        ? is3d
+          ? legLabels
+          : Array.from({ length: numberOfRounds }, (_, i) => `Runde ${i + 1}`)
+        : [];
+    const countHeaders = is3d ? tieBreakLabels : [rings === 5 ? 'X+5/4-1/M' : 'X/10/9'];
+    const head = ['Rang', 'Name', ...roundHeaders, ...countHeaders, 'Gesamt'];
     const gesamtColumnIndex = head.length - 1;
 
     autoTable(doc, {
@@ -182,7 +226,7 @@ export async function generateResultsPdf(
   classes: ClassRecord[],
   settings: Pick<SettingsRecord, 'title' | 'logoLeftDataUri' | 'logoRightDataUri'> | undefined,
   includeIncomplete: boolean,
-  roundsConfig?: Pick<RoundConfig, 'numberOfRounds' | 'rings'>
+  roundsConfig?: ResultsRoundConfig
 ): Promise<Blob> {
   const doc = await buildResultsPdfDoc(classifications, classes, settings, includeIncomplete, roundsConfig);
   return doc.output('blob');

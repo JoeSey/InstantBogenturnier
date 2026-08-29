@@ -347,6 +347,18 @@ describe('SetupRounds', () => {
       });
     });
 
+    it('offers the blank-scoresheet PDF download in 3D mode too', async () => {
+      render(SetupRounds);
+      await fireEvent.click(screen.getByLabelText(strings.setup.scoringMode3d));
+
+      await waitFor(async () => {
+        expect((await db.rounds.get(1))?.scoringMode).toBe('3d');
+      });
+      expect(
+        screen.getByRole('button', { name: strings.scoresheetExport.downloadButton })
+      ).toBeTruthy();
+    });
+
     it('rehydrates the 3D panel from an existing 3d rounds record', async () => {
       await db.rounds.put({
         id: 1,

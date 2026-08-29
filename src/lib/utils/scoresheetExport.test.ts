@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildScoresheetPdfDoc, generateScoresheetPdf, scoresheetPdfFilename } from './scoresheetExport';
+import { defaultRoundRuleset } from './threeDScoring';
 import type { RoundConfig } from '../db/schema';
 
 function makeConfig(overrides: Partial<RoundConfig> = {}): RoundConfig {
@@ -85,5 +86,70 @@ describe('buildScoresheetPdfDoc', () => {
     const doc = await buildScoresheetPdfDoc(makeConfig({ numberOfRounds: 2 }), undefined);
     const output = doc.output();
     expect(output).toContain('Runde:');
+  });
+});
+
+// v2 (3D milestone) slice 6 — a per-station outcome card, one page per leg.
+describe('buildScoresheetPdfDoc — 3D mode', () => {
+  function threeDConfig(overrides: Partial<RoundConfig> = {}): RoundConfig {
+    return makeConfig({
+      arrowsPerPasse: 1,
+      passesPerRound: 14,
+      numberOfRounds: 1,
+      scoringMode: '3d',
+      roundRulesets: [defaultRoundRuleset('dfbv-3arrow')],
+      ...overrides,
+    });
+  }
+
+  it('produces one A5 page per leg', async () => {
+    expect((await buildScoresheetPdfDoc(threeDConfig(), undefined)).getNumberOfPages()).toBe(1);
+
+    const three = await buildScoresheetPdfDoc(
+      threeDConfig({
+        numberOfRounds: 3,
+        roundRulesets: [
+          defaultRoundRuleset('dfbv-3arrow'),
+          defaultRoundRuleset('dfbv-3arrow'),
+          defaultRoundRuleset('dfbv-hunter'),
+        ],
+      }),
+      undefined
+    );
+    expect(three.getNumberOfPages()).toBe(3);
+  });
+
+  it('renders the station-card headers and the point legend, not the ring grid', async () => {
+    const output = (await buildScoresheetPdfDoc(threeDConfig(), undefined)).output();
+    for (const header of ['Ziel', 'Wertung', 'Punkte', 'Summe']) {
+      expect(output).toContain(header);
+    }
+    for (const zone of ['Kill', 'Vital', 'Wound', 'Fehlschuss']) {
+      expect(output).toContain(zone);
+    }
+    expect(output).not.toContain('Ringe Pfeil Nr.');
+  });
+
+  it('marks each page with its leg number when there is more than one leg', async () => {
+    const output = (
+      await buildScoresheetPdfDoc(
+        threeDConfig({
+          numberOfRounds: 2,
+          roundRulesets: [defaultRoundRuleset('dfbv-3arrow'), defaultRoundRuleset('dfbv-hunter')],
+        }),
+        undefined
+      )
+    ).output();
+    expect(output).toContain('Durchgang: 1');
+    expect(output).toContain('Durchgang: 2');
+  });
+
+  it('falls back to a default ruleset per leg when none is configured', async () => {
+    const doc = await buildScoresheetPdfDoc(
+      makeConfig({ scoringMode: '3d', roundRulesets: undefined, numberOfRounds: 2, arrowsPerPasse: 1 }),
+      undefined
+    );
+    expect(doc.getNumberOfPages()).toBe(2);
+    expect(doc.output()).toContain('Ziel');
   });
 });

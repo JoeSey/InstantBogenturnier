@@ -114,8 +114,6 @@ export const strings = {
     threeDPointsCustom: '(angepasst)',
     threeDPointsReset: 'Auf Standard zurücksetzen',
     threeDArrowColumn: (n: number) => `${n}. Pfeil`,
-    threeDScoresheetUnavailable:
-      'Ein Schießzettel-PDF für die 3D-Wertung folgt in einer späteren Version.',
   },
   registration: {
     heading: 'Schützen',

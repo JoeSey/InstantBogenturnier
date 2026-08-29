@@ -6,6 +6,7 @@ import {
   generateResultsPdf,
   resultsPdfFilename,
 } from './pdfExport';
+import { defaultRoundRuleset } from './threeDScoring';
 import type { RankedRow } from './ranking';
 import type { ClassRecord } from '../db/schema';
 
@@ -94,6 +95,30 @@ describe('buildClassTableRows', () => {
     ];
     const result = buildClassTableRows(fiveRingRows, false, 1, 5);
     expect(result).toEqual([['1', 'Anna', '5/4/1', '280']]);
+  });
+
+  // v2 (3D milestone) slice 6 — one column per tie-break label instead of X/10/9.
+  it('emits one column per tie-break label from tieBreakCounts in 3D mode', () => {
+    const rows3d: RankedRow[] = [makeRow({ name: 'Ada', sum: 40, rank: 1, tieBreakCounts: [2, 1, 0] })];
+    expect(buildClassTableRows(rows3d, false, 1, 10, ['Kill', 'Vital', 'Wound'])).toEqual([
+      ['1', 'Ada', '2', '1', '0', '40'],
+    ]);
+  });
+
+  it('defaults a missing tieBreakCounts entry to 0', () => {
+    const rows3d: RankedRow[] = [makeRow({ name: 'Ada', sum: 40, rank: 1, tieBreakCounts: undefined })];
+    expect(buildClassTableRows(rows3d, false, 1, 10, ['Kill', 'Vital', 'Wound'])).toEqual([
+      ['1', 'Ada', '0', '0', '0', '40'],
+    ]);
+  });
+
+  it('keeps per-leg sum columns before the tie-break columns for a multi-leg 3D config', () => {
+    const rows3d: RankedRow[] = [
+      makeRow({ name: 'Ada', sum: 40, rank: 1, roundSums: [22, 18], tieBreakCounts: [1, 1, 0] }),
+    ];
+    expect(buildClassTableRows(rows3d, false, 2, 10, ['Kill', 'Vital', 'Wound'])).toEqual([
+      ['1', 'Ada', '22', '18', '1', '1', '0', '40'],
+    ]);
   });
 });
 
@@ -211,6 +236,35 @@ describe('generateResultsPdf', () => {
     const head = getAutoTableHeadRow(doc);
     expect(head).not.toContain('X/10/9');
     expect(head).toContain('X+5/4-1/M');
+  });
+
+  it('renders Kill/Vital/Wound headers instead of X/10/9 in 3D mode', async () => {
+    const doc = await buildResultsPdfDoc(makeRankings(), classes, undefined, false, {
+      numberOfRounds: 1,
+      scoringMode: '3d',
+      roundRulesets: [defaultRoundRuleset('dfbv-3arrow')],
+    });
+    const head = getAutoTableHeadRow(doc);
+    expect(head).not.toContain('X/10/9');
+    expect(head).toEqual(['Rang', 'Name', 'Kill', 'Vital', 'Wound', 'Gesamt']);
+  });
+
+  it('labels per-leg columns by template for a multi-leg 3D config', async () => {
+    const doc = await buildResultsPdfDoc(makeRankings(), classes, undefined, false, {
+      numberOfRounds: 2,
+      scoringMode: '3d',
+      roundRulesets: [defaultRoundRuleset('dfbv-3arrow'), defaultRoundRuleset('dfbv-hunter')],
+    });
+    expect(getAutoTableHeadRow(doc)).toEqual([
+      'Rang',
+      'Name',
+      '3-Pfeil-Runde',
+      'Hunter-Runde',
+      'Kill',
+      'Vital',
+      'Wound',
+      'Gesamt',
+    ]);
   });
 });
 
