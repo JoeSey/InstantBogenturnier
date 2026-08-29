@@ -22,6 +22,8 @@ Nach Abschluss eines Turniers müssen die Ergebnisse **nicht** persistiert werde
 
 *Version 1.5:* Möglichkeit, vor dem Turnier blanko Schießzettel gemäß dem gewählten Modus auszudrucken (DIN A5, zwei Zettel pro DIN A4-Blatt).
 
+*Version 2:* Alternativ zur Ringwertung eine **3D-/Feldparcours-Wertung**: Umschalter "Wertung" (Zielscheibe / 3D). Im 3D-Modus wird pro Durchgang eine Wertungsart gewählt (DFBV-Vorlagen *3-Pfeil-Runde* / *Hunter-Runde*), Kurs = konfigurierbare Anzahl Stationen (statt Passen). Die Punktetabelle (Zone Kill/Vital/Wound × Pfeil-Nr.) ist pro Durchgang editierbar, damit freie 3D-Turniere ihre eigenen Werte eintragen können. Erfassung dann als ganzer Wertungszettel pro Schütze (siehe Phase 3), Ergebnis-Tie-Break nach Kill- dann Vital-Anzahl. Schießzettel-PDF und Ergebnis-PDF entsprechend angepasst.
+
 **Turnier, Phase 2:**
 Eingabe der Schützen: Name, Klasse, Schießlinie (optional - praktisch bei großer Schützenzahl, weil dann die Ergebnisse anhand der Schießlinien schneller erfasst werden können, als wenn noch der Name der Schützen gesucht werden müsste)).
 Während Erfassung: Anzeige, ob Modus AB oder AB/CD (wenn Anzahl Schützen > Schießlinien, dann bei Schießlinie Auswahl AB/CD)

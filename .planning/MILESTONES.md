@@ -1,5 +1,27 @@
 # Milestones
 
+## v2 3D / Field Tournaments (branch `feature/3d-tournaments` — pending merge)
+
+**Delivered:** A parallel scoring model for DFBV-style 3D/field parcours alongside the existing ring-target flow — course of N stations instead of rounds/passes, zone-and-arrow-ordinal outcome tokens (Kill/Vital/Wound × 1./2./3. Pfeil) instead of ring values, per-leg rulesets with editable point tables, per-archer whole-scorecard entry, and Kill/Vital/Wound tie-break in results. `scoringMode` undefined ⇒ ring mode, so every existing tournament and preset is untouched with zero migration.
+
+**Structure:** 7 build slices, executed directly per user request (bypassing the discuss/plan/execute workflow), each an atomic commit. Preceded by a research pass (DFBV SpO 2024 §6.7 — see auto-memory `3d-archery-scoring-research.md`) and an agreed data-model design (`.planning/milestones/v2-3D-DESIGN.md`).
+**Git range:** `b7d60b5` (slice 0 — per-archer entry layout, landed on `main` first) → `c914bf4`/`8e19b7a` (design docs) → `e6fd0bc` … `d220683` (slices 1–6) → slice 7 (e2e + docs).
+**Tests at close:** 313 unit/component tests + `e2e/threeD.spec.ts` (offline happy-path) pass; production build clean; `npm run check` unchanged at 11 pre-existing errors.
+
+**Key accomplishments:**
+
+- **Schema (slice 1):** `ScoreValue` split into `RingScoreValue | ThreeDScoreValue` (`K1`..`W3` | `M`); `ScoringMode`, `RoundRuleset`, and `scoringMode`/`roundRulesets` on `RoundConfig` — no `ScoreRecord` PK change, no Dexie version bump. `threeDTemplates.ts` ships `dfbv-3arrow` (SpO §6.7.8: 20/18/16 → 14/12/10 → 8/6/4) and `dfbv-hunter` (§6.7.9); `threeDScoring.ts` has `resolveRuleset` (merges point overrides over template defaults) and `scoreTarget`.
+- **Generalised scoring (slice 2):** `buildScoringContext(config)` — one object exposing `pointsFor`/`tieBreakLabels`/`tieBreakCounts`/`entriesExpected` — plus `isTournamentComplete`. `ranking.ts`'s per-shooter helpers take a context or the legacy ring count; `assignRanks` compares a tuple key `[sum, ...tieBreakCounts]` so ring "1-2-2-4" is preserved and 3D breaks ties by Kill then Vital count.
+- **Setup 3D panel (slice 3):** "Wertung" segmented control swaps the ring/preset block for a 3D-Aufbau panel — stations per leg, leg count, per-leg template dropdown, and a `ThreeDPointGrid` matrix editor (Kill/Vital/Wound × ordinal) with a "(Standardwerte)"/"(angepasst)" badge and reset. Presets carry `scoringMode`+`roundRulesets`; import validation requires a well-formed ruleset per leg.
+- **3D score entry (slice 4):** `ScoreOutcomeGrid` (zone × ordinal button grid + Fehlschuss) and `ArcherCard3d` (Ziel | Wertung | Punkte rows). In 3D the per-archer card is the only layout; a fresh pick auto-advances the picker to the next unscored station and closes when the card is complete.
+- **Results (slice 5):** `ResultsTable` gains Kill/Vital/Wound count columns (via a `tieBreakLabels` prop) in 3D mode; the sums/ranks were already correct from slice 2.
+- **PDFs (slice 6):** results-list PDF replaces the X/10/9 column with per-leg template labels + Kill/Vital/Wound counts; the blank scoresheet becomes a per-station outcome card — one A5 page per leg with that leg's point-table legend.
+- **Close-out (slice 7):** `e2e/threeD.spec.ts` drives config → outcome entry → finalize → Kill/Vital/Wound results and both PDFs offline; README/SPECS updated; `appVersion` → `2.0`.
+
+**Known deferred (design leaves room, no code):** additive-scoring templates (`dfbv-doppelhunter` 2 entries/target, `wa-3d` flat 11/10/8/5), a 2-zone Scandinavian template, per-leg station counts. The `entriesPerTarget` / `zones`-as-data model means these are data + minor UI, not a reshape.
+
+---
+
 ## v1.5 Post-Ship Robustness & Cross-Device Continuation (Shipped: 2026-07-17)
 
 **Delivered:** Fixed a first-real-deployment PWA-only crash discovered live at a tournament, then shipped five follow-on requests from the same session as quick tasks (no phases/plans — executed directly per user request, bypassing the discuss/plan/execute workflow for this batch of small, independently-shippable items).

@@ -1,7 +1,34 @@
 # v2 — 3D outdoor tournaments: data-model design
 
-Status: **design agreed, not yet implemented.** Branch: `feature/3d-tournaments`.
+Status: **implemented on `feature/3d-tournaments`, pending merge.** All 7 build
+slices done; 313 unit tests + a 3D e2e spec pass, production build clean, `npm run
+check` shows only the 11 pre-existing errors from before this milestone.
 Companion research (rules, sources): see auto-memory `3d-archery-scoring-research.md`.
+
+## Slice status
+
+| Slice | Scope | Commit |
+|---|---|---|
+| 1 | Schema (`ScoreValue` split, `ScoringMode`, `RoundRuleset`, `RoundConfig` fields), `threeDTemplates.ts` (`dfbv-3arrow` / `dfbv-hunter`), `threeDScoring.ts` (`resolveRuleset` / `scoreTarget`) | `e6fd0bc` |
+| 2 | `scoringContext.ts` (`buildScoringContext`, `isTournamentComplete`); `ranking.ts` scoring-context + tuple `assignRanks` tie-break; `RankedRow.tieBreakCounts` | `8cbfc9f` |
+| 3 | Setup "Wertung" toggle + 3D-Aufbau panel; `ThreeDPointGrid.svelte` editable point tables; preset save/restore/import of `scoringMode` + `roundRulesets` | `7bbc921` |
+| 4 | `ScoreOutcomeGrid.svelte` + `ArcherCard3d.svelte`; `ScoreEntry.svelte` 3D wiring, auto-advance to next unscored station | `1d47737` |
+| 5 | `ResultsTable.svelte` Kill/Vital/Wound columns (via `tieBreakLabels` prop) | `5f87dda` |
+| 6 | `pdfExport.ts` 3D results columns (per-leg template labels + tie-break counts); `scoresheetExport.ts` per-station 3D card, one A5 page per leg; scoresheet button un-hidden | `d220683` |
+| 7 | `e2e/threeD.spec.ts` offline happy-path; README / SPECS / MILESTONES | _this slice_ |
+
+## Deviations from the design below
+
+- The on-screen results table was already deliberately minimal (Rang/Name/Linie/
+  Gesamt/Urkunde — no per-round or ring-count columns; those live only in the PDF).
+  So slice 5 added only the tie-break count columns on screen; per-leg 3D sums are
+  PDF-only, matching ring mode.
+- `RoundConfig.roundRulesets` must be written as plain objects, not a raw Svelte
+  `$state` array — the latter can't be `structuredClone`d into IndexedDB
+  (`DataCloneError`). Handled in `SetupRounds.svelte`'s `threeDResolvedConfig`.
+
+---
+
 
 ## Goal
 
