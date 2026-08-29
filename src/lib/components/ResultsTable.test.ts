@@ -81,4 +81,53 @@ describe('ResultsTable', () => {
     const headerButtons = container.querySelectorAll('thead button');
     expect(headerButtons.length).toBe(0);
   });
+
+  // v2 (3D milestone) slice 5 — tie-break count columns.
+  it('renders no tie-break columns by default', () => {
+    const { container } = render(ResultsTable, {
+      props: { rows: [row()], oncertexport: () => {} },
+    });
+    // Rang, Name, Schießplatz, Gesamt, Urkunde
+    expect(container.querySelectorAll('thead th')).toHaveLength(5);
+  });
+
+  it('renders one count column per tieBreakLabel, reading row.tieBreakCounts', () => {
+    const rows: RankedRow[] = [
+      row({ shooterId: 1, name: 'Anna', rank: 1, sum: 40, tieBreakCounts: [2, 1, 0] }),
+      row({ shooterId: 2, name: 'Bea', rank: 2, sum: 38, tieBreakCounts: [1, 1, 1] }),
+    ];
+    const { container } = render(ResultsTable, {
+      props: { rows, oncertexport: () => {}, tieBreakLabels: ['Kill', 'Vital', 'Wound'] },
+    });
+
+    const headers = Array.from(container.querySelectorAll('thead th')).map((h) => h.textContent?.trim());
+    expect(headers).toEqual([
+      strings.results.columnRank,
+      strings.results.columnName,
+      strings.results.columnLine,
+      strings.results.columnTotal,
+      'Kill',
+      'Vital',
+      'Wound',
+      strings.results.columnCertificate,
+    ]);
+
+    const annaCells = Array.from(
+      container.querySelectorAll('tbody tr')[0].querySelectorAll('td')
+    ).map((c) => c.textContent?.trim());
+    // Rang, Name, Linie, Gesamt(40), Kill(2), Vital(1), Wound(0), Urkunde-button
+    expect(annaCells.slice(4, 7)).toEqual(['2', '1', '0']);
+  });
+
+  it('shows 0 in a tie-break column when a row has no tieBreakCounts', () => {
+    const { container } = render(ResultsTable, {
+      props: {
+        rows: [row({ tieBreakCounts: undefined })],
+        oncertexport: () => {},
+        tieBreakLabels: ['Kill', 'Vital', 'Wound'],
+      },
+    });
+    const cells = Array.from(container.querySelectorAll('tbody td')).map((c) => c.textContent?.trim());
+    expect(cells.slice(4, 7)).toEqual(['0', '0', '0']);
+  });
 });

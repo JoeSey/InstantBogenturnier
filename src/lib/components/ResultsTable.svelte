@@ -15,7 +15,19 @@
   // Phase 6 Plan 04: added a per-row certificate action column (D-02/D-04) — the
   // `oncertexport` callback lets the parent (Results.svelte) supply the class-name-
   // aware handler, since RankedRow itself has no className field.
-  let { rows, oncertexport }: { rows: RankedRow[]; oncertexport: (row: RankedRow) => void } = $props();
+  // v2 (3D milestone): in 3D scoring mode the parent passes the ruleset's tie-break
+  // zone labels (e.g. ['Kill', 'Vital', 'Wound']); each becomes a compact count
+  // column between Gesamt and Urkunde, reading row.tieBreakCounts[i]. Empty in ring
+  // mode ⇒ the table is byte-identical to before.
+  let {
+    rows,
+    oncertexport,
+    tieBreakLabels = [],
+  }: {
+    rows: RankedRow[];
+    oncertexport: (row: RankedRow) => void;
+    tieBreakLabels?: string[];
+  } = $props();
 
   let hasIncomplete = $derived(rows.some((r) => !r.isComplete));
 
@@ -46,6 +58,13 @@
         >
           {strings.results.columnTotal}
         </th>
+        {#each tieBreakLabels as label (label)}
+          <th
+            class="p-2 md:p-4 text-right text-[14px] font-normal leading-[1.4] text-slate-500 dark:text-slate-400"
+          >
+            {label}
+          </th>
+        {/each}
         <th class="p-2 md:p-4 text-[14px] font-normal leading-[1.4] text-slate-500 dark:text-slate-400">
           {strings.results.columnCertificate}
         </th>
@@ -74,6 +93,11 @@
             {row.sum}{#if !row.isComplete}<span class="text-slate-400 dark:text-slate-500">*</span
               ><span class="sr-only">{strings.results.inProgressAria}</span>{/if}
           </td>
+          {#each tieBreakLabels as label, i (label)}
+            <td class="px-2 py-2 md:px-3 md:py-2 text-right text-slate-600 dark:text-slate-300">
+              {row.tieBreakCounts?.[i] ?? 0}
+            </td>
+          {/each}
           <td class="px-2 py-2 md:px-3 md:py-2 text-center">
             <button
               type="button"

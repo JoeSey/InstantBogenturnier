@@ -5,6 +5,7 @@
   import { db } from '../db/schema';
   import { strings } from '../i18n/strings.de';
   import { computeClassRankings } from '../utils/ranking';
+  import { buildScoringContext } from '../utils/scoringContext';
   import { generateResultsPdf, resultsPdfFilename } from '../utils/pdfExport';
   import { expandClassName } from '../utils/classNameGenerator';
   import {
@@ -37,6 +38,13 @@
   let allScores = $derived($scoresQuery ?? []);
 
   let rankings = $derived(computeClassRankings(shooters, classes, allScores, roundsConfig));
+
+  // v2: in 3D scoring mode these are the ruleset's tie-break zone labels
+  // (['Kill', 'Vital', 'Wound']); [] in ring mode, where the results table stays as
+  // it was.
+  let tieBreakLabels = $derived(
+    roundsConfig ? buildScoringContext(roundsConfig).tieBreakLabels : []
+  );
 
   // D-04: alphabetical class order, edge-case-safe — only classes with at least one
   // ranked shooter (rankings.has) feed BOTH the phone dropdown and the grid.
@@ -275,6 +283,7 @@
       <div class="mt-4">
         <ResultsTable
           rows={selectedClassId !== null ? (rankings.get(selectedClassId) ?? []) : []}
+          {tieBreakLabels}
           oncertexport={(row) => {
             const cls = classesWithResults.find((c) => c.id === selectedClassId);
             handleSingleCertExport(row, cls ? expandClassName(cls) : '');
@@ -299,6 +308,7 @@
           </h2>
           <ResultsTable
             rows={rankings.get(cls.id!) ?? []}
+            {tieBreakLabels}
             oncertexport={(row) => handleSingleCertExport(row, expandClassName(cls))}
           />
         </GlassCard>
