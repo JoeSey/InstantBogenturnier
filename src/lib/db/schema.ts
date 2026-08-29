@@ -40,6 +40,25 @@ export interface ShootingLineConfig {
 // (by Schießplatz vs. alphabetically by name).
 export type ScoreEntryMode = 'byRound' | 'byArcherLine' | 'byArcherName';
 
+// v2 (3D milestone). `scoringMode` undefined ⇒ 'rings' — every existing tournament and
+// preset keeps working with zero migration. In '3d' mode the WA-preset/rings/rounds
+// setup is replaced by a 3D panel, and `rings` is ignored.
+export type ScoringMode = 'rings' | '3d';
+
+// Near-term 3D ruleset templates. 'dfbv-doppelhunter' | 'wa-3d' | 'scandinavian-2zone'
+// come later — they only add data + grid layout, not a schema reshape.
+export type ThreeDTemplateId = 'dfbv-3arrow' | 'dfbv-hunter';
+
+// A round's resolved 3D ruleset, stored on the tournament (not merely referenced by
+// id) so trainer-edited point values travel with it. `points` is seeded from the
+// template's `defaultPoints` and holds overrides for any token the template permits;
+// 'M' is always 0. See src/lib/fixtures/threeDTemplates.ts and
+// src/lib/utils/threeDScoring.ts (resolveRuleset / scoreTarget).
+export interface RoundRuleset {
+  templateId: ThreeDTemplateId;
+  points: Partial<Record<ScoreValue, number>>;
+}
+
 export interface RoundConfig {
   id?: number;
   arrowsPerPasse: number;
@@ -49,6 +68,10 @@ export interface RoundConfig {
   presetId?: string;
   rings?: 10 | 5;
   entryMode?: ScoreEntryMode;
+  scoringMode?: ScoringMode;
+  // 3d only; index i is the ruleset for roundIndex i, so length must equal
+  // numberOfRounds. Undefined/absent in rings mode.
+  roundRulesets?: RoundRuleset[];
 }
 
 export interface ShooterRecord {
@@ -72,7 +95,9 @@ export interface PresetRecord {
 // `roundIndex`/`passeIndex`/`arrowIndex` are 0-based; the UI displays them 1-based
 // via `{i + 1}`. No separate `id` field — the 4-part compound tuple below is the
 // primary key, giving `db.scores.put(...)` upsert-by-cell semantics for free.
-export type ScoreValue =
+//
+// Ring-target score values — the original WA/DFBV target-face convention.
+export type RingScoreValue =
   | '0'
   | '1'
   | '2'
@@ -86,6 +111,28 @@ export type ScoreValue =
   | '10'
   | 'X'
   | 'M';
+
+// v2 (3D milestone) — outcome tokens for the first-hit-counts 3D rulesets. Encodes
+// `<zone K|V|W><arrow ordinal 1..maxArrows>`; 'M' = no scoring hit with any permitted
+// arrow. One token is stored per (shooter, round, station) with `arrowIndex` fixed at
+// 0 — the ordinal lives in the token, not in a per-arrow row. `dfbv-3arrow` permits
+// all nine hit tokens; `dfbv-hunter` permits only `K1 / V1 / W1`. See
+// .planning/milestones/v2-3D-DESIGN.md.
+export type ThreeDScoreValue =
+  | 'K1'
+  | 'K2'
+  | 'K3'
+  | 'V1'
+  | 'V2'
+  | 'V3'
+  | 'W1'
+  | 'W2'
+  | 'W3'
+  | 'M';
+
+// 'M' is shared and means "miss" in both worlds. Which arm is valid for a given
+// ScoreRecord is determined by the tournament's `RoundConfig.scoringMode`.
+export type ScoreValue = RingScoreValue | ThreeDScoreValue;
 
 export interface ScoreRecord {
   shooterId: number;
