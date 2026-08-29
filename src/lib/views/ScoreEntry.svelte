@@ -6,11 +6,18 @@
   import { strings } from '../i18n/strings.de';
   import {
     calculatePasseSum,
-    areAllScoresEntered,
     isPasseComplete,
     findFirstIncompletePasse,
     computeIsFinalized,
   } from '../utils/scoreCompletion';
+  import { isTournamentComplete } from '../utils/scoringContext';
+  import {
+    resolveRuleset,
+    scoreTarget,
+    tokenOrdinal,
+    tokenZone,
+    type ResolvedRuleset,
+  } from '../utils/threeDScoring';
   import { findNextEmptyArrowInRow } from '../utils/scoreAdvance';
   import PlaceholderScreen from '../components/PlaceholderScreen.svelte';
   import RoundPasseSelector from '../components/RoundPasseSelector.svelte';
@@ -18,7 +25,10 @@
   import type { ScoreRow } from '../components/ScoreTable.svelte';
   import ArcherScoreCard from '../components/ArcherScoreCard.svelte';
   import type { ArcherScoreCardRow } from '../components/ArcherScoreCard.svelte';
+  import ArcherCard3d from '../components/ArcherCard3d.svelte';
+  import type { ArcherCard3dRow } from '../components/ArcherCard3d.svelte';
   import ScorePicker from '../components/ScorePicker.svelte';
+  import ScoreOutcomeGrid from '../components/ScoreOutcomeGrid.svelte';
   import ConfirmDialog from '../components/ConfirmDialog.svelte';
   import { sortRows } from '../utils/sortComparators';
   import type { SortColumn, SortDirection } from '../utils/sortComparators';
@@ -44,7 +54,20 @@
   // 'byArcherLine'/'byArcherName' switch to a single-archer whole-scorecard layout
   // (see ArcherScoreCard.svelte). The mode is chosen on the Einrichtung tab and stored
   // on the rounds singleton; undefined means the classic layout.
-  let entryMode = $derived(roundsConfig?.entryMode ?? 'byRound');
+  //
+  // v2: in 3D scoring mode the per-archer card is the only sensible layout — everyone
+  // hands in a whole scorecard — so 'byRound' is coerced to 'byArcherLine' here even
+  // if a stale value survives on the record.
+  let scoringMode = $derived(roundsConfig?.scoringMode ?? 'rings');
+  let entryMode = $derived.by(() => {
+    const mode = roundsConfig?.entryMode ?? 'byRound';
+    return scoringMode === '3d' && mode === 'byRound' ? 'byArcherLine' : mode;
+  });
+
+  // One resolved ruleset per leg (roundIndex) in 3D mode; empty otherwise.
+  let resolvedRulesets = $derived<ResolvedRuleset[]>(
+    scoringMode === '3d' ? (roundsConfig?.roundRulesets ?? []).map(resolveRuleset) : []
+  );
 
   // Single flat lookup of every score by its full cell coordinate, used by both
   // layouts. Cheap even for a large tournament (a few thousand entries).
@@ -86,6 +109,15 @@
     if (!cell) return '';
     return shooters.find((s) => s.id === cell.shooterId)?.name ?? '';
   });
+  // 3D picker: the ruleset + station label for the open cell.
+  let pickerRuleset = $derived(pickerCell ? resolvedRulesets[pickerCell.roundIndex] : undefined);
+  let pickerStationLabel = $derived.by(() => {
+    const cell = pickerCell;
+    if (!cell || !roundsConfig) return '';
+    return roundsConfig.numberOfRounds > 1
+      ? `${cell.roundIndex + 1}.${cell.passeIndex + 1}`
+      : `${cell.passeIndex + 1}`;
+  });
   // Quick task 260705-ok7: live per-arrow preview of the current picker row, feeding
   // ScorePicker's rowPreview prop and its title preview text.
   let pickerRowPreview: (ScoreValue | null)[] = $derived.by(() => {
@@ -123,13 +155,7 @@
   // whether the trainer has already confirmed the permanent lock.
   let isComplete = $derived(
     roundsConfig && shooters.length > 0
-      ? areAllScoresEntered(
-          shooters.map((s) => s.id!),
-          roundsConfig.numberOfRounds,
-          roundsConfig.passesPerRound,
-          roundsConfig.arrowsPerPasse,
-          allScores
-        )
+      ? isTournamentComplete(shooters.map((s) => s.id!), roundsConfig, allScores)
       : false
   );
 
@@ -279,6 +305,64 @@
 
   let cardTotal = $derived(cardRows.reduce((acc, row) => acc + (row.sum ?? 0), 0));
 
+  // ---- 3D single-archer card (scoringMode === '3d') ----
+
+  // Readable label for one stored outcome token, given the leg's ruleset: the zone
+  // name, plus the arrow ordinal when the round permits more than one arrow.
+  function outcomeTextFor(token: ScoreValue, ruleset: ResolvedRuleset | undefined): string {
+    if (token === 'M') return strings.scoring.outcomeMiss;
+    const zone = tokenZone(token);
+    const zoneLabel = ruleset?.zones.find((z) => z.zone === zone)?.label ?? zone ?? '';
+    const ordinal = tokenOrdinal(token);
+    return ruleset && ruleset.maxArrows > 1 && ordinal
+      ? strings.scoring.outcomeZoneOrdinal(zoneLabel, ordinal)
+      : zoneLabel;
+  }
+
+  let card3dRows: ArcherCard3dRow[] = $derived.by(() => {
+    if (scoringMode !== '3d' || !roundsConfig || selectedShooterId === null) return [];
+    const built: ArcherCard3dRow[] = [];
+    for (let r = 0; r < roundsConfig.numberOfRounds; r++) {
+      const ruleset = resolvedRulesets[r];
+      for (let p = 0; p < roundsConfig.passesPerRound; p++) {
+        const token = (allScoreByKey.get(cellKey(selectedShooterId, r, p, 0)) as ScoreValue) ?? null;
+        built.push({
+          roundIndex: r,
+          passeIndex: p,
+          label: roundsConfig.numberOfRounds > 1 ? `${r + 1}.${p + 1}` : `${p + 1}`,
+          outcomeLabel: token ? outcomeTextFor(token, ruleset) : '',
+          points: token && ruleset ? scoreTarget(ruleset, [token]).points : null,
+        });
+      }
+    }
+    return built;
+  });
+
+  let card3dTotal = $derived(card3dRows.reduce((acc, row) => acc + (row.points ?? 0), 0));
+
+  // After a 3D pick, jump the picker to the next station on this archer's card that
+  // has no outcome yet (course order, wrapping past the end). Returns null when the
+  // card is complete.
+  function nextIncompleteStation(
+    shooterId: number,
+    fromRound: number,
+    fromPasse: number
+  ): { roundIndex: number; passeIndex: number } | null {
+    if (!roundsConfig) return null;
+    const total = roundsConfig.numberOfRounds * roundsConfig.passesPerRound;
+    const startFlat = fromRound * roundsConfig.passesPerRound + fromPasse;
+    for (let step = 1; step <= total; step++) {
+      const flat = (startFlat + step) % total;
+      const r = Math.floor(flat / roundsConfig.passesPerRound);
+      const p = flat % roundsConfig.passesPerRound;
+      const key = cellKey(shooterId, r, p, 0);
+      if (!allScoreByKey.has(key) && !justPickedValues.has(key)) {
+        return { roundIndex: r, passeIndex: p };
+      }
+    }
+    return null;
+  }
+
   // Quick task 260710-erfassung-jump-to-blank: one-shot initial jump to the first
   // round/passe that still has a blank arrow, so reopening Erfassung mid-tournament
   // doesn't always land back on round 1/passe 1. Fires at most once per mount: the
@@ -356,6 +440,23 @@
       });
 
     justPickedValues.set(cellKey(shooterId, roundIndex, passeIndex, arrowIndex), value);
+
+    // 3D: exactly one outcome token per station. Editing an existing outcome closes
+    // the picker; a fresh pick jumps to the next station on this card that still has
+    // no outcome (course order, wrapping), or closes when the card is complete.
+    if (scoringMode === '3d') {
+      const next = wasFilled ? null : nextIncompleteStation(shooterId, roundIndex, passeIndex);
+      pickerCell = next
+        ? {
+            shooterId,
+            roundIndex: next.roundIndex,
+            passeIndex: next.passeIndex,
+            arrowIndex: 0,
+            wasFilled: false,
+          }
+        : null;
+      return;
+    }
 
     // Quick task 260705-ok7: editing an already-filled cell always closes the
     // dialog — the trainer was correcting a single value, not filling a row.
@@ -536,25 +637,47 @@
         </button>
       </div>
 
-      <ArcherScoreCard
-        rows={cardRows}
-        arrowsPerPasse={roundsConfig.arrowsPerPasse}
-        finalized={isFinalized}
-        total={cardTotal}
-        oncelltap={(roundIndex, passeIndex, arrowIndex) =>
-          selectedShooterId !== null &&
-          openPicker(selectedShooterId, roundIndex, passeIndex, arrowIndex)}
-      />
+      {#if scoringMode === '3d'}
+        <ArcherCard3d
+          rows={card3dRows}
+          finalized={isFinalized}
+          total={card3dTotal}
+          oncelltap={(roundIndex, passeIndex) =>
+            selectedShooterId !== null &&
+            openPicker(selectedShooterId, roundIndex, passeIndex, 0)}
+        />
+      {:else}
+        <ArcherScoreCard
+          rows={cardRows}
+          arrowsPerPasse={roundsConfig.arrowsPerPasse}
+          finalized={isFinalized}
+          total={cardTotal}
+          oncelltap={(roundIndex, passeIndex, arrowIndex) =>
+            selectedShooterId !== null &&
+            openPicker(selectedShooterId, roundIndex, passeIndex, arrowIndex)}
+        />
+      {/if}
     {/if}
 
-    <ScorePicker
-      open={pickerCell !== null}
-      shooterName={pickerShooterName}
-      rowPreview={pickerRowPreview}
-      onselect={handleScoreSelect}
-      oncancel={cancelPicker}
-      rings={roundsConfig.rings ?? 10}
-    />
+    {#if scoringMode === '3d'}
+      <ScoreOutcomeGrid
+        open={pickerCell !== null}
+        shooterName={pickerShooterName}
+        stationLabel={pickerStationLabel}
+        ruleset={pickerRuleset}
+        onselect={handleScoreSelect}
+        oncancel={cancelPicker}
+      />
+    {:else}
+      <ScorePicker
+        open={pickerCell !== null}
+        shooterName={pickerShooterName}
+        rowPreview={pickerRowPreview}
+        onselect={handleScoreSelect}
+        oncancel={cancelPicker}
+        rings={roundsConfig.rings ?? 10}
+      />
+    {/if}
 
     {#if isFinalized}
       <p class="text-[16px] leading-[1.5] text-slate-700 dark:text-slate-200">

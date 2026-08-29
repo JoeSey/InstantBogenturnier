@@ -31,6 +31,14 @@ export function tokenZone(token: ScoreValue): ThreeDZone | null {
   return head === 'K' || head === 'V' || head === 'W' ? head : null;
 }
 
+// The arrow ordinal of a 3D hit token ('K2' -> 2), or null for a miss or a non-3D
+// value ('10' -> null, '1' -> null).
+export function tokenOrdinal(token: ScoreValue): number | null {
+  if (tokenZone(token) === null) return null;
+  const n = Number(token.charAt(1));
+  return Number.isInteger(n) && n >= 1 ? n : null;
+}
+
 // A fresh RoundRuleset seeded from a template's defaults — the shape the Setup 3D
 // panel writes when a template is first chosen for a round.
 export function defaultRoundRuleset(templateId: ThreeDTemplateId): RoundRuleset {

@@ -4,6 +4,7 @@ import ScoreEntry from './ScoreEntry.svelte';
 import { db } from '../db/schema';
 import { resetDb } from '../db/testHelpers';
 import { strings } from '../i18n/strings.de';
+import { defaultRoundRuleset } from '../utils/threeDScoring';
 
 // Behavior per 03-01-PLAN.md Task 2 <acceptance_criteria> block (SCORE-01/02/03/05).
 describe('ScoreEntry', () => {
@@ -938,6 +939,156 @@ describe('ScoreEntry', () => {
 
       expect(screen.getByLabelText(strings.scoring.roundLabel)).toBeTruthy();
       expect(screen.queryByLabelText(strings.scoring.archerLabel)).toBeNull();
+    });
+  });
+
+  // v2 (3D milestone) slice 4 — 3D scoring mode: per-archer card of Ziel/Wertung/
+  // Punkte rows, tapped via the outcome-zone picker.
+  describe('3D scoring mode', () => {
+    async function seed3dCourse(rulesetId: 'dfbv-3arrow' | 'dfbv-hunter' = 'dfbv-3arrow') {
+      const classId = await db.classes.add({ name: 'Blank' });
+      await db.rounds.put({
+        id: 1,
+        arrowsPerPasse: 1,
+        passesPerRound: 3,
+        numberOfRounds: 1,
+        scoringMode: '3d',
+        roundRulesets: [defaultRoundRuleset(rulesetId)],
+        entryMode: 'byArcherLine',
+      });
+      await db.shooters.add({ name: 'Ada', classId, lineAssignment: 1 });
+      await db.shooters.add({ name: 'Bea', classId, lineAssignment: 2 });
+      return classId;
+    }
+
+    it('shows the per-archer card with Ziel/Wertung/Punkte and no ring picker', async () => {
+      await seed3dCourse();
+      const { container } = render(ScoreEntry);
+      await screen.findByLabelText(strings.scoring.archerLabel);
+
+      expect(screen.queryByLabelText(strings.scoring.roundLabel)).toBeNull();
+      expect(screen.getByText(strings.scoring.columnOutcome)).toBeTruthy();
+      expect(screen.getByText(strings.scoring.columnPoints)).toBeTruthy();
+
+      const rows = container.querySelectorAll('tbody tr');
+      expect(rows).toHaveLength(3); // 1 leg × 3 stations
+      // every station starts unscored
+      expect(screen.getAllByText(strings.scoring.outcomeNotScored)).toHaveLength(3);
+    });
+
+    it('records an outcome token and shows its label + points', async () => {
+      await seed3dCourse();
+      const { container } = render(ScoreEntry);
+      await screen.findByLabelText(strings.scoring.archerLabel);
+
+      // tap station 1's Wertung cell
+      const firstCellButton = container.querySelectorAll('tbody tr')[0].querySelectorAll('button')[0];
+      await fireEvent.click(firstCellButton);
+
+      // pick "Kill (1.)" = 20 points
+      await fireEvent.click(
+        await screen.findByRole('button', {
+          name: strings.scoring.outcomeAria(strings.scoring.outcomeZoneOrdinal('Kill', 1), 20),
+        })
+      );
+
+      const ada = (await db.shooters.toArray()).find((s) => s.name === 'Ada');
+      await waitFor(async () => {
+        expect(await db.scores.count()).toBe(1);
+      });
+      expect((await db.scores.toArray())[0]).toMatchObject({
+        shooterId: ada!.id,
+        roundIndex: 0,
+        passeIndex: 0,
+        arrowIndex: 0,
+        value: 'K1',
+      });
+
+      await screen.findByText(strings.scoring.outcomeZoneOrdinal('Kill', 1));
+      // total row reflects 20
+      expect(screen.getByText(strings.scoring.cardTotalLabel).closest('tr')?.textContent).toContain(
+        '20'
+      );
+    });
+
+    it('auto-advances the picker to the next unscored station, then closes', async () => {
+      await seed3dCourse();
+      const { container } = render(ScoreEntry);
+      await screen.findByLabelText(strings.scoring.archerLabel);
+
+      await fireEvent.click(
+        container.querySelectorAll('tbody tr')[0].querySelectorAll('button')[0]
+      );
+
+      const missName = new RegExp(strings.scoring.outcomeMiss);
+      // station 1 -> picker stays open on station 2
+      await fireEvent.click(await screen.findByRole('button', { name: missName }));
+      expect(
+        screen.getByText(strings.scoring.outcomePickerTitle('Ada', '2'))
+      ).toBeTruthy();
+      // station 2 -> station 3
+      await fireEvent.click(await screen.findByRole('button', { name: missName }));
+      expect(
+        screen.getByText(strings.scoring.outcomePickerTitle('Ada', '3'))
+      ).toBeTruthy();
+      // station 3 -> card complete, picker closes
+      await fireEvent.click(await screen.findByRole('button', { name: missName }));
+      await waitFor(() => {
+        expect(screen.queryByRole('dialog')).toBeNull();
+      });
+      await waitFor(async () => {
+        const ada = (await db.shooters.toArray()).find((s) => s.name === 'Ada');
+        const adaScores = (await db.scores.toArray()).filter((s) => s.shooterId === ada!.id);
+        expect(adaScores).toHaveLength(3);
+        expect(adaScores.every((s) => s.value === 'M')).toBe(true);
+      });
+    });
+
+    it('enables Abschließen only once every archer has a full card', async () => {
+      await seed3dCourse();
+      render(ScoreEntry);
+      await screen.findByLabelText(strings.scoring.archerLabel);
+
+      const finalizeBtn = () =>
+        screen.getByRole('button', { name: strings.scoring.finalizeButton }) as HTMLButtonElement;
+      expect(finalizeBtn().disabled).toBe(true);
+
+      const all = await db.shooters.toArray();
+      for (const s of all) {
+        for (let p = 0; p < 3; p++) {
+          await db.scores.put({
+            shooterId: s.id!,
+            roundIndex: 0,
+            passeIndex: p,
+            arrowIndex: 0,
+            value: 'V1',
+            finalized: false,
+          });
+        }
+      }
+
+      await waitFor(() => {
+        expect(finalizeBtn().disabled).toBe(false);
+      });
+    });
+
+    it('omits the arrow ordinal from the outcome label for a single-arrow hunter leg', async () => {
+      await seed3dCourse('dfbv-hunter');
+      const { container } = render(ScoreEntry);
+      await screen.findByLabelText(strings.scoring.archerLabel);
+
+      await fireEvent.click(
+        container.querySelectorAll('tbody tr')[0].querySelectorAll('button')[0]
+      );
+      await fireEvent.click(
+        await screen.findByRole('button', {
+          name: strings.scoring.outcomeAria('Wound', 16),
+        })
+      );
+
+      // label is just "Wound" — no "(1.)"
+      await screen.findByText('Wound');
+      expect(screen.queryByText(strings.scoring.outcomeZoneOrdinal('Wound', 1))).toBeNull();
     });
   });
 });
