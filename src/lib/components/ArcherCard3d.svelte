@@ -9,12 +9,14 @@
     passeIndex: number;
     label: string;
     outcomeLabel: string; // '' when nothing recorded yet
+    zone: string | null; // 'K'|'V'|'W' for a hit, null for a miss or nothing recorded
     points: number | null; // null when nothing recorded yet
   }
 </script>
 
 <script lang="ts">
   import { strings } from '../i18n/strings.de';
+  import { outcomeCellColorClass } from '../utils/scoreColor';
 
   let {
     rows,
@@ -59,7 +61,7 @@
               aria-disabled={finalized}
               class={row.outcomeLabel === ''
                 ? 'flex min-h-[44px] w-full items-center justify-start rounded-md bg-slate-100 px-3 text-slate-500 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-700 dark:text-slate-400'
-                : 'flex min-h-[44px] w-full items-center justify-start rounded-md bg-teal-50 px-3 font-semibold text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-600 dark:text-slate-100'}
+                : `flex min-h-[44px] w-full items-center justify-start rounded-md px-3 font-semibold disabled:cursor-not-allowed disabled:opacity-50 ${outcomeCellColorClass(row.zone)}`}
             >
               {row.outcomeLabel === '' ? strings.scoring.outcomeNotScored : row.outcomeLabel}
             </button>

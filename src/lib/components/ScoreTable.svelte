@@ -18,6 +18,7 @@
 <script lang="ts">
   import { strings } from '../i18n/strings.de';
   import type { SortColumn, SortDirection } from '../utils/sortComparators';
+  import { scoreCellColorClass } from '../utils/scoreColor';
 
   // Fully opaque score table (Phase 1 D-11) — NO glass-surface class anywhere in this
   // file. Wrapped in overflow-x-auto so phone-width viewports scroll horizontally
@@ -37,6 +38,7 @@
     sortDir,
     oncelltap,
     onsort,
+    rings = 10,
   }: {
     rows: ScoreRow[];
     arrowsPerPasse: number;
@@ -45,6 +47,7 @@
     sortDir: SortDirection;
     oncelltap: (shooterId: number, arrowIndex: number) => void;
     onsort: (column: SortColumn) => void;
+    rings?: 10 | 5;
   } = $props();
 
   // SCORE-04: Linie/Name/Klasse/Summe are the only sortable columns — the
@@ -142,7 +145,7 @@
                 aria-disabled={finalized}
                 class={arrow === null
                   ? 'flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-700'
-                  : 'flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md bg-teal-50 font-semibold text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-600 dark:text-slate-100'}
+                  : `flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md font-semibold disabled:cursor-not-allowed disabled:opacity-50 ${scoreCellColorClass(arrow, rings)}`}
               >
                 {arrow ?? ''}
               </button>

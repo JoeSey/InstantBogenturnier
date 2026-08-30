@@ -16,6 +16,7 @@
 
 <script lang="ts">
   import { strings } from '../i18n/strings.de';
+  import { scoreCellColorClass } from '../utils/scoreColor';
 
   let {
     rows,
@@ -23,12 +24,14 @@
     finalized,
     total,
     oncelltap,
+    rings = 10,
   }: {
     rows: ArcherScoreCardRow[];
     arrowsPerPasse: number;
     finalized: boolean;
     total: number;
     oncelltap: (roundIndex: number, passeIndex: number, arrowIndex: number) => void;
+    rings?: 10 | 5;
   } = $props();
 </script>
 
@@ -66,7 +69,7 @@
                 aria-disabled={finalized}
                 class={arrow === null
                   ? 'flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-700'
-                  : 'flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md bg-teal-50 font-semibold text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-600 dark:text-slate-100'}
+                  : `flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md font-semibold disabled:cursor-not-allowed disabled:opacity-50 ${scoreCellColorClass(arrow, rings)}`}
               >
                 {arrow ?? ''}
               </button>
