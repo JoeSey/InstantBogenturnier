@@ -45,7 +45,13 @@ export function defaultRoundRuleset(templateId: ThreeDTemplateId): RoundRuleset 
   return { templateId, points: { ...getThreeDTemplate(templateId).defaultPoints } };
 }
 
-export function resolveRuleset(rr: RoundRuleset): ResolvedRuleset {
+// `zoneLabels` (RoundConfig.threeDZoneLabels) overrides the template's zone display
+// names — one club-wide set, so callers pass the same map for every leg. A blank or
+// absent entry keeps the template default.
+export function resolveRuleset(
+  rr: RoundRuleset,
+  zoneLabels?: Partial<Record<string, string>>
+): ResolvedRuleset {
   const t = getThreeDTemplate(rr.templateId);
   const points: Record<string, number> = {};
   for (const token of t.tokens) {
@@ -54,12 +60,17 @@ export function resolveRuleset(rr: RoundRuleset): ResolvedRuleset {
   // A miss never scores, regardless of template defaults or a stray override.
   points.M = 0;
 
+  const zones = t.zones.map((z) => {
+    const custom = zoneLabels?.[z.zone]?.trim();
+    return custom ? { ...z, label: custom } : z;
+  });
+
   return {
     templateId: t.id,
     label: t.label,
     entriesPerTarget: t.entriesPerTarget,
     maxArrows: t.maxArrows,
-    zones: t.zones,
+    zones,
     tokens: [...t.tokens],
     points,
     targetMax: t.targetMax,

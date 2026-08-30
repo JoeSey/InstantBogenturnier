@@ -232,7 +232,9 @@ async function buildThreeDScoresheetDoc(
   const fallback = Array.from({ length: Math.max(1, roundsConfig.numberOfRounds) }, () =>
     defaultRoundRuleset('dfbv-3arrow')
   );
-  const legs: ResolvedRuleset[] = (stored.length ? stored : fallback).map(resolveRuleset);
+  const legs: ResolvedRuleset[] = (stored.length ? stored : fallback).map((rr) =>
+    resolveRuleset(rr, roundsConfig.threeDZoneLabels)
+  );
   const multiLeg = legs.length > 1;
 
   legs.forEach((rs, legIndex) => {

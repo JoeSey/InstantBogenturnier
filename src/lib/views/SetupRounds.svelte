@@ -63,6 +63,11 @@
   let threeDLegs = $state(1);
   let threeDStations = $state(20);
   let threeDRulesets = $state<RoundRuleset[]>([defaultRoundRuleset('dfbv-3arrow')]);
+  // Club-wide hit-zone display names. Only the first leg's point table exposes the
+  // inputs; every leg (and both PDF exports) reads this same map. Empty string ⇒ use
+  // the template default for that zone.
+  let threeDZoneLabels = $state<Record<'K' | 'V' | 'W', string>>({ K: '', V: '', W: '' });
+  const THREE_D_ZONES = ['K', 'V', 'W'] as const;
 
   function syncRulesetLength() {
     const n = threeDLegs;
@@ -95,7 +100,19 @@
       templateId: rr.templateId,
       points: { ...rr.points },
     })),
+    threeDZoneLabels: normalizedZoneLabels(),
   });
+
+  // Trim the free-text zone names and drop the blanks, so an untouched config stores
+  // no `threeDZoneLabels` at all (⇒ template defaults) rather than three empty strings.
+  function normalizedZoneLabels(): Partial<Record<'K' | 'V' | 'W', string>> | undefined {
+    const out: Partial<Record<'K' | 'V' | 'W', string>> = {};
+    for (const zone of THREE_D_ZONES) {
+      const trimmed = threeDZoneLabels[zone].trim();
+      if (trimmed) out[zone] = trimmed;
+    }
+    return Object.keys(out).length ? out : undefined;
+  }
 
   function isValidThreeDConfig(): boolean {
     return (
@@ -144,6 +161,12 @@
     setLegPoints(index, { ...getThreeDTemplate(threeDRulesets[index].templateId).defaultPoints });
   }
 
+  function setZoneLabel(zone: string, label: string) {
+    if (zone !== 'K' && zone !== 'V' && zone !== 'W') return;
+    threeDZoneLabels = { ...threeDZoneLabels, [zone]: label };
+    save();
+  }
+
   // CR-01 (04-REVIEW.md): App.svelte destroys/recreates views on nav, so this component
   // remounts to hardcoded defaults every time the trainer revisits Einrichtung. Rehydrate
   // from the persisted db.rounds record once on first load so saving doesn't silently
@@ -164,6 +187,11 @@
         templateId: rr.templateId,
         points: { ...rr.points },
       }));
+      threeDZoneLabels = {
+        K: cfg.threeDZoneLabels?.K ?? '',
+        V: cfg.threeDZoneLabels?.V ?? '',
+        W: cfg.threeDZoneLabels?.W ?? '',
+      };
       syncRulesetLength();
     } else if (cfg.presetId) {
       selectedMode = 'preset';
@@ -494,6 +522,32 @@
             {/each}
           </select>
         </label>
+        {#if i === 0}
+          <fieldset class="flex flex-col gap-2 border-t border-slate-200 pt-2 dark:border-slate-600">
+            <legend class="text-[14px] font-semibold leading-[1.4] text-slate-700 dark:text-slate-200">
+              {strings.setup.threeDZoneNamesLegend}
+            </legend>
+            <div class="flex flex-wrap gap-3">
+              {#each THREE_D_ZONES as zone (zone)}
+                <label class="flex flex-col gap-1 text-[13px] leading-[1.4] text-slate-600 dark:text-slate-300">
+                  {strings.setup.threeDZoneDefault(zone)}
+                  <input
+                    type="text"
+                    value={threeDZoneLabels[zone]}
+                    placeholder={strings.setup.threeDZoneDefault(zone)}
+                    aria-label={strings.setup.threeDZoneNameLabel(strings.setup.threeDZoneDefault(zone))}
+                    disabled={isFinalized}
+                    onchange={(e) => setZoneLabel(zone, (e.currentTarget as HTMLInputElement).value)}
+                    class="min-h-[44px] w-40 rounded-lg border border-slate-300 bg-white p-2 text-[16px] leading-[1.5] text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                  />
+                </label>
+              {/each}
+            </div>
+            <p class="text-[13px] leading-[1.4] text-slate-500 dark:text-slate-400">
+              {strings.setup.threeDZoneNamesHelper}
+            </p>
+          </fieldset>
+        {/if}
         <details>
           <summary class="cursor-pointer text-[14px] leading-[1.4] text-slate-600 dark:text-slate-300">
             {strings.setup.threeDPointsSummary}
@@ -507,6 +561,7 @@
             <ThreeDPointGrid
               templateId={ruleset.templateId}
               points={ruleset.points}
+              zoneLabels={threeDZoneLabels}
               disabled={isFinalized}
               onchange={(points) => setLegPoints(i, points)}
             />

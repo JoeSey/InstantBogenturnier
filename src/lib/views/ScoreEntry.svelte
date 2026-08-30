@@ -66,7 +66,11 @@
 
   // One resolved ruleset per leg (roundIndex) in 3D mode; empty otherwise.
   let resolvedRulesets = $derived<ResolvedRuleset[]>(
-    scoringMode === '3d' ? (roundsConfig?.roundRulesets ?? []).map(resolveRuleset) : []
+    scoringMode === '3d'
+      ? (roundsConfig?.roundRulesets ?? []).map((rr) =>
+          resolveRuleset(rr, roundsConfig?.threeDZoneLabels)
+        )
+      : []
   );
 
   // Single flat lookup of every score by its full cell coordinate, used by both

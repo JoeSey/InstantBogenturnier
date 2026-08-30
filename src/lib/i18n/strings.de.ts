@@ -114,6 +114,15 @@ export const strings = {
     threeDPointsCustom: '(angepasst)',
     threeDPointsReset: 'Auf Standard zurücksetzen',
     threeDArrowColumn: (n: number) => `${n}. Pfeil`,
+    // Editable hit-zone names (first leg only). These names appear in der Erfassung
+    // und auf den Ergebnis-/Wertungszettel-PDFs; alle weiteren Durchgänge übernehmen
+    // sie automatisch.
+    threeDZoneNameLabel: (fallback: string) => `Bezeichnung für „${fallback}“`,
+    threeDZoneNamesLegend: 'Trefferzonen-Bezeichnungen',
+    threeDZoneDefault: (zone: 'K' | 'V' | 'W') =>
+      zone === 'K' ? 'Kill' : zone === 'V' ? 'Vital' : 'Wound',
+    threeDZoneNamesHelper:
+      'Frei wählbare Namen der Trefferzonen — gelten für alle Durchgänge und erscheinen in der Erfassung sowie auf den Ergebnis- und Wertungszettel-PDFs.',
   },
   registration: {
     heading: 'Schützen',

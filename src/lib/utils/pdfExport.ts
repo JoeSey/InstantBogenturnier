@@ -10,7 +10,7 @@ import { resolveRuleset } from './threeDScoring';
 // rulesets (for column labels) and the tie-break zones (Kill/Vital/Wound counts).
 type ResultsRoundConfig = Pick<
   RoundConfig,
-  'numberOfRounds' | 'rings' | 'scoringMode' | 'roundRulesets'
+  'numberOfRounds' | 'rings' | 'scoringMode' | 'roundRulesets' | 'threeDZoneLabels'
 >;
 
 // Ordered tie-break zone labels for a 3D config, e.g. ['Kill', 'Vital', 'Wound'];
@@ -19,7 +19,7 @@ function threeDTieBreakLabels(roundsConfig?: ResultsRoundConfig): string[] {
   if (roundsConfig?.scoringMode !== '3d') return [];
   const primary = (roundsConfig.roundRulesets ?? [])[0];
   if (!primary) return [];
-  const rs = resolveRuleset(primary);
+  const rs = resolveRuleset(primary, roundsConfig.threeDZoneLabels);
   return rs.tieBreak.map((zone) => rs.zones.find((z) => z.zone === zone)?.label ?? zone);
 }
 

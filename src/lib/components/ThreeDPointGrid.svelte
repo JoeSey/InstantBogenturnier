@@ -8,20 +8,31 @@
   // Pure input surface: it renders the resolved value per cell (stored override ??
   // template default) and emits a full `points` map on every edit. The parent
   // (SetupRounds) owns persistence and the "(angepasst)" / reset affordances.
+  // `zoneLabels` are the club-wide display-name overrides (RoundConfig.threeDZoneLabels),
+  // edited on the first leg in SetupRounds and passed to every leg's grid so all row
+  // headers (and the number-input aria labels) read the same custom names.
   let {
     templateId,
     points,
     disabled = false,
     onchange,
+    zoneLabels = {},
   }: {
     templateId: ThreeDTemplateId;
     points: RoundRuleset['points'];
     disabled?: boolean;
     onchange: (points: RoundRuleset['points']) => void;
+    zoneLabels?: Partial<Record<string, string>>;
   } = $props();
 
   let template = $derived(getThreeDTemplate(templateId));
   let ordinals = $derived(Array.from({ length: template.maxArrows }, (_, i) => i + 1));
+
+  // Display name for a zone: the club override (trimmed, non-empty) or the template
+  // default. Used for the number-input aria labels and the read-only header text.
+  function labelFor(zone: string, fallback: string): string {
+    return zoneLabels[zone]?.trim() || fallback;
+  }
 
   function valueOf(token: ScoreValue): number {
     return points[token] ?? template.defaultPoints[token] ?? 0;
@@ -49,7 +60,7 @@
     <tbody>
       {#each template.zones as zone (zone.zone)}
         <tr>
-          <th class="p-1 text-left font-semibold">{zone.label}</th>
+          <th class="p-1 text-left font-semibold">{labelFor(zone.zone, zone.label)}</th>
           {#each ordinals as ordinal (ordinal)}
             {@const token = `${zone.zone}${ordinal}` as ScoreValue}
             <td class="p-1">
@@ -58,7 +69,7 @@
                 min="0"
                 step="1"
                 inputmode="numeric"
-                aria-label={`${zone.label} ${strings.setup.threeDArrowColumn(ordinal)}`}
+                aria-label={`${labelFor(zone.zone, zone.label)} ${strings.setup.threeDArrowColumn(ordinal)}`}
                 value={valueOf(token)}
                 {disabled}
                 onchange={(e) => handleInput(token, (e.currentTarget as HTMLInputElement).value)}

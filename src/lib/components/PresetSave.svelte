@@ -34,7 +34,15 @@
             // v2: a 3D tournament's scoring mode + per-leg rulesets travel with the
             // preset. A rings preset simply omits both (scoringMode undefined ⇒ rings).
             ...(roundsRecord.scoringMode === '3d'
-              ? { scoringMode: '3d' as const, roundRulesets: roundsRecord.roundRulesets ?? [] }
+              ? {
+                  scoringMode: '3d' as const,
+                  roundRulesets: roundsRecord.roundRulesets ?? [],
+                  // Club-wide hit-zone names travel with the preset too (undefined ⇒
+                  // the trainer never renamed them; template defaults apply).
+                  ...(roundsRecord.threeDZoneLabels
+                    ? { threeDZoneLabels: { ...roundsRecord.threeDZoneLabels } }
+                    : {}),
+                }
               : {}),
           }
         : { arrowsPerPasse: 3, passesPerRound: 10, numberOfRounds: 1, distance: '18m', rings: 10 };

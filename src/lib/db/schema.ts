@@ -72,6 +72,12 @@ export interface RoundConfig {
   // 3d only; index i is the ruleset for roundIndex i, so length must equal
   // numberOfRounds. Undefined/absent in rings mode.
   roundRulesets?: RoundRuleset[];
+  // 3d only. Trainer-facing display names for the hit zones (Kill/Vital/Wound),
+  // shown in score entry and printed on the results/scoresheet PDFs. Keys are the
+  // fixed zone letters; a missing or blank entry falls back to the template's own
+  // label. One tournament-wide set — every leg reflects it (only the first leg's
+  // point table exposes the inputs). Undefined ⇒ template defaults everywhere.
+  threeDZoneLabels?: Partial<Record<'K' | 'V' | 'W', string>>;
 }
 
 export interface ShooterRecord {

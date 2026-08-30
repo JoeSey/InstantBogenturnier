@@ -29,7 +29,9 @@ export function buildScoringContext(config: RoundConfig): ScoringContext {
     // One resolved ruleset per round (leg). Defensive against a not-yet-configured
     // 3d tournament (roundRulesets absent/short) so the slices before the Setup UI
     // exists don't crash — missing ruleset ⇒ zero points, no tie-break.
-    const resolved = (config.roundRulesets ?? []).map(resolveRuleset);
+    const resolved = (config.roundRulesets ?? []).map((rr) =>
+      resolveRuleset(rr, config.threeDZoneLabels)
+    );
     const primary = resolved[0];
     const tieBreakZones = primary?.tieBreak ?? [];
     const labelOf = (zone: string) =>
