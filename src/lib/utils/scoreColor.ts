@@ -27,3 +27,26 @@ export function scoreColorCategory(value: ScoreValue, rings: 10 | 5 = 10): Score
   if (value === '4' || value === '3') return 'black';
   return 'white';
 }
+
+// Tweak 260830: the filled score cells in the Erfassung tables echo the tap-picker's
+// target-face colors, but a few shades lighter so the score digit stays readable and
+// the table doesn't turn into a wall of saturated blocks. Returns only the
+// background/text portion — callers keep their own layout/disabled classes.
+export function scoreCellColorClass(value: ScoreValue, rings: 10 | 5 = 10): string {
+  switch (scoreColorCategory(value, rings)) {
+    case 'yellow':
+      return 'bg-amber-100 text-slate-900 dark:bg-amber-400/25 dark:text-amber-50';
+    case 'red':
+      return 'bg-red-100 text-slate-900 dark:bg-red-500/25 dark:text-red-50';
+    case 'blue':
+      return 'bg-blue-100 text-slate-900 dark:bg-blue-500/25 dark:text-blue-50';
+    case 'darkblue':
+      return 'bg-blue-200 text-slate-900 dark:bg-blue-800/40 dark:text-blue-50';
+    case 'black':
+      return 'bg-slate-200 text-slate-900 dark:bg-slate-500/40 dark:text-slate-50';
+    case 'miss':
+      return 'bg-gray-200 text-slate-700 dark:bg-gray-500/30 dark:text-gray-100';
+    default:
+      return 'bg-slate-50 text-slate-900 dark:bg-slate-700 dark:text-slate-100';
+  }
+}

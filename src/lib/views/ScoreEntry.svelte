@@ -487,6 +487,7 @@
         {rows}
         arrowsPerPasse={roundsConfig.arrowsPerPasse}
         finalized={isFinalized}
+        rings={roundsConfig.rings ?? 10}
         {sortBy}
         {sortDir}
         oncelltap={(shooterId, arrowIndex) =>
@@ -540,6 +541,7 @@
         rows={cardRows}
         arrowsPerPasse={roundsConfig.arrowsPerPasse}
         finalized={isFinalized}
+        rings={roundsConfig.rings ?? 10}
         total={cardTotal}
         oncelltap={(roundIndex, passeIndex, arrowIndex) =>
           selectedShooterId !== null &&
